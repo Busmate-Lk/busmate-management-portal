@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Layout } from '@/components/shared/layout';
 import TimekeeperAdvancedFilters from '@/components/mot/timekeepers/TimekeeperAdvancedFilters/page';
@@ -29,32 +29,37 @@ interface QueryParams {
   sortBy: string;
   sortDir: 'asc' | 'desc';
   search: string;
-  status?: 'pending' | 'active' | 'inactive' | 'cancelled';
+  status?: 'active' | 'inactive';
 }
 
 interface FilterOptions {
-  statuses: Array<'pending' | 'active' | 'inactive' | 'cancelled'>;
-  provinces: Array<string>;
-  stands: Array<string>;
+  statuses: Array<'active' | 'inactive'>;
+  provinces: string[];
+  stands: string[];
 }
 
 export default function TimekeepersPage() {
   const router = useRouter();
+
+  // Core states
   const [timekeepers, setTimekeepers] = useState<TimekeeperResponse[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Filters
+  const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [provinceFilter, setProvinceFilter] = useState('all');
   const [standFilter, setStandFilter] = useState('all');
 
+  // Dynamic dropdown filter options
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    statuses: ['pending', 'active', 'inactive', 'cancelled'],
+    statuses: ['active', 'inactive'],
     provinces: [],
     stands: [],
   });
 
+  // Query params
   const [queryParams, setQueryParams] = useState<QueryParams>({
     page: 0,
     size: 10,
@@ -63,6 +68,7 @@ export default function TimekeepersPage() {
     search: '',
   });
 
+  // Pagination metadata
   const [pagination, setPagination] = useState({
     currentPage: 0,
     totalPages: 0,
@@ -70,6 +76,7 @@ export default function TimekeepersPage() {
     pageSize: 10,
   });
 
+  // Stats for dashboard cards
   const [stats, setStats] = useState({
     totalTimekeepers: { count: 0 },
     activeTimekeepers: { count: 0 },
@@ -77,14 +84,14 @@ export default function TimekeepersPage() {
     provincesCount: { count: 0 },
   });
 
-  /** Load all timekeepers from backend */
+  /** Fetch all timekeepers */
   const loadTimekeepers = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
 
       const response = await TimekeeperControllerService.getAllTimekeepers();
-      console.log(' Timekeepers response:', response);
+      console.log('✅ Timekeepers response:', response);
 
       const normalized = (response || []).map((r: any) => ({
         id: r.id ?? r.timekeeperId ?? r._id ?? r.userId ?? '',
@@ -101,19 +108,26 @@ export default function TimekeepersPage() {
 
       setTimekeepers(normalized);
 
-      // derive province & stand filters dynamically
+      // Calculate statistics
+      setStats({
+        totalTimekeepers: { count: normalized.length },
+        activeTimekeepers: {
+          count: normalized.filter((t) => t.status === 'active').length,
+        },
+        inactiveTimekeepers: {
+          count: normalized.filter((t) => t.status === 'inactive').length,
+        },
+        provincesCount: {
+          count: new Set(normalized.map((t) => t.province).filter(Boolean)).size,
+        },
+      });
+
+      // Derive filter options
       const provinces = [...new Set(normalized.map((t) => t.province).filter(Boolean))];
       const stands = [...new Set(normalized.map((t) => t.assign_stand).filter(Boolean))];
       setFilterOptions((prev) => ({ ...prev, provinces, stands }));
-
-      setPagination({
-        currentPage: 0,
-        totalPages: 1,
-        totalElements: normalized.length,
-        pageSize: normalized.length || 10,
-      });
     } catch (err) {
-      console.error(' Error loading timekeepers:', err);
+      console.error('❌ Error loading timekeepers:', err);
       setError('Failed to load timekeepers. Please try again.');
       setTimekeepers([]);
     } finally {
@@ -121,100 +135,50 @@ export default function TimekeepersPage() {
     }
   }, []);
 
-  /**Initial data load */
+  /** Initial load */
   useEffect(() => {
     loadTimekeepers();
   }, [loadTimekeepers]);
 
-  /**Update query params */
+  /** Update query parameters */
   const updateQueryParams = useCallback(
     (updates: Partial<QueryParams>) => {
       setQueryParams((prev) => {
-        const newParams = { ...prev, ...updates };
+        const updated = { ...prev, ...updates };
         if (!('status' in updates)) {
           if (statusFilter !== 'all') {
-            newParams.status = statusFilter as QueryParams['status'];
+            updated.status = statusFilter as QueryParams['status'];
           } else {
-            delete newParams.status;
+            delete updated.status;
           }
         }
-        return newParams;
+        return updated;
       });
     },
     [statusFilter]
   );
 
+  /** React to filter changes */
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const debounce = setTimeout(() => {
       updateQueryParams({ page: 0 });
     }, 300);
-    return () => clearTimeout(timer);
+    return () => clearTimeout(debounce);
   }, [statusFilter, provinceFilter, standFilter, updateQueryParams]);
 
-  /** Actions */
+  /** Handle Actions */
   const handleSearch = (term: string) => {
     setSearchTerm(term);
     updateQueryParams({ search: term, page: 0 });
   };
 
-  const handleAddNew = () => {
-    router.push('/mot/staff-management/add-new');
-  };
-
-  const handleExportAll = async () => {
-    try {
-      const dataToExport = timekeepers.map((tk) => ({
-        Fullname: tk.fullname || '',
-        Phone: tk.phonenumber || '',
-        Email: tk.email || '',
-        'Assigned Stand': tk.assign_stand || '',
-        NIC: tk.nic || '',
-        Province: tk.province || '',
-        Status: tk.status || '',
-        'Created At': tk.createdAt ? new Date(tk.createdAt).toLocaleDateString() : '',
-      }));
-
-      if (dataToExport.length === 0) {
-        alert('No data to export');
-        return;
-      }
-
-      const headers = Object.keys(dataToExport[0]);
-      const csvContent = [
-        headers.join(','),
-        ...dataToExport.map((row) =>
-          headers
-            .map((h) => {
-              const v = row[h as keyof typeof row];
-              return typeof v === 'string' && v.includes(',')
-                ? `"${v.replace(/"/g, '""')}"`
-                : v;
-            })
-            .join(',')
-        ),
-      ].join('\n');
-
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `timekeepers-${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('Export failed:', err);
-      alert('Failed to export data. Please try again.');
-    }
-  };
-
+  const handleAddNew = () => router.push('/mot/staff-management/add-new');
   const handleView = (id: string) => router.push(`/mot/users/timekeepers/${id}`);
   const handleEdit = (id: string) => router.push(`/mot/users/timekeepers/${id}/edit`);
   const handleDelete = (id: string) => alert(`Delete not implemented yet for ID: ${id}`);
 
-  /**Filters and table data */
-  const filteredTimekeepers = React.useMemo(() => {
+  /** Filtering + Pagination */
+  const filteredTimekeepers = useMemo(() => {
     let list = timekeepers;
     if (provinceFilter !== 'all') list = list.filter((t) => t.province === provinceFilter);
     if (standFilter !== 'all') list = list.filter((t) => t.assign_stand === standFilter);
@@ -229,9 +193,15 @@ export default function TimekeepersPage() {
     return list;
   }, [timekeepers, provinceFilter, standFilter, statusFilter, searchTerm]);
 
-  const transformed = React.useMemo(
+  const paginatedTimekeepers = useMemo(() => {
+    const start = queryParams.page * queryParams.size;
+    const end = start + queryParams.size;
+    return filteredTimekeepers.slice(start, end);
+  }, [filteredTimekeepers, queryParams.page, queryParams.size]);
+
+  const transformed = useMemo(
     () =>
-      filteredTimekeepers.map((tk) => ({
+      paginatedTimekeepers.map((tk) => ({
         id: tk.id,
         fullname: tk.fullname,
         phonenumber: tk.phonenumber,
@@ -242,9 +212,19 @@ export default function TimekeepersPage() {
         status: tk.status,
         createdAt: tk.createdAt,
       })),
-    [filteredTimekeepers]
+    [paginatedTimekeepers]
   );
 
+  useEffect(() => {
+    setPagination({
+      currentPage: queryParams.page,
+      totalPages: Math.ceil(filteredTimekeepers.length / queryParams.size) || 1,
+      totalElements: filteredTimekeepers.length,
+      pageSize: queryParams.size,
+    });
+  }, [filteredTimekeepers, queryParams.page, queryParams.size]);
+
+  /** Render */
   return (
     <Layout
       activeItem="timekeepers"
@@ -253,6 +233,7 @@ export default function TimekeepersPage() {
       role="mot"
     >
       <div className="space-y-6">
+        {/* Error Message */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-md p-4">
             <h3 className="text-sm font-medium text-red-800">Error</h3>
@@ -266,15 +247,11 @@ export default function TimekeepersPage() {
           </div>
         )}
 
-        {/* Stats cards */}
+        {/* Statistics */}
         <TimekeeperStatsCards stats={stats} />
 
-        {/* Action buttons */}
-        <TimekeeperActionButtons
-          onAddTimekeeper={handleAddNew}
-          onImportTimekeepers={() => {}}
-          onExportAll={handleExportAll}
-        />
+        {/* Only "Add New" button now */}
+        <TimekeeperActionButtons onAddTimekeeper={handleAddNew} />
 
         {/* Filters */}
         <TimekeeperAdvancedFilters
