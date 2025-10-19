@@ -34,7 +34,10 @@ interface TimekeeperFormProps {
   onCancel?: () => void;
 }
 
-interface FormData extends TimekeeperRequest {}
+interface FormData extends TimekeeperRequest {
+  assign_stand_id?: string; // store hidden stop ID
+}
+
 interface FormErrors {
   [key: string]: string | undefined;
 }
@@ -50,8 +53,14 @@ export default function TimekeeperForm({ timekeeperId, onSuccess, onCancel }: Ti
   const isEditMode = !!timekeeperId;
 
   const [formData, setFormData] = useState<FormData>({
-    fullname: '', phonenumber: '', email: '', assign_stand: '',
-    nic: '', province: '', password: '',
+    fullname: '',
+    phonenumber: '',
+    email: '',
+    assign_stand: '',
+    nic: '',
+    province: '',
+    password: '',
+    assign_stand_id: '',
   });
 
   const [busStops, setBusStops] = useState<{ id: string; stopName: string }[]>([]);
@@ -60,7 +69,7 @@ export default function TimekeeperForm({ timekeeperId, onSuccess, onCancel }: Ti
   const [errors, setErrors] = useState<FormErrors>({});
   const [isDirty, setIsDirty] = useState(false);
 
-  // ---------------- Input Change ----------------
+  // ---------------- Handle Input Change ----------------
   const handleInputChange = useCallback((field: keyof FormData, value: string) => {
     setIsDirty(true);
     setErrors(prev => ({ ...prev, [field]: undefined, general: undefined }));
@@ -69,36 +78,32 @@ export default function TimekeeperForm({ timekeeperId, onSuccess, onCancel }: Ti
 
   // ---------------- Form Validation ----------------
   const validateForm = (): boolean => {
-  const newErrors: FormErrors = {};
+    const newErrors: FormErrors = {};
 
-  if (!formData.fullname.trim()) newErrors.fullname = 'Full name is required';
+    if (!formData.fullname.trim()) newErrors.fullname = 'Full name is required';
 
-  // Phone number: exactly 10 digits
-  if (!/^\d{10}$/.test(formData.phonenumber))
-    newErrors.phonenumber = 'Phone number must be exactly 10 digits';
+    if (!/^\d{10}$/.test(formData.phonenumber))
+      newErrors.phonenumber = 'Phone number must be exactly 10 digits';
 
-  // Email validation
-  if (!formData.email.trim()) newErrors.email = 'Email is required';
-  else if (!/^\S+@\S+\.\S+$/.test(formData.email)) newErrors.email = 'Invalid email format';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    else if (!/^\S+@\S+\.\S+$/.test(formData.email)) newErrors.email = 'Invalid email format';
 
-  if (!formData.assign_stand.trim()) newErrors.assign_stand = 'Assigned stand is required';
+    if (!formData.assign_stand_id) newErrors.assign_stand = 'Assigned stand is required';
 
-  // NIC: 12 digits or 11 digits ending with v/V
-  if (!/^(\d{12}|\d{11}[vV])$/.test(formData.nic))
-    newErrors.nic = 'NIC must be 12 digits or 11 digits ending with V';
+    if (!/^(\d{12}|\d{11}[vV])$/.test(formData.nic))
+      newErrors.nic = 'NIC must be 12 digits or 11 digits ending with V';
 
-  if (!formData.province.trim()) newErrors.province = 'Province is required';
+    if (!formData.province.trim()) newErrors.province = 'Province is required';
 
-  // Password: min 6 chars, at least one lowercase, uppercase, number, special
-  if (!isEditMode) {
-    if (!formData.password) newErrors.password = 'Password is required';
-    else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}/.test(formData.password))
-      newErrors.password = 'Password must be at least 6 chars, include uppercase, lowercase, number & special char';
-  }
+    if (!isEditMode) {
+      if (!formData.password) newErrors.password = 'Password is required';
+      else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{6,}/.test(formData.password))
+        newErrors.password = 'Password must be min 6 chars, include uppercase, lowercase, number & special char';
+    }
 
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // ---------------- Fetch Bus Stops ----------------
   useEffect(() => {
@@ -143,7 +148,10 @@ export default function TimekeeperForm({ timekeeperId, onSuccess, onCancel }: Ti
       if (isEditMode) {
         setErrors({ general: 'Edit feature not yet implemented for timekeepers.' });
       } else {
-        result = await TimekeeperControllerService.signup(formData);
+        result = await TimekeeperControllerService.signup({
+          ...formData,
+          assign_stand: formData.assign_stand_id, // submit hidden stop ID
+        });
       }
 
       if (result) {
@@ -194,9 +202,43 @@ export default function TimekeeperForm({ timekeeperId, onSuccess, onCancel }: Ti
           <FormInput label="Phone Number" required value={formData.phonenumber} error={errors.phonenumber} onChange={v => handleInputChange('phonenumber', v)} placeholder="10 digits" />
           <FormInput label="Email" required value={formData.email} error={errors.email} onChange={v => handleInputChange('email', v)} placeholder="Enter email address" />
           <FormInput label="NIC" required value={formData.nic} error={errors.nic} onChange={v => handleInputChange('nic', v)} placeholder="11 or 12 digits, may end with V" />
-          <FormSelect label="Assigned Stand" required value={formData.assign_stand} options={busStops.map(bs => ({ value: bs.stopName, label: bs.stopName }))} error={errors.assign_stand} disabled={loadingBusStops} placeholder={loadingBusStops ? 'Loading bus stops...' : 'Select a bus stop'} onChange={v => handleInputChange('assign_stand', v)} />
-          <FormSelect label="Province" required value={formData.province} options={SRI_LANKAN_PROVINCES.map(p => ({ value: p, label: p }))} error={errors.province} placeholder="Select a province" onChange={v => handleInputChange('province', v)} />
-          <FormInput label="Password" type="password" required={!isEditMode} value={formData.password} error={errors.password} placeholder={isEditMode ? 'Enter new password' : 'Min 6 chars, include upper/lower, number, special'} hint={isEditMode ? 'Leave blank to keep current password' : undefined} onChange={v => handleInputChange('password', v)} />
+          
+          <FormSelect
+            label="Assigned Stand"
+            required
+            value={formData.assign_stand_id || ''}
+            options={busStops.map(bs => ({ value: bs.id, label: bs.stopName }))}
+            error={errors.assign_stand}
+            disabled={loadingBusStops}
+            placeholder={loadingBusStops ? 'Loading bus stops...' : 'Select a bus stop'}
+            onChange={v => {
+              const stopName = busStops.find(bs => bs.id === v)?.stopName || '';
+              setFormData(prev => ({ ...prev, assign_stand_id: v, assign_stand: stopName }));
+              setErrors(prev => ({ ...prev, assign_stand: undefined }));
+              setIsDirty(true);
+            }}
+          />
+
+          <FormSelect
+            label="Province"
+            required
+            value={formData.province}
+            options={SRI_LANKAN_PROVINCES.map(p => ({ value: p, label: p }))}
+            error={errors.province}
+            placeholder="Select a province"
+            onChange={v => handleInputChange('province', v)}
+          />
+
+          <FormInput
+            label="Password"
+            type="password"
+            required={!isEditMode}
+            value={formData.password}
+            error={errors.password}
+            placeholder={isEditMode ? 'Enter new password' : 'Min 6 chars, include upper/lower, number, special'}
+            hint={isEditMode ? 'Leave blank to keep current password' : undefined}
+            onChange={v => handleInputChange('password', v)}
+          />
         </div>
       </div>
 
