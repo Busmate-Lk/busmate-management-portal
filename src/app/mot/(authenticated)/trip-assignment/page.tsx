@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 
 export default function TripAssignmentPage() {
   return (
+    <div className="h-[100vh] bg-gray-50 overflow-hidden">
     <Layout 
       activeItem="trip-assignment" 
       pageTitle="Trip Assignment" 
@@ -17,5 +18,6 @@ export default function TripAssignmentPage() {
       padding={0}>
       <TripAssignment />
     </Layout>
+    </div>
   );
 }
