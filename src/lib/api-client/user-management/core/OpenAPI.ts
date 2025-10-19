@@ -22,9 +22,15 @@ export type OpenAPIConfig = {
 export const OpenAPI: OpenAPIConfig = {
     BASE: process.env.NEXT_PUBLIC_USER_MANAGEMENT_API_URL || 'http://107.21.189.199:8081',
     VERSION: '1.0.0',
-    WITH_CREDENTIALS: false,
+    WITH_CREDENTIALS: true,
     CREDENTIALS: 'include',
-    TOKEN: undefined,
+    TOKEN: async () => {
+        if (typeof window !== 'undefined') {
+            const { getCookie } = await import('@/lib/utils/cookieUtils');
+            return getCookie('access_token') || '';
+        }
+        return '';
+    },
     USERNAME: undefined,
     PASSWORD: undefined,
     HEADERS: undefined,

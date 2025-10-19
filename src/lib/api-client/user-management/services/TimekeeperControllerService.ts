@@ -42,7 +42,6 @@ export class TimekeeperControllerService {
      * @returns Array<TimekeeperDTO> OK
      * @throws ApiError
      */
-
     public static getAllTimekeepers(): CancelablePromise<Array<TimekeeperDTO>> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -51,5 +50,5 @@ export class TimekeeperControllerService {
     }
 
 
-    
+
 }
