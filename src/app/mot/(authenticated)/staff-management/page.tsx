@@ -308,12 +308,13 @@ export default function TimekeepersPage() {
         <TimekeeperStatsCards stats={stats} />
 
         {/* Add & Export buttons */}
-        {/* 
+         
         <TimekeeperActionButtons
           onAddTimekeeper={handleAddNew}
+          onImportTimekeepers={() => {}}
           onExportAll={handleExportAll}
-          isLoading={isLoading}
-        />  */}
+          //isLoading={isLoading}
+        />  
 
         {/* Filters */}
         <TimekeeperAdvancedFilters
