@@ -173,8 +173,8 @@ export default function TimekeepersPage() {
   };
 
   const handleAddNew = () => router.push('/mot/staff-management/add-new');
-  const handleView = (id: string) => router.push(`/mot/users/timekeepers/${id}`);
-  const handleEdit = (id: string) => router.push(`/mot/users/timekeepers/${id}/edit`);
+  const handleView = (id: string) => router.push(`/mot/staff-management/${id}`);
+  const handleEdit = (id: string) => router.push(`/mot/staff-management/${id}/edit`);
   const handleDelete = (id: string) => alert(`Delete not implemented yet for ID: ${id}`);
 
   /** Filtering + Pagination */
