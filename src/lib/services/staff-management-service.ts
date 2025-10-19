@@ -1,4 +1,5 @@
 import { STAFF_API_BASE } from '@/lib/constants';
+import { getUserFromToken } from '@/lib/utils/jwtHandler';
 
 export interface ConductorProfile {
     userId: string;
@@ -78,6 +79,11 @@ class StaffManagementService {
             if (!token) {
                 throw new Error('Missing access token');
             }
+
+            // Get operator ID from token
+            const userFromToken = getUserFromToken(token);
+            const operatorId = userFromToken?.id;
+
             const response = await fetch(`${this.baseUrl}/api/conductor/all`, {
                 method: 'GET',
                 headers: {
@@ -91,8 +97,15 @@ class StaffManagementService {
             }
 
             const data = await response.json();
-            // API returns array of conductors
-            return Array.isArray(data) ? data : [];
+            const allConductors = Array.isArray(data) ? data : [];
+
+            // Filter to only show conductors assigned to this operator
+            if (operatorId) {
+                return allConductors.filter(conductor => conductor.assign_operator_id === operatorId);
+            }
+
+            // If no operator ID found, return all (shouldn't happen in production)
+            return allConductors;
         } catch (error) {
             console.error('Error fetching conductors:', error);
             throw error;
@@ -103,8 +116,12 @@ class StaffManagementService {
      * Get all drivers for the operator (using mock data until API is ready)
      */
     async getDrivers(token: string): Promise<DriverProfile[]> {
+        // Get operator ID from token
+        const userFromToken = getUserFromToken(token);
+        const operatorId = userFromToken?.id;
+
         // Mock data for drivers until API is ready
-        return Promise.resolve([
+        const allDrivers: DriverProfile[] = [
             {
                 userId: '1',
                 fullName: 'Kasun Perera',
@@ -181,7 +198,15 @@ class StaffManagementService {
                 licenseNumber: 'DL456789',
                 licenseExpiry: '2026-09-15',
             },
-        ]);
+        ];
+
+        // Filter to only show drivers assigned to this operator
+        if (operatorId) {
+            return Promise.resolve(allDrivers.filter(driver => driver.assign_operator_id === operatorId));
+        }
+
+        // If no operator ID found, return all (shouldn't happen in production)
+        return Promise.resolve(allDrivers);
     }
 
     /**

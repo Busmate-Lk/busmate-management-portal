@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { User, Camera, Upload, FileText, Calendar, ChevronDown } from "lucide-react"
 import { staffManagementService, ConductorProfile, DriverProfile } from "@/lib/services/staff-management-service"
 import { getCookie } from "@/lib/utils/cookieUtils"
+import { getUserFromToken } from "@/lib/utils/jwtHandler"
 
 interface StaffFormData {
   role: "Driver" | "Conductor"
@@ -122,6 +123,10 @@ export function AddStaffForm() {
 
       const token = getCookie('access_token') || ''
 
+      // Get operator ID from token
+      const userFromToken = getUserFromToken(token)
+      const operatorId = userFromToken?.id || ''
+
       if (formData.role === 'Conductor') {
         const conductorData: Omit<ConductorProfile, 'userId'> = {
           fullName: formData.fullName,
@@ -132,7 +137,7 @@ export function AddStaffForm() {
           isVerified: false,
           phoneNumber: formData.phoneNumber,
           employee_id: employeeId,
-          assign_operator_id: '', // Will be set by backend based on operator
+          assign_operator_id: operatorId, // Set from logged-in operator
           shift_status: formData.shiftStatus || 'available',
           nicNumber: formData.nicNumber,
           dateOfBirth: formData.dateOfBirth,
@@ -155,7 +160,7 @@ export function AddStaffForm() {
           isVerified: false,
           phoneNumber: formData.phoneNumber,
           employee_id: employeeId,
-          assign_operator_id: '',
+          assign_operator_id: operatorId, // Set from logged-in operator
           shift_status: formData.shiftStatus || 'available',
           nicNumber: formData.nicNumber,
           dateOfBirth: formData.dateOfBirth,
@@ -218,8 +223,8 @@ export function AddStaffForm() {
                 <button
                   onClick={() => updateFormData("role", "Driver")}
                   className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${formData.role === "Driver"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                 >
                   Driver
@@ -227,8 +232,8 @@ export function AddStaffForm() {
                 <button
                   onClick={() => updateFormData("role", "Conductor")}
                   className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${formData.role === "Conductor"
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                 >
                   Conductor
