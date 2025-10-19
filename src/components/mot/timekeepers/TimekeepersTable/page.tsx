@@ -42,8 +42,6 @@ interface TimekeepersTableProps {
 export function TimekeepersTable({
   timekeepers,
   onView,
-  onEdit,
-  onDelete,
   onSort,
   activeFilters,
   loading,
@@ -80,8 +78,6 @@ export function TimekeepersTable({
     switch (status) {
       case 'active': return <CheckCircle className="w-4 h-4 text-green-600" />;
       case 'inactive': return <XCircle className="w-4 h-4 text-red-600" />;
-      case 'pending': return <Clock className="w-4 h-4 text-yellow-600" />;
-      case 'cancelled': return <XCircle className="w-4 h-4 text-gray-600" />;
       default: return <AlertCircle className="w-4 h-4 text-gray-400" />;
     }
   };
@@ -90,8 +86,6 @@ export function TimekeepersTable({
     switch (status) {
       case 'active': return 'bg-green-50 text-green-700 border-green-200';
       case 'inactive': return 'bg-red-50 text-red-700 border-red-200';
-      case 'pending': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-      case 'cancelled': return 'bg-gray-50 text-gray-700 border-gray-200';
       default: return 'bg-gray-50 text-gray-600 border-gray-200';
     }
   };
@@ -134,8 +128,6 @@ export function TimekeepersTable({
                 { label: 'Contact' },
                 { label: 'Stand & Province' },
                 { label: 'Status' },
-                { label: 'Created', field: 'createdAt' },
-                { label: 'Updated', field: 'updatedAt' },
                 { label: 'Actions' },
               ].map((col, idx) => (
                 <th
@@ -194,21 +186,8 @@ export function TimekeepersTable({
                   </span>
                 </td>
 
-                {/* Created */}
-                <td className="px-6 py-4 text-gray-700">
-                  <div>{formatDate(tk.createdAt)}</div>
-                  <div className="text-xs text-gray-400">
-                    {tk.createdAt && new Date(tk.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                </td>
+                
 
-                {/* Updated */}
-                <td className="px-6 py-4 text-gray-700">
-                  <div>{formatDate(tk.updatedAt)}</div>
-                  <div className="text-xs text-gray-400">
-                    {tk.updatedAt && new Date(tk.updatedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                </td>
 
                 {/* Actions */}
                 <td className="px-6 py-4">
@@ -216,12 +195,7 @@ export function TimekeepersTable({
                     <button onClick={() => onView(tk.id)} className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 transition">
                       <Eye className="h-4 w-4" />
                     </button>
-                    <button onClick={() => onEdit(tk.id)} className="p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition">
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button onClick={() => onDelete(tk.id)} className="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition">
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    
                   </div>
                 </td>
               </tr>
