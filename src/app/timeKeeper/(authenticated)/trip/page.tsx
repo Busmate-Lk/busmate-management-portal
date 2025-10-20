@@ -8,7 +8,14 @@ import {
   PageTripResponse,
   TripStatisticsResponse,
   TripFilterOptionsResponse,
+  BusStopManagementService,
+  StopResponse,
+  RouteManagementService,
+  RouteResponse,
 } from '@/lib/api-client/route-management';
+import { getUserFromToken } from '@/lib/utils/jwtHandler';
+import { getCookie } from '@/lib/utils/cookieUtils';
+import { userManagementClient } from '@/lib/api/client';
 
 // Import our custom components
 import { TripStatsCards } from '@/components/timeKeeper/trips/TripStatsCards';
@@ -19,6 +26,7 @@ import { TimeKeeperTripsTable } from '@/components/timeKeeper/trips/TimeKeeperTr
 import Pagination from '@/components/shared/Pagination';
 import { Layout } from '@/components/shared/layout';
 import { BusReassignmentModal } from '@/components/timeKeeper/trips/BusReassignmentModal';
+import { useAuth } from '@/context/AuthContext';
 
 interface QueryParams {
   page: number;
@@ -73,11 +81,20 @@ export default function TimeKeeperTripsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Track which trips start at the assigned bus stop (for bus management)
+  const [tripsStartingAtStop, setTripsStartingAtStop] = useState<Set<string>>(
+    new Set()
+  );
+
   // TimeKeeper's assigned bus stop (this would come from user context/auth)
   // For now, we'll use a state variable - in production, get this from user session
   const [assignedBusStopId, setAssignedBusStopId] = useState<string>('');
   const [assignedBusStopName, setAssignedBusStopName] =
     useState<string>('Loading...');
+  const [busStopDetails, setBusStopDetails] = useState<StopResponse | null>(
+    null
+  );
+  const [userId, setUserId] = useState<string>('');
 
   // Filter states
   const [statusFilter, setStatusFilter] = useState('all');
@@ -141,30 +158,62 @@ export default function TimeKeeperTripsPage() {
   // Helper function to check if a trip starts at the assigned bus stop
   const tripStartsAtAssignedStop = useCallback(
     (trip: TripResponse): boolean => {
-      // TODO: Implement logic to check if trip's starting stop matches assignedBusStopId
-      // This will depend on how your trip data includes stop information
-      // For now, returning true for demonstration
-      return true;
+      // Check the pre-computed set
+      return tripsStartingAtStop.has(trip.id || '');
     },
     [assignedBusStopId]
   );
 
   // Load timekeeper's assigned bus stop
   useEffect(() => {
-    // TODO: Replace with actual API call to get timekeeper's assigned bus stop
-    // For now, using mock data
     const fetchAssignedBusStop = async () => {
       try {
-        // Example: const response = await TimekeeperService.getAssignedBusStop();
-        // setAssignedBusStopId(response.id);
-        // setAssignedBusStopName(response.name);
+        // Step 1: Get access token from cookies
+        const accessToken = getCookie('access_token');
 
-        // Mock data for demonstration
-        setAssignedBusStopId('mock-bus-stop-id');
-        setAssignedBusStopName('Main Terminal');
-      } catch (err) {
+        if (!accessToken) {
+          throw new Error('No access token found. Please log in again.');
+        }
+
+        // Step 2: Extract user ID from JWT token
+        const userFromToken = getUserFromToken(accessToken);
+
+        if (!userFromToken?.id) {
+          throw new Error('Invalid access token. Please log in again.');
+        }
+
+        const extractedUserId = userFromToken.id;
+        setUserId(extractedUserId);
+
+        console.log('Extracted User ID from token:', extractedUserId);
+
+        // Step 3: Fetch timekeeper profile to get assigned_stand
+        // Endpoint: GET /api/timekeeper/{userId} or /api/users/{userId}/profile
+        const timekeeperResponse = await userManagementClient.get(
+          `/api/timekeeper/profile/${extractedUserId}`
+        );
+
+        const timekeeperData = timekeeperResponse.data;
+
+        // Extract assigned_stand from the response
+        const assignedStandId = timekeeperData.assign_stand;
+        console.log('Assigned Stand ID:', assignedStandId);
+        if (!assignedStandId) {
+          throw new Error('No bus stop assigned to this timekeeper');
+        }
+
+        setAssignedBusStopId(assignedStandId);
+
+        // Step 4: Fetch bus stop details using the BusStopManagementService
+        const busStop = await BusStopManagementService.getStopById(
+          assignedStandId
+        );
+        setBusStopDetails(busStop);
+        setAssignedBusStopName(busStop.name || 'Unknown Stop');
+      } catch (err: any) {
         console.error('Failed to load assigned bus stop:', err);
         setAssignedBusStopName('Unknown Stop');
+        setError(err?.message || 'Failed to load assigned bus stop');
       }
     };
 
@@ -216,34 +265,104 @@ export default function TimeKeeperTripsPage() {
   // Load statistics (filtered by bus stop)
   const loadStatistics = useCallback(async () => {
     try {
-      const response: TripStatisticsResponse =
-        await TripManagementService.getTripStatistics();
+      // If no assigned bus stop yet, don't load statistics
+      if (!assignedBusStopId) {
+        return;
+      }
 
-      // TODO: Filter statistics by assignedBusStopId
+      // Get all trips and filter by assigned bus stop
+      const allTripsResponse = await TripManagementService.getAllTrips(
+        0,
+        1000, // Get a large number to calculate accurate statistics
+        'tripDate',
+        'desc'
+      );
+
+      const allTrips = allTripsResponse.content || [];
+
+      // Filter trips that pass through the assigned bus stop
+      const filteredTripsPromises = allTrips.map(async (trip) => {
+        try {
+          if (!trip.routeId) {
+            return null;
+          }
+
+          const route = await RouteManagementService.getRouteById(trip.routeId);
+
+          const hasStop =
+            route.startStopId === assignedBusStopId ||
+            route.endStopId === assignedBusStopId ||
+            route.routeStops?.some((stop) => stop.stopId === assignedBusStopId);
+          console.log(hasStop);
+          return hasStop ? trip : null;
+        } catch (err) {
+          console.error('Failed to check route for trip:', trip.id, err);
+          return null;
+        }
+      });
+
+      const resolvedTrips = await Promise.all(filteredTripsPromises);
+      const validTrips = resolvedTrips.filter(
+        (trip): trip is TripResponse => trip !== null
+      );
+      console.log(validTrips);
+
+      // Calculate statistics from filtered trips
+      const totalTrips = validTrips.length;
+      const activeTrips = validTrips.filter(
+        (t) =>
+          t.status === 'active' ||
+          t.status === 'in_transit' ||
+          t.status === 'boarding'
+      ).length;
+      const completedTrips = validTrips.filter(
+        (t) => t.status === 'completed'
+      ).length;
+      const pendingTrips = validTrips.filter(
+        (t) => t.status === 'pending'
+      ).length;
+      const cancelledTrips = validTrips.filter(
+        (t) => t.status === 'cancelled'
+      ).length;
+      const tripsWithPsp = validTrips.filter(
+        (t) => t.passengerServicePermitId
+      ).length;
+      const tripsWithBus = validTrips.filter((t) => t.busId).length;
+      const inTransitTrips = validTrips.filter(
+        (t) => t.status === 'in_transit'
+      ).length;
+
       setStats({
-        totalTrips: { count: response.totalTrips || 0 },
-        activeTrips: { count: response.activeTrips || 0 },
-        completedTrips: { count: response.completedTrips || 0 },
-        pendingTrips: { count: response.pendingTrips || 0 },
-        cancelledTrips: { count: response.cancelledTrips || 0 },
-        tripsWithPsp: { count: response.tripsWithAssignedPsp || 0 },
-        tripsWithBus: { count: response.tripsWithAssignedBus || 0 },
-        inTransitTrips: { count: response.inTransitTrips || 0 },
+        totalTrips: { count: totalTrips },
+        activeTrips: { count: activeTrips },
+        completedTrips: { count: completedTrips },
+        pendingTrips: { count: pendingTrips },
+        cancelledTrips: { count: cancelledTrips },
+        tripsWithPsp: { count: tripsWithPsp },
+        tripsWithBus: { count: tripsWithBus },
+        inTransitTrips: { count: inTransitTrips },
       });
     } catch (err) {
       console.error('Failed to load statistics:', err);
     }
-  }, []);
+  }, [assignedBusStopId]);
 
   // Load trips from API (filtered by bus stop)
   const loadTrips = useCallback(async () => {
     try {
       setError(null);
 
+      // If no assigned bus stop yet, don't load trips
+      if (!assignedBusStopId) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Get all trips with the current filters
       const response: PageTripResponse =
         await TripManagementService.getAllTrips(
-          queryParams.page,
-          queryParams.size,
+          0, // Get from first page
+          1000, // Get a large number to filter client-side
           queryParams.sortBy,
           queryParams.sortDir,
           queryParams.search || undefined,
@@ -261,14 +380,67 @@ export default function TimeKeeperTripsPage() {
           queryParams.hasConductor
         );
 
-      // TODO: Filter trips by assignedBusStopId on the backend
-      // For now, showing all trips - in production, add busStopId parameter to API
-      setTrips(response.content || []);
+      const allTrips = response.content || [];
+
+      // Filter trips that pass through the assigned bus stop
+      const filteredTripsPromises = allTrips.map(async (trip) => {
+        try {
+          if (!trip.routeId) {
+            return null;
+          }
+
+          const route = await RouteManagementService.getRouteById(trip.routeId);
+
+          const hasStop =
+            route.startStopId === assignedBusStopId ||
+            route.endStopId === assignedBusStopId ||
+            route.routeStops?.some((stop) => stop.stopId === assignedBusStopId);
+
+          return hasStop ? trip : null;
+        } catch (err) {
+          console.error('Failed to check route for trip:', trip.id, err);
+          return null;
+        }
+      });
+
+      const resolvedTrips = await Promise.all(filteredTripsPromises);
+      const validTrips = resolvedTrips.filter(
+        (trip): trip is TripResponse => trip !== null
+      );
+
+      // Determine which trips start at the assigned stop (for bus management)
+      const tripsStartingSet = new Set<string>();
+      for (const trip of validTrips) {
+        try {
+          if (trip.routeId) {
+            const route = await RouteManagementService.getRouteById(
+              trip.routeId
+            );
+            if (route.startStopId === assignedBusStopId) {
+              tripsStartingSet.add(trip.id || '');
+            }
+          }
+        } catch (err) {
+          console.error(
+            'Failed to check if trip starts at stop:',
+            trip.id,
+            err
+          );
+        }
+      }
+      setTripsStartingAtStop(tripsStartingSet);
+
+      // Apply client-side pagination
+      const startIndex = queryParams.page * queryParams.size;
+      const endIndex = startIndex + queryParams.size;
+      const paginatedTrips = validTrips.slice(startIndex, endIndex);
+
+      setTrips(paginatedTrips);
       setPagination({
-        currentPage: response.pageable?.pageNumber || 0,
-        totalPages: response.totalPages || 0,
-        totalElements: response.totalElements || 0,
-        pageSize: response.pageable?.pageSize || 10,
+        currentPage: queryParams.page,
+        totalPages: Math.ceil(validTrips.length / queryParams.size),
+        totalElements: validTrips.length,
+        pageSize: queryParams.size,
       });
     } catch (err: any) {
       setError(err?.message || 'Failed to load trips');
