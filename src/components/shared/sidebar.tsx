@@ -159,34 +159,16 @@ export function Sidebar({
     },
     {
       icon: Calendar,
-      label: 'Schedule Assignment',
-      active: activeItem === 'schedule',
-      href: '/timeKeeper/schedule',
+      label: 'Trip Managemanet',
+      active: activeItem === 'trip',
+      href: '/timeKeeper/trip',
     },
-    // {
-    //   icon: Clock,
-    //   label: 'Time Tracking',
-    //   active: activeItem === 'tracking',
-    //   href: '/timeKeeper/time-tracking',
-    // },
-    // {
-    //   icon: FileText,
-    //   label: 'Reports',
-    //   active: activeItem === 'reports',
-    //   href: '/timeKeeper/reports',
-    // },
-    // {
-    //   icon: BarChart3,
-    //   label: 'Analytics',
-    //   active: activeItem === 'analytics',
-    //   href: '/timeKeeper/analytics',
-    // },
-    // {
-    //   icon: Settings,
-    //   label: 'Settings',
-    //   active: activeItem === 'settings',
-    //   href: '/timeKeeper/settings',
-    // },
+    {
+      icon: Bus,
+      label: 'Trip Assignment',
+      active: activeItem === 'trip-assignment',
+      href: '/timeKeeper/trip-assignment',
+    },
   ];
 
   let sidebarItems = null;
@@ -203,15 +185,17 @@ export function Sidebar({
 
   return (
     <div
-      className={`${isCollapsed ? 'w-20' : 'w-68'
-        } bg-blue-800 text-white transition-all duration-300 ease-in-out flex flex-col h-screen fixed left-0 top-0 z-40`}
+      className={`${
+        isCollapsed ? 'w-20' : 'w-68'
+      } bg-blue-800 text-white transition-all duration-300 ease-in-out flex flex-col h-screen fixed left-0 top-0 z-40`}
     >
       {/* Header Section */}
       <div className="p-4 border-b border-blue-500 h-20 flex items-center">
         <div className="flex items-center justify-between w-full">
           <div
-            className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''
-              }`}
+            className={`flex items-center gap-3 ${
+              isCollapsed ? 'justify-center' : ''
+            }`}
           >
             {!isCollapsed && (
               <div className="bg-blue-800  rounded-lg flex-shrink-0">
@@ -225,7 +209,7 @@ export function Sidebar({
               </div>
             )}
             {!isCollapsed && (
-              <div className='w-full justify-center '>
+              <div className="w-full justify-center ">
                 <h1 className="text-xl font-bold text-white">BUSMATE LK</h1>
                 <p className="text-blue-200 text-sm">MoT Portal</p>
               </div>
@@ -257,16 +241,19 @@ export function Sidebar({
             <Link
               key={index}
               href={item.href}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3 py-3'
-                } rounded-lg text-sm font-medium transition-all duration-200 group ${item.active
+              className={`w-full flex items-center ${
+                isCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3 py-3'
+              } rounded-lg text-sm font-medium transition-all duration-200 group ${
+                item.active
                   ? 'bg-white text-blue-600 shadow-sm'
                   : 'text-blue-100 hover:bg-blue-500 hover:text-white'
-                }`}
+              }`}
               title={isCollapsed ? item.label : undefined}
             >
               <item.icon
-                className={`w-5 h-5 flex-shrink-0 ${item.active ? 'text-blue-600' : ''
-                  }`}
+                className={`w-5 h-5 flex-shrink-0 ${
+                  item.active ? 'text-blue-600' : ''
+                }`}
               />
               {!isCollapsed && (
                 <span className="truncate ml-3">{item.label}</span>
