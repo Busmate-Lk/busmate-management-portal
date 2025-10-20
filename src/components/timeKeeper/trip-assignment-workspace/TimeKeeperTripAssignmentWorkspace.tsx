@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { RouteManagementService } from '@/lib/api-client/route-management/services/RouteManagementService';
 import { TripManagementService } from '@/lib/api-client/route-management/services/TripManagementService';
 import { PermitManagementService } from '@/lib/api-client/route-management/services/PermitManagementService';
@@ -59,6 +60,9 @@ export interface TimeKeeperWorkspaceState {
 }
 
 export function TimeKeeperTripAssignmentWorkspace() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
   // Workspace state
   const [workspace, setWorkspace] = useState<TimeKeeperWorkspaceState>({
     assignedBusStopId: null,
@@ -105,6 +109,58 @@ export function TimeKeeperTripAssignmentWorkspace() {
       loadRouteGroups();
     }
   }, [workspace.assignedBusStopId]);
+
+  // Handle incoming trip ID from URL parameters
+  useEffect(() => {
+    const tripId = searchParams.get('tripId');
+    if (tripId && workspace.availableRoutes.length > 0) {
+      handleIncomingTripId(tripId);
+    }
+  }, [searchParams, workspace.availableRoutes]);
+
+  // Function to handle incoming trip ID
+  const handleIncomingTripId = async (tripId: string) => {
+    try {
+      // Fetch the trip details
+      const trip = await TripManagementService.getTripById(tripId);
+
+      if (!trip || !trip.routeId) {
+        console.error('Trip not found or invalid');
+        return;
+      }
+
+      // Find the route for this trip
+      const route = workspace.availableRoutes.find(
+        (r) => r.id === trip.routeId
+      );
+
+      if (!route) {
+        console.error('Route not found in available routes');
+        return;
+      }
+
+      // Select the route group
+      if (route.routeGroupId) {
+        handleRouteGroupSelect(route.routeGroupId);
+
+        // Wait a bit for route group to load, then select route
+        setTimeout(() => {
+          handleRouteSelect(route.id!);
+
+          // Wait for trips to load, then select the trip
+          setTimeout(() => {
+            handleTripSelect(tripId, false);
+
+            // Clear the URL parameter after processing
+            const newUrl = window.location.pathname;
+            router.replace(newUrl);
+          }, 500);
+        }, 500);
+      }
+    } catch (error) {
+      console.error('Error handling incoming trip ID:', error);
+    }
+  };
 
   // Load TimeKeeper's assigned bus stop (reused from trip page)
   const loadAssignedBusStop = async () => {

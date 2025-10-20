@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   ChevronUp,
   ChevronDown,
@@ -19,6 +20,7 @@ import {
   ChevronRight,
   RefreshCw,
   UserPlus,
+  ClipboardList,
 } from 'lucide-react';
 import { TripResponse } from '@/lib/api-client/route-management';
 
@@ -51,8 +53,14 @@ export function TimeKeeperTripsTable({
   assignedBusStopId,
   canManageBus,
 }: TimeKeeperTripsTableProps) {
+  const router = useRouter();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  const handleAssignTrip = (trip: TripResponse) => {
+    // Navigate to trip assignment page with the trip ID as a query parameter
+    router.push(`/timeKeeper/trip-assignment?tripId=${trip.id}`);
+  };
 
   const toggleRowExpansion = (tripId: string) => {
     setExpandedRows((prev) => {
@@ -329,6 +337,14 @@ export function TimeKeeperTripsTable({
                         {/* Actions only available for trips that start at the assigned stop */}
                         {canManageBus && canManageBus(trip) ? (
                           <>
+                            <button
+                              onClick={() => handleAssignTrip(trip)}
+                              className="text-blue-600 hover:text-blue-900"
+                              title="Assign trip"
+                            >
+                              <ClipboardList className="w-4 h-4" />
+                            </button>
+
                             {onAddNotes && (
                               <button
                                 onClick={() => onAddNotes(trip.id!)}
@@ -349,7 +365,7 @@ export function TimeKeeperTripsTable({
                               </button>
                             )}
 
-                            {onChangePsp && (
+                            {/* {onChangePsp && (
                               <button
                                 onClick={() => onChangePsp(trip.id!)}
                                 className="text-indigo-600 hover:text-indigo-900"
@@ -357,7 +373,7 @@ export function TimeKeeperTripsTable({
                               >
                                 <UserPlus className="w-4 h-4" />
                               </button>
-                            )}
+                            )} */}
 
                             {onRemoveBus && trip.busPlateNumber && (
                               <button
