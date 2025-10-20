@@ -33,17 +33,21 @@ export function RealTimeClock() {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <Clock className="h-6 w-6 text-blue-800" />
-        <h3 className="text-lg font-semibold text-gray-900">Current Time</h3>
+    <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 shadow-md p-4">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="p-1.5 bg-blue-800 rounded-lg">
+          <Clock className="h-4 w-4 text-white" />
+        </div>
+        <h3 className="text-sm font-semibold text-gray-900">Current Time</h3>
       </div>
 
-      <div className="text-center space-y-2">
-        <div className="text-4xl font-mono font-bold text-blue-800 tracking-wider">
+      <div className="text-center space-y-1.5">
+        <div className="text-3xl font-mono font-bold text-slate-800 tracking-wide drop-shadow-sm">
           {formatTime(currentTime)}
         </div>
-        <div className="text-sm text-gray-600">{formatDate(currentTime)}</div>
+        <div className="text-xs text-slate-600 font-medium">
+          {formatDate(currentTime)}
+        </div>
       </div>
     </div>
   );

@@ -109,41 +109,43 @@ export function CalendarNavigator({ onDateSelect }: CalendarNavigatorProps) {
   const days = getDaysInMonth(currentDate);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <CalendarIcon className="h-5 w-5 text-blue-800" />
+    <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 shadow-md p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+          <div className="p-1.5 bg-blue-800 rounded-lg">
+            <CalendarIcon className="h-3.5 w-3.5 text-white" />
+          </div>
           Schedule Calendar
         </h3>
       </div>
 
       {/* Month Navigation */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-3 bg-white/60 backdrop-blur-sm rounded-lg px-2 py-2">
         <button
           onClick={goToPreviousMonth}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          className="p-1.5 hover:bg-slate-200 rounded-lg transition-all hover:scale-105"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-3.5 w-3.5 text-slate-700" />
         </button>
 
-        <h4 className="text-lg font-medium text-gray-900">
+        <h4 className="text-sm font-semibold text-slate-800">
           {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
         </h4>
 
         <button
           onClick={goToNextMonth}
-          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          className="p-1.5 hover:bg-slate-200 rounded-lg transition-all hover:scale-105"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-3.5 w-3.5 text-slate-700" />
         </button>
       </div>
 
       {/* Days of Week Headers */}
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      <div className="grid grid-cols-7 gap-0.5 mb-1">
         {daysOfWeek.map((day) => (
           <div
             key={day}
-            className="text-center text-sm font-medium text-gray-500 py-2"
+            className="text-center text-xs font-semibold text-slate-600 py-1.5 bg-slate-200/50 rounded-t"
           >
             {day}
           </div>
@@ -151,36 +153,36 @@ export function CalendarNavigator({ onDateSelect }: CalendarNavigatorProps) {
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-0.5">
         {days.map((date, index) => (
           <div key={index} className="aspect-square">
             {date && (
               <button
                 onClick={() => handleDateClick(date)}
-                className={`w-full h-full flex flex-col items-center justify-center text-sm rounded-lg transition-colors relative ${
+                className={`w-full h-full flex flex-col items-center justify-center text-xs rounded-md transition-all relative ${
                   isToday(date)
-                    ? 'bg-blue-800 text-white font-semibold'
+                    ? 'bg-blue-800 text-white font-bold shadow-lg scale-105 ring-2 ring-blue-400 ring-offset-1'
                     : isSelected(date)
-                    ? 'bg-blue-100 text-blue-800 font-medium'
-                    : 'hover:bg-gray-100 text-gray-700'
+                    ? 'bg-blue-100 text-blue-800 font-semibold shadow-md scale-105'
+                    : 'hover:bg-slate-200 text-slate-700 bg-white/80 hover:scale-105 hover:shadow'
                 }`}
               >
-                <span className="mb-1">{date.getDate()}</span>
+                <span className="mb-0.5">{date.getDate()}</span>
 
                 {/* Schedule indicators */}
-                <div className="flex gap-1">
+                <div className="flex gap-0.5">
                   {hasSchedules(date) && (
                     <div
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        isToday(date) ? 'bg-white' : 'bg-green-500'
+                      className={`w-1 h-1 rounded-full shadow-sm ${
+                        isToday(date) ? 'bg-emerald-300' : 'bg-emerald-500'
                       }`}
                       title="Has schedules"
                     />
                   )}
                   {hasDelays(date) && (
                     <div
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        isToday(date) ? 'bg-yellow-200' : 'bg-red-500'
+                      className={`w-1 h-1 rounded-full shadow-sm ${
+                        isToday(date) ? 'bg-amber-300' : 'bg-rose-500'
                       }`}
                       title="Has delays reported"
                     />
@@ -192,18 +194,18 @@ export function CalendarNavigator({ onDateSelect }: CalendarNavigatorProps) {
         ))}
       </div>
 
-      <div className="mt-4 space-y-2">
-        <div className="text-xs text-gray-500 text-center">
+      <div className="mt-3 space-y-1.5">
+        <div className="text-[10px] text-slate-500 text-center font-medium">
           Click on any date to view schedule details
         </div>
-        <div className="flex items-center justify-center gap-4 text-xs">
+        <div className="flex items-center justify-center gap-3 text-[10px] bg-white/60 rounded-lg py-1.5">
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <span className="text-gray-600">Schedules</span>
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm"></div>
+            <span className="text-slate-600 font-medium">Schedules</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-            <span className="text-gray-600">Delays</span>
+            <div className="w-1.5 h-1.5 rounded-full bg-rose-500 shadow-sm"></div>
+            <span className="text-slate-600 font-medium">Delays</span>
           </div>
         </div>
       </div>
