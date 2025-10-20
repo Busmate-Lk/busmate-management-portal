@@ -155,8 +155,8 @@ export function TimeKeeperTripsWorkspace({
             No Route Selected
           </h3>
           <p className="text-gray-500 max-w-md">
-            Select a route from the sidebar to view trips starting from your
-            assigned bus stop
+            Select a route from the sidebar to view trips for routes passing
+            through your assigned bus stop
           </p>
         </div>
       </div>
@@ -172,14 +172,20 @@ export function TimeKeeperTripsWorkspace({
             <h2 className="text-lg font-semibold text-gray-900">
               Trips for{' '}
               {
-                workspace.routeGroups
-                  .find((rg) => rg.id === workspace.selectedRouteGroup)
-                  ?.routes?.find((r) => r.id === workspace.selectedRoute)?.name
+                workspace.availableRoutes.find(
+                  (r) => r.id === workspace.selectedRoute
+                )?.name
               }
             </h2>
             <p className="text-sm text-gray-600 flex items-center space-x-2">
               <MapPin className="h-3 w-3 text-indigo-600" />
-              <span>Starting from {workspace.assignedBusStopName}</span>
+              <span>
+                {workspace.availableRoutes.find(
+                  (r) => r.id === workspace.selectedRoute
+                )?.direction === 'OUTBOUND'
+                  ? `Departing from ${workspace.assignedBusStopName}`
+                  : `Arriving at ${workspace.assignedBusStopName}`}
+              </span>
               {workspace.selectedTrips.length > 0 && (
                 <span className="font-medium text-indigo-600">
                   • {workspace.selectedTrips.length} selected

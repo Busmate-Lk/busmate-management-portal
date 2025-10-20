@@ -63,10 +63,20 @@ export function TimeKeeperWorkspaceSidebar({
   const filteredRouteGroups = workspace.routeGroups.filter(
     (group) =>
       group.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      group.routes?.some((route) =>
-        route.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      workspace.availableRoutes.some(
+        (route) =>
+          route.routeGroupId === group.id &&
+          route.name?.toLowerCase().includes(searchQuery.toLowerCase())
       )
   );
+
+  // Get routes for a specific route group from availableRoutes
+  const getRoutesForGroup = (routeGroupId: string | undefined) => {
+    if (!routeGroupId) return [];
+    return workspace.availableRoutes.filter(
+      (route) => route.routeGroupId === routeGroupId
+    );
+  };
 
   if (collapsed) {
     return (
@@ -161,8 +171,8 @@ export function TimeKeeperWorkspaceSidebar({
       {/* Info Banner */}
       <div className="p-4 bg-indigo-50 border-b border-indigo-200">
         <div className="text-xs text-indigo-900">
-          <strong>Note:</strong> You can only manage trips starting from your
-          assigned bus stop.
+          <strong>Note:</strong> You can manage trips for routes passing through
+          your assigned bus stop (both inbound and outbound).
         </div>
       </div>
 
@@ -188,105 +198,119 @@ export function TimeKeeperWorkspaceSidebar({
 
         {/* Route Groups List */}
         <div className="flex-1 overflow-y-auto p-4">
-          {workspace.isLoadingRouteGroups ? (
+          {workspace.isLoadingRouteGroups || workspace.isLoadingAssignedStop ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent mx-auto mb-2"></div>
               <div className="text-sm text-gray-600">Loading routes...</div>
             </div>
-          ) : workspace.routeGroupsError ? (
+          ) : workspace.routeGroupsError || workspace.assignedStopError ? (
             <div className="text-center py-8">
               <div className="text-red-600 mb-2">⚠️ Error</div>
               <div className="text-sm text-gray-600">
-                {workspace.routeGroupsError}
+                {workspace.routeGroupsError || workspace.assignedStopError}
+              </div>
+            </div>
+          ) : filteredRouteGroups.length === 0 ? (
+            <div className="text-center py-8">
+              <div className="text-gray-400 mb-2">📍</div>
+              <div className="text-sm text-gray-600">
+                {searchQuery
+                  ? 'No routes match your search'
+                  : 'No routes pass through your assigned bus stop'}
               </div>
             </div>
           ) : (
             <div className="space-y-2">
-              {filteredRouteGroups.map((routeGroup) => (
-                <div
-                  key={routeGroup.id}
-                  className="border border-gray-200 rounded-lg overflow-hidden"
-                >
-                  {/* Route Group Header */}
+              {filteredRouteGroups.map((routeGroup) => {
+                const routesInGroup = getRoutesForGroup(routeGroup.id);
+                return (
                   <div
-                    className={`p-3 cursor-pointer transition-colors ${
-                      workspace.selectedRouteGroup === routeGroup.id
-                        ? 'bg-indigo-50 border-indigo-200'
-                        : 'bg-gray-50 hover:bg-gray-100'
-                    }`}
-                    onClick={() => {
-                      if (routeGroup.id) {
-                        onRouteGroupSelect(routeGroup.id);
-                        toggleRouteGroup(routeGroup.id);
-                      }
-                    }}
+                    key={routeGroup.id}
+                    className="border border-gray-200 rounded-lg overflow-hidden"
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Building className="h-4 w-4 text-gray-500" />
-                        <span className="font-medium text-gray-900 text-sm">
-                          {routeGroup.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">
-                          {routeGroup.routes?.length || 0} routes
-                        </span>
-                        {expandedRouteGroups.includes(routeGroup.id || '') ? (
-                          <ChevronDown className="h-4 w-4 text-gray-400" />
-                        ) : (
-                          <ChevronRightIcon className="h-4 w-4 text-gray-400" />
-                        )}
+                    {/* Route Group Header */}
+                    <div
+                      className={`p-3 cursor-pointer transition-colors ${
+                        workspace.selectedRouteGroup === routeGroup.id
+                          ? 'bg-indigo-50 border-indigo-200'
+                          : 'bg-gray-50 hover:bg-gray-100'
+                      }`}
+                      onClick={() => {
+                        if (routeGroup.id) {
+                          onRouteGroupSelect(routeGroup.id);
+                          toggleRouteGroup(routeGroup.id);
+                        }
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Building className="h-4 w-4 text-gray-500" />
+                          <span className="font-medium text-gray-900 text-sm">
+                            {routeGroup.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-gray-500">
+                            {routesInGroup.length} routes
+                          </span>
+                          {expandedRouteGroups.includes(routeGroup.id || '') ? (
+                            <ChevronDown className="h-4 w-4 text-gray-400" />
+                          ) : (
+                            <ChevronRightIcon className="h-4 w-4 text-gray-400" />
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Routes List */}
-                  {expandedRouteGroups.includes(routeGroup.id || '') &&
-                    routeGroup.routes && (
-                      <div className="bg-white">
-                        {routeGroup.routes.map((route) => (
-                          <div
-                            key={route.id}
-                            className={`p-3 cursor-pointer border-t border-gray-100 transition-colors ${
-                              workspace.selectedRoute === route.id
-                                ? 'bg-indigo-50 text-indigo-600'
-                                : 'hover:bg-gray-50'
-                            }`}
-                            onClick={() => route.id && onRouteSelect(route.id)}
-                          >
-                            <div className="flex items-center space-x-2">
-                              <Route className="h-4 w-4 text-gray-400" />
-                              <div className="flex-1">
-                                <div className="font-medium text-sm">
-                                  {route.name}
-                                </div>
-                                <div className="flex items-center space-x-2 mt-1">
-                                  <span
-                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                      route.direction === 'OUTBOUND'
-                                        ? 'bg-green-100 text-green-700'
-                                        : 'bg-orange-100 text-orange-700'
-                                    }`}
-                                  >
-                                    {route.direction === 'OUTBOUND'
-                                      ? 'Out'
-                                      : 'In'}
-                                  </span>
-                                  {route.distanceKm && (
-                                    <span className="text-xs text-gray-500">
-                                      {route.distanceKm}km
+                    {/* Routes List */}
+                    {expandedRouteGroups.includes(routeGroup.id || '') &&
+                      routesInGroup.length > 0 && (
+                        <div className="bg-white">
+                          {routesInGroup.map((route) => (
+                            <div
+                              key={route.id}
+                              className={`p-3 cursor-pointer border-t border-gray-100 transition-colors ${
+                                workspace.selectedRoute === route.id
+                                  ? 'bg-indigo-50 text-indigo-600'
+                                  : 'hover:bg-gray-50'
+                              }`}
+                              onClick={() =>
+                                route.id && onRouteSelect(route.id)
+                              }
+                            >
+                              <div className="flex items-center space-x-2">
+                                <Route className="h-4 w-4 text-gray-400" />
+                                <div className="flex-1">
+                                  <div className="font-medium text-sm">
+                                    {route.name}
+                                  </div>
+                                  <div className="flex items-center space-x-2 mt-1">
+                                    <span
+                                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                        route.direction === 'OUTBOUND'
+                                          ? 'bg-green-100 text-green-700'
+                                          : 'bg-orange-100 text-orange-700'
+                                      }`}
+                                    >
+                                      {route.direction === 'OUTBOUND'
+                                        ? 'Out'
+                                        : 'In'}
                                     </span>
-                                  )}
+                                    {route.distanceKm && (
+                                      <span className="text-xs text-gray-500">
+                                        {route.distanceKm}km
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                </div>
-              ))}
+                          ))}
+                        </div>
+                      )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

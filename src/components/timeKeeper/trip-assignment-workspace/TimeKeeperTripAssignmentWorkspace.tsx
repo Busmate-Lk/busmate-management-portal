@@ -4,10 +4,16 @@ import { useState, useEffect } from 'react';
 import { RouteManagementService } from '@/lib/api-client/route-management/services/RouteManagementService';
 import { TripManagementService } from '@/lib/api-client/route-management/services/TripManagementService';
 import { PermitManagementService } from '@/lib/api-client/route-management/services/PermitManagementService';
+import { BusStopManagementService } from '@/lib/api-client/route-management/services/BusStopManagementService';
 import type { RouteGroupResponse } from '@/lib/api-client/route-management/models/RouteGroupResponse';
 import type { PassengerServicePermitResponse } from '@/lib/api-client/route-management/models/PassengerServicePermitResponse';
 import type { TripResponse } from '@/lib/api-client/route-management/models/TripResponse';
 import type { BulkPspAssignmentRequest } from '@/lib/api-client/route-management/models/BulkPspAssignmentRequest';
+import type { RouteResponse } from '@/lib/api-client/route-management/models/RouteResponse';
+import type { StopResponse } from '@/lib/api-client/route-management/models/StopResponse';
+import { getUserFromToken } from '@/lib/utils/jwtHandler';
+import { getCookie } from '@/lib/utils/cookieUtils';
+import { userManagementClient } from '@/lib/api/client';
 
 // Workspace Sections
 import { TimeKeeperTripsWorkspace } from './components/TimeKeeperTripsWorkspace';
@@ -19,6 +25,8 @@ export interface TimeKeeperWorkspaceState {
   // TimeKeeper specific
   assignedBusStopId: string | null;
   assignedBusStopName: string | null;
+  busStopDetails: StopResponse | null;
+  userId: string | null;
 
   // Active selections
   selectedRouteGroup: string | null;
@@ -31,6 +39,7 @@ export interface TimeKeeperWorkspaceState {
 
   // Data
   routeGroups: RouteGroupResponse[];
+  availableRoutes: RouteResponse[]; // Routes that start from assigned bus stop
   trips: TripResponse[];
   permits: PassengerServicePermitResponse[];
 
@@ -39,12 +48,14 @@ export interface TimeKeeperWorkspaceState {
   isLoadingTrips: boolean;
   isLoadingPermits: boolean;
   isAssigningPsps: boolean;
+  isLoadingAssignedStop: boolean;
 
   // Error states
   routeGroupsError: string | null;
   tripsError: string | null;
   permitsError: string | null;
   assignmentError: string | null;
+  assignedStopError: string | null;
 }
 
 export function TimeKeeperTripAssignmentWorkspace() {
@@ -52,6 +63,8 @@ export function TimeKeeperTripAssignmentWorkspace() {
   const [workspace, setWorkspace] = useState<TimeKeeperWorkspaceState>({
     assignedBusStopId: null,
     assignedBusStopName: null,
+    busStopDetails: null,
+    userId: null,
     selectedRouteGroup: null,
     selectedRoute: null,
     selectedDateRange: {
@@ -60,16 +73,19 @@ export function TimeKeeperTripAssignmentWorkspace() {
     },
     selectedTrips: [],
     routeGroups: [],
+    availableRoutes: [],
     trips: [],
     permits: [],
     isLoadingRouteGroups: true,
     isLoadingTrips: false,
     isLoadingPermits: false,
     isAssigningPsps: false,
+    isLoadingAssignedStop: true,
     routeGroupsError: null,
     tripsError: null,
     permitsError: null,
     assignmentError: null,
+    assignedStopError: null,
   });
 
   // Workspace view mode
@@ -81,30 +97,82 @@ export function TimeKeeperTripAssignmentWorkspace() {
   // Initialize workspace data
   useEffect(() => {
     loadAssignedBusStop();
-    loadRouteGroups();
   }, []);
 
-  // Load TimeKeeper's assigned bus stop
+  // Load route groups after assigned bus stop is loaded
+  useEffect(() => {
+    if (workspace.assignedBusStopId) {
+      loadRouteGroups();
+    }
+  }, [workspace.assignedBusStopId]);
+
+  // Load TimeKeeper's assigned bus stop (reused from trip page)
   const loadAssignedBusStop = async () => {
     try {
-      // TODO: Replace with actual API call to get timekeeper's assigned bus stop
-      // Example: const response = await TimekeeperService.getAssignedBusStop();
-      // For now, using mock data
       setWorkspace((prev) => ({
         ...prev,
-        assignedBusStopId: 'mock-bus-stop-id',
-        assignedBusStopName: 'Main Terminal',
+        isLoadingAssignedStop: true,
+        assignedStopError: null,
       }));
-    } catch (error) {
+
+      // Step 1: Get access token from cookies
+      const accessToken = getCookie('access_token');
+
+      if (!accessToken) {
+        throw new Error('No access token found. Please log in again.');
+      }
+
+      // Step 2: Extract user ID from JWT token
+      const userFromToken = getUserFromToken(accessToken);
+
+      if (!userFromToken?.id) {
+        throw new Error('Invalid access token. Please log in again.');
+      }
+
+      const extractedUserId = userFromToken.id;
+
+      console.log('Extracted User ID from token:', extractedUserId);
+
+      // Step 3: Fetch timekeeper profile to get assigned_stand
+      const timekeeperResponse = await userManagementClient.get(
+        `/api/timekeeper/profile/${extractedUserId}`
+      );
+
+      const timekeeperData = timekeeperResponse.data;
+
+      // Extract assigned_stand from the response
+      const assignedStandId = timekeeperData.assign_stand;
+      console.log('Assigned Stand ID:', assignedStandId);
+
+      if (!assignedStandId) {
+        throw new Error('No bus stop assigned to this timekeeper');
+      }
+
+      // Step 4: Fetch bus stop details using the BusStopManagementService
+      const busStop = await BusStopManagementService.getStopById(
+        assignedStandId
+      );
+
+      setWorkspace((prev) => ({
+        ...prev,
+        assignedBusStopId: assignedStandId,
+        assignedBusStopName: busStop.name || 'Unknown Stop',
+        busStopDetails: busStop,
+        userId: extractedUserId,
+        isLoadingAssignedStop: false,
+      }));
+    } catch (error: any) {
       console.error('Error loading assigned bus stop:', error);
       setWorkspace((prev) => ({
         ...prev,
         assignedBusStopName: 'Unknown Stop',
+        assignedStopError: error?.message || 'Failed to load assigned bus stop',
+        isLoadingAssignedStop: false,
       }));
     }
   };
 
-  // Load route groups
+  // Load route groups (filtered by routes starting from assigned bus stop)
   const loadRouteGroups = async () => {
     try {
       setWorkspace((prev) => ({
@@ -112,10 +180,57 @@ export function TimeKeeperTripAssignmentWorkspace() {
         isLoadingRouteGroups: true,
         routeGroupsError: null,
       }));
-      const response = await RouteManagementService.getAllRouteGroupsAsList();
+
+      // Get all routes to filter by starting bus stop
+      const allRoutes = await RouteManagementService.getAllRoutesAsList();
+
+      // Filter routes that pass through the timekeeper's assigned bus stop
+      // Include both:
+      // 1. OUTBOUND routes that START from the assigned bus stop
+      // 2. INBOUND routes that END at the assigned bus stop (return routes)
+      const routesStartingFromAssignedStop = allRoutes.filter(
+        (route) =>
+          route.startStopId === workspace.assignedBusStopId ||
+          route.endStopId === workspace.assignedBusStopId
+      );
+
+      console.log(
+        'Routes passing through assigned stop:',
+        routesStartingFromAssignedStop
+      );
+      console.log(
+        'OUTBOUND routes:',
+        routesStartingFromAssignedStop.filter((r) => r.direction === 'OUTBOUND')
+          .length
+      );
+      console.log(
+        'INBOUND routes:',
+        routesStartingFromAssignedStop.filter((r) => r.direction === 'INBOUND')
+          .length
+      );
+
+      // Get unique route group IDs from filtered routes
+      const routeGroupIds = new Set(
+        routesStartingFromAssignedStop
+          .map((route) => route.routeGroupId)
+          .filter((id): id is string => id !== undefined && id !== null)
+      );
+
+      // Get all route groups
+      const allRouteGroups =
+        await RouteManagementService.getAllRouteGroupsAsList();
+
+      // Filter route groups to only include those with routes starting from assigned stop
+      const filteredRouteGroups = allRouteGroups.filter((group) =>
+        routeGroupIds.has(group.id || '')
+      );
+
+      console.log('Filtered route groups:', filteredRouteGroups);
+
       setWorkspace((prev) => ({
         ...prev,
-        routeGroups: response,
+        routeGroups: filteredRouteGroups,
+        availableRoutes: routesStartingFromAssignedStop,
         isLoadingRouteGroups: false,
       }));
     } catch (error) {
@@ -128,7 +243,7 @@ export function TimeKeeperTripAssignmentWorkspace() {
     }
   };
 
-  // Load trips for selected route (filtered by assigned bus stop)
+  // Load trips for selected route (routes passing through assigned bus stop)
   const loadTrips = async (routeId: string) => {
     try {
       setWorkspace((prev) => ({
@@ -136,28 +251,30 @@ export function TimeKeeperTripAssignmentWorkspace() {
         isLoadingTrips: true,
         tripsError: null,
       }));
-      const response = await TripManagementService.getTripsByRoute(routeId);
 
-      // Filter trips that start from the timekeeper's assigned bus stop
-      // TODO: Replace with actual API filtering when backend supports busStopId parameter
-      const filteredTrips = workspace.assignedBusStopId
-        ? response.filter((trip) => {
-            // For now, showing all trips. In production, filter by:
-            // trip.startingStopId === workspace.assignedBusStopId
-            return true;
-          })
-        : response;
+      // Verify that the selected route passes through the assigned bus stop
+      const selectedRoute = workspace.availableRoutes.find(
+        (route) => route.id === routeId
+      );
+
+      if (!selectedRoute) {
+        throw new Error(
+          'Selected route does not pass through your assigned bus stop'
+        );
+      }
+
+      const response = await TripManagementService.getTripsByRoute(routeId);
 
       setWorkspace((prev) => ({
         ...prev,
-        trips: filteredTrips,
+        trips: response,
         isLoadingTrips: false,
       }));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading trips:', error);
       setWorkspace((prev) => ({
         ...prev,
-        tripsError: 'Failed to load trips',
+        tripsError: error?.message || 'Failed to load trips',
         isLoadingTrips: false,
       }));
     }
