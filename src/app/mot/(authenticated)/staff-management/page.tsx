@@ -91,7 +91,7 @@ export default function TimekeepersPage() {
       setError(null);
 
       const response = await TimekeeperControllerService.getAllTimekeepers();
-      console.log('✅ Timekeepers response:', response);
+      console.log('Timekeepers response:', response);
 
       const normalized = (response || []).map((r: any) => ({
         id: r.id ?? r.timekeeperId ?? r._id ?? r.userId ?? '',
@@ -127,7 +127,7 @@ export default function TimekeepersPage() {
       const stands = [...new Set(normalized.map((t) => t.assign_stand).filter(Boolean))];
       setFilterOptions((prev) => ({ ...prev, provinces, stands }));
     } catch (err) {
-      console.error('❌ Error loading timekeepers:', err);
+      console.error('Error loading timekeepers:', err);
       setError('Failed to load timekeepers. Please try again.');
       setTimekeepers([]);
     } finally {
@@ -317,4 +317,4 @@ export default function TimekeepersPage() {
       </div>
     </Layout>
   );
-}
+}  
