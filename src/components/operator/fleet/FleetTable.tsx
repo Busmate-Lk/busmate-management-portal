@@ -11,7 +11,8 @@ import {
   AlertCircle,
   ChevronUp,
   ChevronDown,
-  FileText
+  FileText,
+  Link
 } from 'lucide-react';
 import { PermitManagementModal } from './PermitManagementModal';
 
@@ -19,6 +20,7 @@ interface FleetTableProps {
   buses: any[];
   onView: (busId: string) => void;
   onDelete: (busId: string, busRegistration: string) => void;
+  onAssignPermit?: (busId: string, busRegistration: string) => void;
   onSort: (sortBy: string, sortDir: 'asc' | 'desc') => void;
   activeFilters: Record<string, any>;
   loading: boolean;
@@ -31,6 +33,7 @@ export function FleetTable({
   buses,
   onView,
   onDelete,
+  onAssignPermit,
   onSort,
   activeFilters,
   loading,
@@ -317,6 +320,15 @@ export function FleetTable({
                     >
                       <Eye className="w-4 h-4" />
                     </button>
+                    {onAssignPermit && (
+                      <button
+                        onClick={() => onAssignPermit(bus.id, bus.ntcRegistrationNumber)}
+                        className="text-green-600 hover:text-green-800 transition-colors p-1 rounded hover:bg-green-50"
+                        title="Assign to permit"
+                      >
+                        <Link className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => onDelete(bus.id, bus.ntcRegistrationNumber)}
                       className="text-red-600 hover:text-red-800 transition-colors p-1 rounded hover:bg-red-50"
