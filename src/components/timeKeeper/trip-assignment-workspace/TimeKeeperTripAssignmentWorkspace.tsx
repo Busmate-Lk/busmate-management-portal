@@ -449,7 +449,7 @@ export function TimeKeeperTripAssignmentWorkspace() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Workspace Sidebar */}
       <TimeKeeperWorkspaceSidebar
         workspace={workspace}
@@ -462,7 +462,7 @@ export function TimeKeeperTripAssignmentWorkspace() {
       />
 
       {/* Main Workspace */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col">
         {/* Workspace Header */}
         <TimeKeeperWorkspaceHeader
           workspace={workspace}
@@ -471,7 +471,7 @@ export function TimeKeeperTripAssignmentWorkspace() {
         />
 
         {/* Main Content Area */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex">
           {/* Left Panel - Assignment Management */}
           {activeSection === 'assignments' && (
             <TimeKeeperAssignmentPanel

@@ -164,9 +164,9 @@ export function TimeKeeperTripsWorkspace({
   }
 
   return (
-    <div className="flex-1 bg-gray-50 flex flex-col overflow-hidden">
+    <div className="flex-1 bg-gray-50 flex flex-col">
       {/* Trips Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">
@@ -317,7 +317,7 @@ export function TimeKeeperTripsWorkspace({
       </div>
 
       {/* Trips Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 p-6">
         {workspace.isLoadingTrips ? (
           <div className="text-center py-16">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent mx-auto mb-4"></div>
