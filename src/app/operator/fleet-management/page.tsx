@@ -12,6 +12,7 @@ import Pagination from '@/components/shared/Pagination';
 import { BusOperatorOperationsService } from '@/lib/api-client/route-management/services/BusOperatorOperationsService';
 import { BusResponse } from '@/lib/api-client/route-management/models/BusResponse';
 import { BusPermitAssignmentService } from '@/lib/api-client/route-management/services/BusPermitAssignmentService';
+import { BusPermitAssignmentModal } from '@/components/operator/fleet/BusPermitAssignmentModal';
 
 interface QueryParams {
   page: number;
@@ -73,6 +74,10 @@ export default function FleetManagement() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [busToDelete, setBusToDelete] = useState<BusResponse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // State for assignment modal
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
+  const [busToAssign, setBusToAssign] = useState<{ id: string; registration: string } | null>(null);
 
   // Get operator ID from authenticated user - use memoized value to prevent unnecessary re-renders
   const operatorId = useMemo(() => {
@@ -327,6 +332,24 @@ export default function FleetManagement() {
     }
   };
 
+  const handleAssignPermit = (busId: string, busRegistration: string) => {
+    setBusToAssign({ id: busId, registration: busRegistration });
+    setShowAssignmentModal(true);
+  };
+
+  const handleAssignmentCancel = () => {
+    setBusToAssign(null);
+    setShowAssignmentModal(false);
+  };
+
+  const handleAssignmentCreated = async () => {
+    // Refresh the fleet data after assignment is created
+    await loadFleet();
+    // Close the modal
+    setBusToAssign(null);
+    setShowAssignmentModal(false);
+  };
+
   const handleDeleteCancel = () => {
     setBusToDelete(null);
     setShowDeleteModal(false);
@@ -439,6 +462,7 @@ export default function FleetManagement() {
             buses={buses}
             onView={handleView}
             onDelete={handleDelete}
+            onAssignPermit={handleAssignPermit}
             onSort={handleSort}
             activeFilters={{
               search: searchTerm,
@@ -506,6 +530,17 @@ export default function FleetManagement() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Assignment Modal */}
+      {showAssignmentModal && busToAssign && (
+        <BusPermitAssignmentModal
+          isOpen={showAssignmentModal}
+          onClose={handleAssignmentCancel}
+          busId={busToAssign.id}
+          busRegistration={busToAssign.registration}
+          onAssignmentCreated={handleAssignmentCreated}
+        />
       )}
     </div>
   );

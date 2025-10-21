@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Edit, Wrench, AlertCircle, RefreshCw, ChevronRight, MapPin, Calendar } from 'lucide-react';
 import { Header } from '@/components/operator/header';
 import { OperatorBusSummary, OperatorBusTabsSection } from '@/components/operator/fleet';
+import { BusPermitAssignmentModal } from '@/components/operator/fleet/BusPermitAssignmentModal';
 import {
   BusOperatorOperationsService,
   BusResponse,
@@ -26,6 +27,9 @@ export default function OperatorBusDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [tripsLoading, setTripsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Assignment modal state
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
 
   // Load bus details
   const loadBusDetails = useCallback(async () => {
@@ -101,6 +105,21 @@ export default function OperatorBusDetailsPage() {
 
   const handleViewLocation = () => {
     router.push(`/operator/busTracking?busId=${busId}`);
+  };
+
+  const handleAssignPermit = () => {
+    setShowAssignmentModal(true);
+  };
+
+  const handleAssignmentCancel = () => {
+    setShowAssignmentModal(false);
+  };
+
+  const handleAssignmentCreated = async () => {
+    // Refresh the bus data after assignment is created
+    await loadBusDetails();
+    // Close the modal
+    setShowAssignmentModal(false);
   };
 
   const handleBack = () => {
@@ -286,6 +305,7 @@ export default function OperatorBusDetailsPage() {
             onEdit={handleEdit}
             onScheduleMaintenance={handleScheduleMaintenance}
             onAssignDriver={handleAssignDriver}
+            onAssignPermit={handleAssignPermit}
             onViewLocation={handleViewLocation}
           />
 
@@ -298,6 +318,17 @@ export default function OperatorBusDetailsPage() {
           />
         </div>
       </div>
+
+      {/* Assignment Modal */}
+      {showAssignmentModal && bus && (
+        <BusPermitAssignmentModal
+          isOpen={showAssignmentModal}
+          onClose={handleAssignmentCancel}
+          busId={bus.id!}
+          busRegistration={bus.ntcRegistrationNumber || 'Unknown'}
+          onAssignmentCreated={handleAssignmentCreated}
+        />
+      )}
     </div>
   );
 }

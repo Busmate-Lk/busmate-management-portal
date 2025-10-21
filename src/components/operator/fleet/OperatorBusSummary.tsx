@@ -1,6 +1,6 @@
 'use client';
 
-import { Bus, Calendar, MapPin, Settings, Wrench, User, Edit, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Bus, Calendar, MapPin, Settings, Wrench, User, Edit, AlertTriangle, CheckCircle, Link } from 'lucide-react';
 import type { BusResponse } from '@/lib/api-client/route-management';
 
 interface OperatorBusSummaryProps {
@@ -8,6 +8,7 @@ interface OperatorBusSummaryProps {
   onEdit?: () => void;
   onScheduleMaintenance?: () => void;
   onAssignDriver?: () => void;
+  onAssignPermit?: () => void;
   onViewLocation?: () => void;
 }
 
@@ -16,6 +17,7 @@ export function OperatorBusSummary({
   onEdit,
   onScheduleMaintenance,
   onAssignDriver,
+  onAssignPermit,
   onViewLocation
 }: OperatorBusSummaryProps) {
   const formatDate = (dateString?: string) => {
@@ -159,6 +161,15 @@ export function OperatorBusSummary({
                 title="Assign Driver"
               >
                 <User className="w-5 h-5" />
+              </button>
+            )}
+            {onAssignPermit && (
+              <button
+                onClick={onAssignPermit}
+                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                title="Assign to Permit"
+              >
+                <Link className="w-5 h-5" />
               </button>
             )}
             {onScheduleMaintenance && (
