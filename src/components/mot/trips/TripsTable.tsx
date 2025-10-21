@@ -392,7 +392,7 @@ export function TripsTable({
                       <Eye className="w-4 h-4" />
                     </button>
 
-                    {/* Edit (only for pending trips) */}
+                    {/* Edit (only for pending trips)
                     {canEdit(trip.status) && (
                       <button
                         onClick={() => onEdit(trip.id || '')}
@@ -401,9 +401,9 @@ export function TripsTable({
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                    )}
+                    )} */}
 
-                    {/* Start Trip */}
+                    {/* Start Trip
                     {canStart(trip.status) && (
                       <button
                         onClick={() => onStart(trip.id || '')}
@@ -412,9 +412,9 @@ export function TripsTable({
                       >
                         <Play className="w-4 h-4" />
                       </button>
-                    )}
+                    )} */}
 
-                    {/* Complete Trip */}
+                    {/* Complete Trip
                     {canComplete(trip.status) && (
                       <button
                         onClick={() => onComplete(trip.id || '')}
@@ -423,10 +423,10 @@ export function TripsTable({
                       >
                         <CheckCircle className="w-4 h-4" />
                       </button>
-                    )}
+                    )} */}
 
                     {/* Assign PSP (only if no PSP assigned) */}
-                    {!trip.passengerServicePermitId && (
+                    {/* {!trip.passengerServicePermitId && (
                       <button
                         onClick={() => onAssignPsp(trip.id || '')}
                         className="text-purple-600 hover:text-purple-900 p-1 rounded hover:bg-purple-50"
@@ -434,9 +434,9 @@ export function TripsTable({
                       >
                         <FileText className="w-4 h-4" />
                       </button>
-                    )}
+                    )} */}
 
-                    {/* Cancel Trip */}
+                    {/* Cancel Trip
                     {canCancel(trip.status) && (
                       <button
                         onClick={() => onCancel(trip.id || '')}
@@ -445,7 +445,7 @@ export function TripsTable({
                       >
                         <Square className="w-4 h-4" />
                       </button>
-                    )}
+                    )} */}
 
                     {/* Delete (only for pending/cancelled trips) */}
                     {['pending', 'cancelled'].includes(trip.status?.toLowerCase() || '') && (

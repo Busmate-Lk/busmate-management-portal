@@ -17,6 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
+  LayoutGrid,
 } from 'lucide-react';
 import type { TimeKeeperWorkspaceState } from '../TimeKeeperTripAssignmentWorkspace';
 import type { TripResponse } from '@/lib/api-client/route-management/models/TripResponse';
@@ -38,12 +39,20 @@ export function TimeKeeperTripsWorkspace({
   onRefreshTrips,
   onClearSelection,
 }: TimeKeeperTripsWorkspaceProps) {
-  const [viewMode, setViewMode] = useState<'all-list' | 'daily'>('all-list');
+  const [viewMode, setViewMode] = useState<'all-list' | 'daily' | 'weekly'>(
+    'all-list'
+  );
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [assignmentFilter, setAssignmentFilter] = useState<
     'all' | 'assigned' | 'unassigned'
   >('all');
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedWeek, setSelectedWeek] = useState(() => {
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    return startOfWeek;
+  });
 
   // Date navigation functions
   const navigateDay = (direction: 'prev' | 'next') => {
@@ -52,12 +61,24 @@ export function TimeKeeperTripsWorkspace({
     setSelectedDate(newDate);
   };
 
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    const newWeek = new Date(selectedWeek);
+    newWeek.setDate(selectedWeek.getDate() + (direction === 'next' ? 7 : -7));
+    setSelectedWeek(newWeek);
+  };
+
   const isSameDay = (date1: Date, date2: Date) => {
     return (
       date1.getDate() === date2.getDate() &&
       date1.getMonth() === date2.getMonth() &&
       date1.getFullYear() === date2.getFullYear()
     );
+  };
+
+  const isDateInWeek = (date: Date, weekStart: Date) => {
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    return date >= weekStart && date <= weekEnd;
   };
 
   const getFilteredTrips = () => {
@@ -81,6 +102,12 @@ export function TimeKeeperTripsWorkspace({
         if (!trip.tripDate) return false;
         const tripDate = new Date(trip.tripDate);
         return isSameDay(tripDate, selectedDate);
+      });
+    } else if (viewMode === 'weekly') {
+      filtered = filtered.filter((trip) => {
+        if (!trip.tripDate) return false;
+        const tripDate = new Date(trip.tripDate);
+        return isDateInWeek(tripDate, selectedWeek);
       });
     }
 
@@ -255,6 +282,18 @@ export function TimeKeeperTripsWorkspace({
                 <Calendar className="h-4 w-4" />
                 <span>Daily</span>
               </button>
+              <button
+                onClick={() => setViewMode('weekly')}
+                className={`px-3 py-2 rounded-md transition-colors flex items-center space-x-2 text-sm ${
+                  viewMode === 'weekly'
+                    ? 'bg-white text-indigo-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-800'
+                }`}
+                title="Weekly Trips Grid"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                <span>Weekly</span>
+              </button>
             </div>
 
             {/* Clear Selection */}
@@ -269,12 +308,16 @@ export function TimeKeeperTripsWorkspace({
           </div>
         </div>
 
-        {/* Date Navigation Bar (for daily view) */}
-        {viewMode === 'daily' && (
+        {/* Date Navigation Bar (for daily and weekly views) */}
+        {(viewMode === 'daily' || viewMode === 'weekly') && (
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => navigateDay('prev')}
+                onClick={() =>
+                  viewMode === 'daily'
+                    ? navigateDay('prev')
+                    : navigateWeek('prev')
+                }
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <ChevronLeft className="h-4 w-4 text-gray-600" />
@@ -283,17 +326,32 @@ export function TimeKeeperTripsWorkspace({
               <div className="flex items-center space-x-2">
                 <CalendarDays className="h-4 w-4 text-indigo-600" />
                 <span className="text-sm font-medium text-gray-900">
-                  {selectedDate.toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
+                  {viewMode === 'daily'
+                    ? selectedDate.toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })
+                    : `${selectedWeek.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                      })} - ${new Date(
+                        selectedWeek.getTime() + 6 * 24 * 60 * 60 * 1000
+                      ).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}`}
                 </span>
               </div>
 
               <button
-                onClick={() => navigateDay('next')}
+                onClick={() =>
+                  viewMode === 'daily'
+                    ? navigateDay('next')
+                    : navigateWeek('next')
+                }
                 className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <ChevronRight className="h-4 w-4 text-gray-600" />
@@ -302,10 +360,19 @@ export function TimeKeeperTripsWorkspace({
 
             <div className="flex items-center space-x-2">
               <button
-                onClick={() => setSelectedDate(new Date())}
+                onClick={() =>
+                  viewMode === 'daily'
+                    ? setSelectedDate(new Date())
+                    : setSelectedWeek(() => {
+                        const today = new Date();
+                        const startOfWeek = new Date(today);
+                        startOfWeek.setDate(today.getDate() - today.getDay());
+                        return startOfWeek;
+                      })
+                }
                 className="px-3 py-1 text-sm text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg border border-indigo-200"
               >
-                Today
+                {viewMode === 'daily' ? 'Today' : 'This Week'}
               </button>
               <span className="text-sm text-gray-500">
                 {filteredTrips.length} trip
@@ -339,6 +406,17 @@ export function TimeKeeperTripsWorkspace({
                 : 'No trips match the current filters'}
             </div>
           </div>
+        ) : viewMode === 'weekly' ? (
+          <WeeklyTripsGrid
+            trips={filteredTrips}
+            selectedTrips={workspace.selectedTrips}
+            weekStart={selectedWeek}
+            permits={workspace.permits}
+            assignedBusStopName={workspace.assignedBusStopName}
+            onTripSelect={(tripId, multi) => onTripSelect(tripId, multi)}
+            onAssignPsp={handleAssignPsp}
+            onRemovePsp={handleRemovePsp}
+          />
         ) : (
           <div className="space-y-3">
             {filteredTrips.map((trip) => (
@@ -468,6 +546,174 @@ export function TimeKeeperTripsWorkspace({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// Weekly Trips Grid Component
+interface WeeklyTripsGridProps {
+  trips: TripResponse[];
+  selectedTrips: string[];
+  weekStart: Date;
+  permits: any[];
+  assignedBusStopName: string | null;
+  onTripSelect: (tripId: string, multi: boolean) => void;
+  onAssignPsp: (tripId: string, pspId: string) => void;
+  onRemovePsp: (tripId: string) => void;
+}
+
+function WeeklyTripsGrid({
+  trips,
+  selectedTrips,
+  weekStart,
+  permits,
+  assignedBusStopName,
+  onTripSelect,
+  onAssignPsp,
+  onRemovePsp,
+}: WeeklyTripsGridProps) {
+  const days = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
+  const dayAbbreviations = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const groupedTrips = trips.reduce((groups, trip) => {
+    if (!trip.tripDate) return groups;
+
+    const tripDate = new Date(trip.tripDate);
+    const dayIndex = tripDate.getDay();
+    const dayName = days[dayIndex];
+
+    if (!groups[dayName]) groups[dayName] = [];
+    groups[dayName].push(trip);
+    return groups;
+  }, {} as Record<string, TripResponse[]>);
+
+  const isSelected = (tripId: string) => selectedTrips.includes(tripId);
+
+  return (
+    <div className="grid grid-cols-7 gap-4 h-full">
+      {days.map((day, index) => {
+        const currentDate = new Date(weekStart);
+        currentDate.setDate(weekStart.getDate() + index);
+        const dayTrips = groupedTrips[day] || [];
+        const isToday =
+          new Date().toDateString() === currentDate.toDateString();
+
+        return (
+          <div
+            key={day}
+            className="bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col"
+          >
+            <div
+              className={`px-3 py-2 border-b border-gray-200 ${
+                isToday ? 'bg-indigo-50' : 'bg-gray-50'
+              }`}
+            >
+              <div className="text-center">
+                <div
+                  className={`text-xs font-semibold ${
+                    isToday ? 'text-indigo-900' : 'text-gray-900'
+                  }`}
+                >
+                  {dayAbbreviations[index]}
+                </div>
+                <div
+                  className={`text-sm ${
+                    isToday ? 'text-indigo-700' : 'text-gray-600'
+                  }`}
+                >
+                  {currentDate.getDate()}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {dayTrips.length} trip{dayTrips.length !== 1 ? 's' : ''}
+                </div>
+              </div>
+            </div>
+            <div className="flex-1 p-2 space-y-2 overflow-y-auto max-h-96">
+              {dayTrips.map((trip) => (
+                <div
+                  key={trip.id}
+                  onClick={(e) =>
+                    onTripSelect(trip.id || '', e.ctrlKey || e.metaKey)
+                  }
+                  className={`p-3 rounded-lg border cursor-pointer transition-all hover:shadow-sm ${
+                    isSelected(trip.id || '')
+                      ? 'border-indigo-500 bg-indigo-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-900">
+                        {trip.scheduledDepartureTime
+                          ? new Date(
+                              `2000-01-01T${trip.scheduledDepartureTime}`
+                            ).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })
+                          : 'N/A'}
+                      </span>
+                      <TimeKeeperTripContextMenu
+                        trip={trip}
+                        permits={permits}
+                        onAssignPsp={onAssignPsp}
+                        onRemovePsp={onRemovePsp}
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="text-xs text-gray-600 truncate">
+                        {trip.routeName || 'Unknown Route'}
+                      </div>
+
+                      <div
+                        className={`inline-block px-2 py-1 rounded-full text-xs ${
+                          trip.passengerServicePermitId
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-orange-100 text-orange-800'
+                        }`}
+                      >
+                        {trip.passengerServicePermitId ? 'Assigned' : 'Pending'}
+                      </div>
+
+                      {trip.busPlateNumber && (
+                        <div className="flex items-center space-x-1 text-xs text-gray-600">
+                          <Bus className="h-3 w-3" />
+                          <span>{trip.busPlateNumber}</span>
+                        </div>
+                      )}
+
+                      {assignedBusStopName && (
+                        <div className="flex items-center space-x-1 text-xs text-indigo-600 bg-indigo-50 rounded px-1 py-0.5">
+                          <MapPin className="h-2.5 w-2.5" />
+                          <span className="truncate">
+                            {assignedBusStopName}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {dayTrips.length === 0 && (
+                <div className="text-center py-8 text-gray-400">
+                  <Calendar className="h-6 w-6 mx-auto mb-2" />
+                  <div className="text-xs">No trips</div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }
