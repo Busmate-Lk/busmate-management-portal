@@ -310,7 +310,7 @@ export default function StaffAssignmentPage() {
                 pageDescription="Assign conductors to trips"
             />
 
-            <div className="container mx-auto px-4 py-6">
+            <div className="mx-auto px-6 py-6">
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <div className="bg-white rounded-lg border border-gray-200 p-4">
