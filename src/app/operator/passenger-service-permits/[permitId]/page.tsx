@@ -22,14 +22,13 @@ import {
     BusResponse
 } from '@/lib/api-client/route-management';
 import { Header } from '@/components/operator/header';
-
-// Mock operator ID - In real implementation, this would come from auth context
-const MOCK_OPERATOR_ID = "8e886a71-445c-4e3a-8bc5-a17b5b2dad24";
+import { useAuth } from '@/context/AuthContext';
 
 export default function OperatorPermitDetailsPage() {
     const router = useRouter();
     const params = useParams();
     const permitId = params.permitId as string;
+    const { user } = useAuth();
 
     // State
     const [permit, setPermit] = useState<PassengerServicePermitResponse | null>(null);
@@ -44,9 +43,12 @@ export default function OperatorPermitDetailsPage() {
     const [busesLoading, setBusesLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Get operator ID from authenticated user
+    const operatorId = user?.id;
+
     // Load permit details - operator-specific
     const loadPermitDetails = useCallback(async () => {
-        if (!permitId) return;
+        if (!permitId || !operatorId) return;
 
         try {
             setIsLoading(true);
@@ -54,7 +56,7 @@ export default function OperatorPermitDetailsPage() {
 
             // Use operator-specific API to get permit details
             const permitData = await BusOperatorOperationsService.getOperatorPermitById(
-                MOCK_OPERATOR_ID,
+                operatorId,
                 permitId
             );
             setPermit(permitData);
@@ -67,13 +69,15 @@ export default function OperatorPermitDetailsPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [permitId]);
+    }, [permitId, operatorId]);
 
     // Load operator profile
     const loadOperatorDetails = useCallback(async () => {
+        if (!operatorId) return;
+
         try {
             setOperatorLoading(true);
-            const operatorData = await BusOperatorOperationsService.getOperatorProfile(MOCK_OPERATOR_ID);
+            const operatorData = await BusOperatorOperationsService.getOperatorProfile(operatorId);
             setOperator(operatorData);
         } catch (err) {
             console.error('Error loading operator details:', err);
@@ -81,7 +85,7 @@ export default function OperatorPermitDetailsPage() {
         } finally {
             setOperatorLoading(false);
         }
-    }, []);
+    }, [operatorId]);
 
     // Load route group details
     const loadRouteGroupDetails = useCallback(async (routeGroupId: string) => {
@@ -99,11 +103,13 @@ export default function OperatorPermitDetailsPage() {
 
     // Load assigned buses for this operator
     const loadAssignedBuses = useCallback(async () => {
+        if (!operatorId) return;
+
         try {
             setBusesLoading(true);
             // Get operator's buses (filtered by permit assignment in real implementation)
             const busesResponse = await BusOperatorOperationsService.getOperatorBuses(
-                MOCK_OPERATOR_ID,
+                operatorId,
                 0, // page
                 100, // size
                 'ntcRegistrationNumber', // sortBy
@@ -118,7 +124,7 @@ export default function OperatorPermitDetailsPage() {
         } finally {
             setBusesLoading(false);
         }
-    }, []);
+    }, [operatorId]);
 
     // Load related data when permit is loaded
     useEffect(() => {
@@ -178,6 +184,31 @@ export default function OperatorPermitDetailsPage() {
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
                             <p className="text-gray-600">Loading permit details...</p>
                         </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Authentication check
+    if (!user || !operatorId) {
+        return (
+            <div className="min-h-screen bg-gray-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div className="text-center py-12">
+                        <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+                        <div className="text-red-600 text-lg mb-4">
+                            Authentication required
+                        </div>
+                        <p className="text-gray-600 mb-4">
+                            Please log in to view permit details.
+                        </p>
+                        <button
+                            onClick={() => router.push('/')}
+                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                        >
+                            Go to Login
+                        </button>
                     </div>
                 </div>
             </div>

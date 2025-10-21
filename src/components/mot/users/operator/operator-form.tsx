@@ -163,6 +163,7 @@ export default function OperatorForm({ operatorId, onSuccess, onCancel }: Operat
         operatorType: formData.operatorType,
         region: formData.region.trim(),
         status: formData.status,
+        
       };
 
       let result: OperatorResponse | undefined;
