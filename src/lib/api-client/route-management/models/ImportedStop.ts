@@ -2,11 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type OperatorRequest = {
+export type ImportedStop = {
     id?: string;
-    name: string;
-    operatorType?: string;
-    region?: string;
-    status?: string;
+    name?: string;
+    originalStopId?: string;
+    rowNumber?: number;
 };
 

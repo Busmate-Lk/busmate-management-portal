@@ -42,7 +42,7 @@ export class PassengerApIsService {
     }
     /**
      * Search routes between locations
-     * Find bus routes between origin and destination with comprehensive filtering options
+     * Find bus routes between origin and destination with basic filtering
      * @param fromStopId Origin stop ID
      * @param toStopId Destination stop ID
      * @param fromCity Origin city name
@@ -50,8 +50,6 @@ export class PassengerApIsService {
      * @param direction Route direction
      * @param maxDistance Maximum distance in kilometers
      * @param searchText Search text for route names
-     * @param travelDate Travel date for availability check
-     * @param departureTime Preferred departure time
      * @param page Page number (0-based)
      * @param size Page size
      * @returns PassengerPaginatedResponsePassengerRouteResponse Routes found successfully
@@ -65,8 +63,6 @@ export class PassengerApIsService {
         direction?: 'OUTBOUND' | 'INBOUND',
         maxDistance?: number,
         searchText?: string,
-        travelDate?: string,
-        departureTime?: string,
         page?: number,
         size: number = 20,
     ): CancelablePromise<PassengerPaginatedResponsePassengerRouteResponse> {
@@ -81,8 +77,6 @@ export class PassengerApIsService {
                 'direction': direction,
                 'maxDistance': maxDistance,
                 'searchText': searchText,
-                'travelDate': travelDate,
-                'departureTime': departureTime,
                 'page': page,
                 'size': size,
             },
@@ -253,6 +247,7 @@ export class PassengerApIsService {
      * Retrieve currently active trips with optional filtering
      * @param routeId Filter by route ID
      * @param operatorType Filter by operator type
+     * @param operatorId Filter by specific operator ID
      * @param latitude Latitude for location-based filtering
      * @param longitude Longitude for location-based filtering
      * @param radius Radius for location-based filtering in km
@@ -264,6 +259,7 @@ export class PassengerApIsService {
     public static getActiveTrips(
         routeId?: string,
         operatorType?: 'PRIVATE' | 'CTB',
+        operatorId?: string,
         latitude?: number,
         longitude?: number,
         radius?: number,
@@ -276,6 +272,7 @@ export class PassengerApIsService {
             query: {
                 'routeId': routeId,
                 'operatorType': operatorType,
+                'operatorId': operatorId,
                 'latitude': latitude,
                 'longitude': longitude,
                 'radius': radius,
@@ -294,8 +291,8 @@ export class PassengerApIsService {
      * @param departureTimeFrom Departure time (earliest)
      * @param departureTimeTo Departure time (latest)
      * @param operatorType Operator type filter
+     * @param operatorId Specific operator ID filter
      * @param status Trip status filter
-     * @param directOnly Include only direct trips
      * @param page Page number (0-based)
      * @param size Page size
      * @returns PassengerPaginatedResponsePassengerTripResponse Trips found successfully
@@ -309,8 +306,8 @@ export class PassengerApIsService {
         departureTimeFrom?: string,
         departureTimeTo?: string,
         operatorType?: 'PRIVATE' | 'CTB',
+        operatorId?: string,
         status?: 'pending' | 'active' | 'completed' | 'cancelled' | 'delayed' | 'in_transit' | 'boarding' | 'departed',
-        directOnly: boolean = false,
         page?: number,
         size: number = 20,
     ): CancelablePromise<PassengerPaginatedResponsePassengerTripResponse> {
@@ -325,8 +322,8 @@ export class PassengerApIsService {
                 'departureTimeFrom': departureTimeFrom,
                 'departureTimeTo': departureTimeTo,
                 'operatorType': operatorType,
+                'operatorId': operatorId,
                 'status': status,
-                'directOnly': directOnly,
                 'page': page,
                 'size': size,
             },

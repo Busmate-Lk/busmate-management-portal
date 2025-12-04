@@ -2,11 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-export type OperatorRequest = {
-    id?: string;
-    name: string;
-    operatorType?: string;
-    region?: string;
-    status?: string;
+export type SkippedRecord = {
+    rowNumber?: number;
+    reason?: string;
+    stopIdentifier?: string;
+    details?: string;
 };
 
