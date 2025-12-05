@@ -84,7 +84,7 @@ export default function BusStopsPage() {
   const loadFilterOptions = useCallback(async () => {
     try {
       setFilterOptionsLoading(true);
-      const response = await BusStopManagementService.getFilterOptions1();
+      const response = await BusStopManagementService.getFilterOptions();
 
       setFilterOptions({
         states: response.states || [],
