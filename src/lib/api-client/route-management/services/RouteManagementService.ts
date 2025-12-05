@@ -233,27 +233,6 @@ export class RouteManagementService {
         });
     }
     /**
-     * Get routes by route group ID
-     * Retrieve all routes belonging to a specific route group.
-     * @param routeGroupId Route Group ID
-     * @returns RouteResponse Routes retrieved successfully
-     * @throws ApiError
-     */
-    public static getRoutesByRouteGroupId(
-        routeGroupId: string,
-    ): CancelablePromise<Array<RouteResponse>> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/routes/groups/{routeGroupId}',
-            path: {
-                'routeGroupId': routeGroupId,
-            },
-            errors: {
-                400: `Invalid UUID format`,
-            },
-        });
-    }
-    /**
      * Import complete route data from unified CSV file
      * Import route groups, routes, and route stops from a single CSV file with flexible options. CSV format includes all route-related entities in one row. Supports intelligent duplicate handling, validation options, and partial imports. The CSV should include columns for route group, route, and route stop information.
      * @param routeGroupDuplicateStrategy Import options for handling duplicates and validation
