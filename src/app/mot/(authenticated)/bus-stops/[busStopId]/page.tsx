@@ -474,13 +474,6 @@ export default function BusStopDetailsPage({ params }: BusStopDetailsPageProps) 
 
           <div className="flex items-center gap-3">
             <button
-              onClick={loadBusStopDetails}
-              className="flex items-center bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg transition-colors"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
-            </button>
-            <button
               onClick={() => router.push(`/mot/bus-stops/${busStop.id}/edit`)}
               className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
             >
