@@ -24,7 +24,7 @@ export function FleetActionButtons({
     <div className="flex flex-col sm:flex-row gap-3">
       {/* Primary Actions */}
       <div className="flex gap-3">
-        <button
+        {/* <button
           onClick={onAddBus}
           disabled={isLoading}
           className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
@@ -32,9 +32,9 @@ export function FleetActionButtons({
           <Plus className="h-4 w-4" />
           <span className="hidden sm:inline">Add Bus</span>
           <span className="sm:hidden">Add</span>
-        </button>
+        </button> */}
         
-        {onMaintenanceSchedule && (
+        {/* {onMaintenanceSchedule && (
           <button
             onClick={onMaintenanceSchedule}
             disabled={isLoading}
@@ -44,7 +44,7 @@ export function FleetActionButtons({
             <span className="hidden sm:inline">Schedule Maintenance</span>
             <span className="sm:hidden">Maintenance</span>
           </button>
-        )}
+        )} */}
       </div>
 
       {/* Secondary Actions */}

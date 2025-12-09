@@ -11,6 +11,8 @@ import { FleetTable } from '@/components/operator/fleet/FleetTable';
 import Pagination from '@/components/shared/Pagination';
 import { BusOperatorOperationsService } from '@/lib/api-client/route-management/services/BusOperatorOperationsService';
 import { BusResponse } from '@/lib/api-client/route-management/models/BusResponse';
+import { BusPermitAssignmentService } from '@/lib/api-client/route-management/services/BusPermitAssignmentService';
+import { BusPermitAssignmentModal } from '@/components/operator/fleet/BusPermitAssignmentModal';
 
 interface QueryParams {
   page: number;
@@ -28,6 +30,7 @@ export default function FleetManagement() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const [buses, setBuses] = useState<BusResponse[]>([]);
+  const [busPermits, setBusPermits] = useState<Record<string, { permitNumber: string; permitType?: string } | null>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,6 +74,10 @@ export default function FleetManagement() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [busToDelete, setBusToDelete] = useState<BusResponse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // State for assignment modal
+  const [showAssignmentModal, setShowAssignmentModal] = useState(false);
+  const [busToAssign, setBusToAssign] = useState<{ id: string; registration: string } | null>(null);
 
   // Get operator ID from authenticated user - use memoized value to prevent unnecessary re-renders
   const operatorId = useMemo(() => {
@@ -162,11 +169,34 @@ export default function FleetManagement() {
     loadStatistics();
   }, [loadStatistics]);
 
+  // Load bus permits
+  const refreshBusPermits = useCallback(async () => {
+    try {
+      const assignments = await BusPermitAssignmentService.getAllAssignments();
+      const map: Record<string, { permitNumber: string; permitType?: string } | null> = {};
+      (assignments || []).forEach(a => {
+        if (!a.busId) return;
+        if (!map[a.busId]) {
+          map[a.busId] = { permitNumber: a.permitNumber || a.passengerServicePermitId || 'Unknown' };
+        }
+      });
+      setBusPermits(map);
+    } catch (error) {
+      console.error('Error loading bus permits:', error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (buses.length > 0) {
+      refreshBusPermits();
+    }
+  }, [buses, refreshBusPermits]);
+
   // Update query params with filters
   const updateQueryParams = useCallback((updates: Partial<QueryParams>) => {
     setQueryParams(prev => {
       const newParams = { ...prev, ...updates };
-      
+
       // Build status filter
       if (statusFilter !== 'all') {
         newParams.status = statusFilter as any;
@@ -188,7 +218,7 @@ export default function FleetManagement() {
       }
 
       // Check if params actually changed to prevent unnecessary API calls
-      const paramsChanged = Object.keys(newParams).some(key => 
+      const paramsChanged = Object.keys(newParams).some(key =>
         newParams[key as keyof QueryParams] !== prev[key as keyof QueryParams]
       );
 
@@ -228,7 +258,7 @@ export default function FleetManagement() {
     setMinCapacity('');
     setMaxCapacity('');
     setModelFilter('all');
-    
+
     setQueryParams(prev => ({
       ...prev,
       searchText: '',
@@ -302,6 +332,24 @@ export default function FleetManagement() {
     }
   };
 
+  const handleAssignPermit = (busId: string, busRegistration: string) => {
+    setBusToAssign({ id: busId, registration: busRegistration });
+    setShowAssignmentModal(true);
+  };
+
+  const handleAssignmentCancel = () => {
+    setBusToAssign(null);
+    setShowAssignmentModal(false);
+  };
+
+  const handleAssignmentCreated = async () => {
+    // Refresh the fleet data after assignment is created
+    await loadFleet();
+    // Close the modal
+    setBusToAssign(null);
+    setShowAssignmentModal(false);
+  };
+
   const handleDeleteCancel = () => {
     setBusToDelete(null);
     setShowDeleteModal(false);
@@ -314,7 +362,7 @@ export default function FleetManagement() {
       setIsDeleting(true);
       // Delete bus logic would go here
       // await BusOperatorOperationsService.deleteBus(operatorId, busToDelete.id);
-      
+
       // Refresh the fleet list
       await loadFleet();
       setShowDeleteModal(false);
@@ -339,8 +387,8 @@ export default function FleetManagement() {
     return (
       <div className="flex min-h-screen bg-gray-50">
         <div className="flex-1">
-          <Header 
-            pageTitle="Fleet Management" 
+          <Header
+            pageTitle="Fleet Management"
             pageDescription="Manage and monitor your bus fleet"
           />
           <div className="p-6">
@@ -357,8 +405,8 @@ export default function FleetManagement() {
   return (
     <div className="flex min-h-screen bg-gray-50">
       <div className="flex-1">
-        <Header 
-          pageTitle="Fleet Management" 
+        <Header
+          pageTitle="Fleet Management"
           pageDescription="Manage and monitor your bus fleet, routes, and maintenance"
         />
 
@@ -413,10 +461,8 @@ export default function FleetManagement() {
           <FleetTable
             buses={buses}
             onView={handleView}
-            onEdit={handleEdit}
             onDelete={handleDelete}
-            onAssignRoute={handleAssignRoute}
-            onScheduleMaintenance={handleScheduleMaintenance}
+            onAssignPermit={handleAssignPermit}
             onSort={handleSort}
             activeFilters={{
               search: searchTerm,
@@ -427,6 +473,8 @@ export default function FleetManagement() {
             }}
             loading={isLoading}
             currentSort={{ field: queryParams.sortBy, direction: queryParams.sortDir }}
+            busPermits={busPermits}
+            onPermitsChanged={refreshBusPermits}
           />
 
           {/* Pagination */}
@@ -459,7 +507,7 @@ export default function FleetManagement() {
               <h3 className="text-lg font-medium text-gray-900">Delete Bus</h3>
               <div className="mt-2 px-7 py-3">
                 <p className="text-sm text-gray-500">
-                  Are you sure you want to delete bus "{busToDelete.ntcRegistrationNumber}"? 
+                  Are you sure you want to delete bus "{busToDelete.ntcRegistrationNumber}"?
                   This action cannot be undone.
                 </p>
               </div>
@@ -482,6 +530,17 @@ export default function FleetManagement() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Assignment Modal */}
+      {showAssignmentModal && busToAssign && (
+        <BusPermitAssignmentModal
+          isOpen={showAssignmentModal}
+          onClose={handleAssignmentCancel}
+          busId={busToAssign.id}
+          busRegistration={busToAssign.registration}
+          onAssignmentCreated={handleAssignmentCreated}
+        />
       )}
     </div>
   );

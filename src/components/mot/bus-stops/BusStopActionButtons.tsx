@@ -1,12 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Plus, Upload, Download, FileText, CheckSquare } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Plus, Upload, Download, FileText, CheckSquare, Settings } from 'lucide-react';
 
 interface BusStopActionButtonsProps {
   onAddBusStop: () => void;
   onImportBusStops: () => void;
-  onExportAll: () => void;
   onBulkOperations?: () => void;
   isLoading?: boolean;
   selectedCount?: number;
@@ -15,11 +15,11 @@ interface BusStopActionButtonsProps {
 export function BusStopActionButtons({
   onAddBusStop,
   onImportBusStops,
-  onExportAll,
   onBulkOperations,
   isLoading = false,
   selectedCount = 0
 }: BusStopActionButtonsProps) {
+  const router = useRouter();
   return (
     <div className="flex flex-col sm:flex-row gap-3">
       {/* Primary Actions */}
@@ -40,21 +40,24 @@ export function BusStopActionButtons({
           className="flex items-center gap-2 border border-blue-600 text-blue-600 bg-white px-4 py-2 rounded-lg hover:bg-blue-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
         >
           <Upload className="h-4 w-4" />
-          <span className="hidden sm:inline">Import</span>
+          <span className="hidden sm:inline">Import Stops</span>
+          <span className="sm:hidden">Import</span>
         </button>
       </div>
 
       {/* Secondary Actions */}
       <div className="flex gap-3">
-        <button
-          onClick={onExportAll}
-          disabled={isLoading}
-          className="flex items-center gap-2 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
-        >
-          <Download className="h-4 w-4" />
-          <span className="hidden sm:inline">Export All</span>
-          <span className="sm:hidden">Export</span>
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => router.push('/mot/bus-stops/export')}
+            disabled={isLoading}
+            className="flex items-center gap-2 border border-blue-300 text-blue-700 bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
+          >
+            <Download className="h-4 w-4" />
+            <span className="hidden sm:inline">Export Stops</span>
+            <span className="sm:hidden">Export</span>
+          </button>
+        </div>
 
         {/* Bulk Operations - Only show when items are selected */}
         {selectedCount > 0 && onBulkOperations && (

@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { 
-  RefreshCw, 
-  Download, 
+import {
+  RefreshCw,
+  Download,
   AlertCircle,
   ChevronRight,
   FileText
@@ -14,10 +14,11 @@ import { OperatorPermitStatsCards } from '@/components/operator/permits/Operator
 import { OperatorPermitFilters } from '@/components/operator/permits/OperatorPermitFilters';
 import { OperatorPermitsTable } from '@/components/operator/permits/OperatorPermitsTable';
 import { Pagination } from '@/components/mot/pagination';
-import { 
+import {
   BusOperatorOperationsService,
-  PassengerServicePermitResponse 
+  PassengerServicePermitResponse
 } from '@/lib/api-client/route-management';
+import { useAuth } from '@/context/AuthContext';
 
 interface PermitFilters {
   search: string;
@@ -37,13 +38,11 @@ interface SortState {
   direction: 'asc' | 'desc';
 }
 
-// Mock operator ID - In real implementation, this would come from auth context
-const MOCK_OPERATOR_ID = "8e886a71-445c-4e3a-8bc5-a17b5b2dad24";
-
 function OperatorPassengerServicePermitsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+  const { user } = useAuth();
+
   // Data states
   const [permits, setPermits] = useState<PassengerServicePermitResponse[]>([]);
   const [statistics, setStatistics] = useState<any>(null);
@@ -51,30 +50,39 @@ function OperatorPassengerServicePermitsContent() {
     statuses: ['ACTIVE', 'INACTIVE', 'PENDING', 'EXPIRED'],
     permitTypes: ['REGULAR', 'SPECIAL', 'TEMPORARY']
   });
-  
+
   // Filter states with URL sync
   const [filters, setFilters] = useState<PermitFilters>({
     search: searchParams.get('search') || '',
     status: searchParams.get('status') || 'all',
     permitType: searchParams.get('permitType') || 'all'
   });
-  
+
   // Pagination and sort states with URL sync
   const [pagination, setPagination] = useState<PaginationState>({
-    currentPage: parseInt(searchParams.get('page') || '1'),
+    currentPage: Math.max(1, Number.parseInt(searchParams.get('page') || '1') || 1),
     totalPages: 0,
     totalElements: 0,
-    pageSize: parseInt(searchParams.get('size') || '10')
+    pageSize: Math.max(1, Number.parseInt(searchParams.get('size') || '10') || 10)
   });
-  
+
   const [sort, setSort] = useState<SortState>({
     field: searchParams.get('sortBy') || 'permitNumber',
     direction: (searchParams.get('sortDir') as 'asc' | 'desc') || 'asc'
   });
-  
+
+  // Only allow API-supported sort fields; fallback to 'permitNumber' if unsupported
+  const allowedSortFields = useMemo(() => (
+    ['permitNumber', 'issueDate', 'expiryDate', 'status', 'createdAt', 'updatedAt']
+  ), []);
+  const effectiveSortField = allowedSortFields.includes(sort.field) ? sort.field : 'permitNumber';
+
   // UI states
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Get operator ID from authenticated user
+  const operatorId = user?.id;
 
   // Update URL when filters change
   useEffect(() => {
@@ -86,7 +94,7 @@ function OperatorPassengerServicePermitsContent() {
     if (pagination.pageSize !== 10) params.set('size', pagination.pageSize.toString());
     if (sort.field !== 'permitNumber') params.set('sortBy', sort.field);
     if (sort.direction !== 'asc') params.set('sortDir', sort.direction);
-    
+
     const queryString = params.toString();
     const newUrl = queryString ? `?${queryString}` : '/operator/passenger-service-permits';
     window.history.replaceState({}, '', newUrl);
@@ -94,11 +102,13 @@ function OperatorPassengerServicePermitsContent() {
 
   // Load operator-specific permits statistics
   const loadStatistics = useCallback(async () => {
+    if (!operatorId) return;
+
     try {
       // For now, we'll calculate statistics from the permits data
       // In a real implementation, there might be a dedicated statistics endpoint
       const allPermits = await BusOperatorOperationsService.getOperatorPermits(
-        MOCK_OPERATOR_ID,
+        operatorId,
         0, // page
         100, // large size to get all permits for stats
         'permitNumber',
@@ -106,7 +116,7 @@ function OperatorPassengerServicePermitsContent() {
       );
 
       const permitsList = allPermits.content || [];
-      
+
       const stats = {
         totalPermits: permitsList.length,
         activePermits: permitsList.filter(p => p.status === 'ACTIVE').length,
@@ -119,7 +129,7 @@ function OperatorPassengerServicePermitsContent() {
           const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
           return diffDays <= 30 && diffDays >= 0;
         }).length,
-        permitsByOperator: { [MOCK_OPERATOR_ID]: permitsList.length },
+        permitsByOperator: { [operatorId]: permitsList.length },
         permitsByRouteGroup: permitsList.reduce((acc: any, permit) => {
           const routeGroup = permit.routeGroupName || 'Unknown';
           acc[routeGroup] = (acc[routeGroup] || 0) + 1;
@@ -139,54 +149,119 @@ function OperatorPassengerServicePermitsContent() {
         permitsByRouteGroup: {}
       });
     }
-  }, []);
+  }, [operatorId]);
 
   // Load permits data from API with server-side filtering/pagination
   const loadPermits = useCallback(async () => {
+    if (!operatorId) return;
+
     try {
       setLoading(true);
       setError(null);
-      
+
       // Prepare filter parameters for API call
       const statusFilter = filters.status !== 'all' ? filters.status : undefined;
       const permitTypeFilter = filters.permitType !== 'all' ? filters.permitType : undefined;
       const searchText = filters.search || undefined;
-      
+
+      const requestedPageIndex = Math.max(0, (pagination.currentPage || 1) - 1); // 0-based for API
+
+      // Initial fetch
       const response = await BusOperatorOperationsService.getOperatorPermits(
-        MOCK_OPERATOR_ID,
-        pagination.currentPage - 1, // Convert to 0-based for API
+        operatorId,
+        requestedPageIndex,
         pagination.pageSize,
-        sort.field,
+        effectiveSortField,
         sort.direction,
         statusFilter,
         permitTypeFilter,
         searchText
       );
-      
-      setPermits(response.content || []);
+
+      let totalPages = response.totalPages ?? 0;
+      let totalElements = response.totalElements ?? 0;
+      let content = response.content ?? [];
+
+      // Handle stale page index: if API says there are elements but current page is empty, fetch last page
+      if (totalElements > 0 && content.length === 0) {
+        const lastPageIndex = Math.max(0, (totalPages || 1) - 1);
+        if (requestedPageIndex !== lastPageIndex) {
+          const retry = await BusOperatorOperationsService.getOperatorPermits(
+            operatorId,
+            lastPageIndex,
+            pagination.pageSize,
+            effectiveSortField,
+            sort.direction,
+            statusFilter,
+            permitTypeFilter,
+            searchText
+          );
+
+          setPermits(retry.content || []);
+          setPagination(prev => ({
+            ...prev,
+            currentPage: Math.max(1, (retry.totalPages || totalPages || 1)), // 1-based
+            totalPages: retry.totalPages ?? totalPages ?? 0,
+            totalElements: retry.totalElements ?? totalElements ?? 0,
+          }));
+          return;
+        }
+      }
+
+      // Fallback: backend post-filters after pagination can return empty pages even when permits exist.
+      // If the page is empty, refetch first page with a larger size (max 100) and client-side paginate.
+      if (content.length === 0) {
+        const fallback = await BusOperatorOperationsService.getOperatorPermits(
+          operatorId,
+          0,
+          100, // controller allows max 100
+          effectiveSortField,
+          sort.direction,
+          statusFilter,
+          permitTypeFilter,
+          searchText
+        );
+
+        const all = fallback.content || [];
+        if (all.length > 0) {
+          const totalPagesCalc = Math.max(1, Math.ceil(all.length / pagination.pageSize));
+          const clampedPage = Math.min(pagination.currentPage, totalPagesCalc);
+          const start = (clampedPage - 1) * pagination.pageSize;
+          const end = start + pagination.pageSize;
+          const slice = all.slice(start, end);
+
+          setPermits(slice);
+          setPagination(prev => ({
+            ...prev,
+            currentPage: clampedPage,
+            totalElements: all.length,
+            totalPages: totalPagesCalc,
+          }));
+          return;
+        }
+      }
+
+      // Normal path
+      setPermits(content);
       setPagination(prev => ({
         ...prev,
-        totalPages: response.totalPages || 0,
-        totalElements: response.totalElements || 0
+        totalPages,
+        totalElements,
       }));
-      
+
     } catch (err) {
       console.error('Error loading permits:', err);
+      setPermits([]);
+      setPagination(prev => ({ ...prev, totalPages: 0, totalElements: 0 }));
       if (err instanceof Error) {
         setError(err.message);
       } else {
         setError('Failed to load permits. The API service may not be available.');
       }
-      setPermits([]);
-      setPagination(prev => ({
-        ...prev,
-        totalPages: 0,
-        totalElements: 0
-      }));
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.currentPage, pagination.pageSize, sort]);
+  }, [operatorId, filters, pagination.currentPage, pagination.pageSize, sort, effectiveSortField]);
 
   // Load initial data
   useEffect(() => {
@@ -196,7 +271,7 @@ function OperatorPassengerServicePermitsContent() {
         loadPermits()
       ]);
     };
-    
+
     initializeData();
   }, [loadStatistics, loadPermits]);
 
@@ -261,11 +336,11 @@ function OperatorPassengerServicePermitsContent() {
       const headers = Object.keys(dataToExport[0]);
       const csvContent = [
         headers.join(','),
-        ...dataToExport.map(row => 
+        ...dataToExport.map(row =>
           headers.map(header => {
             const value = row[header as keyof typeof row];
-            return typeof value === 'string' && value.includes(',') 
-              ? `"${value.replace(/"/g, '""')}"` 
+            return typeof value === 'string' && value.includes(',')
+              ? `"${value.replace(/"/g, '""')}"`
               : value;
           }).join(',')
         )
@@ -288,9 +363,9 @@ function OperatorPassengerServicePermitsContent() {
 
   // Computed values
   const hasActiveFilters = useMemo(() => {
-    return filters.search !== '' || 
-           filters.status !== 'all' || 
-           filters.permitType !== 'all';
+    return filters.search !== '' ||
+      filters.status !== 'all' ||
+      filters.permitType !== 'all';
   }, [filters]);
 
   const activeFiltersObject = useMemo(() => ({
@@ -298,6 +373,35 @@ function OperatorPassengerServicePermitsContent() {
     status: filters.status !== 'all' ? filters.status : undefined,
     permitType: filters.permitType !== 'all' ? filters.permitType : undefined
   }), [filters]);
+
+  // Authentication check
+  if (!user || !operatorId) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header
+          pageTitle="Passenger Service Permits"
+          pageDescription="Manage your passenger service permits"
+        />
+        <div className="p-6">
+          <div className="text-center py-12">
+            <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+            <div className="text-red-600 text-lg mb-4">
+              Authentication required
+            </div>
+            <p className="text-gray-600 mb-4">
+              Please log in to view your passenger service permits.
+            </p>
+            <button
+              onClick={() => router.push('/')}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Go to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Loading state for initial load
   if (loading && pagination.currentPage === 1 && permits.length === 0) {
@@ -322,7 +426,7 @@ function OperatorPassengerServicePermitsContent() {
         pageTitle="Passenger Service Permits"
         pageDescription="View and manage your passenger service permits and compliance status"
       />
-      
+
       <div className="p-6 space-y-6">
         {/* Error Alert */}
         {error && (
@@ -440,9 +544,9 @@ function OperatorPassengerServicePermitsContent() {
                     <div className="text-sm mb-4">Try adjusting your search criteria.</div>
                     <button
                       onClick={() => {
-                        setFilters({ 
-                          search: '', 
-                          status: 'all', 
+                        setFilters({
+                          search: '',
+                          status: 'all',
                           permitType: 'all'
                         });
                         setPagination(prev => ({ ...prev, currentPage: 1 }));

@@ -1,7 +1,12 @@
 'use client';
 
 import React from 'react';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from 'lucide-react';
 
 interface BusStopPaginationProps {
   currentPage: number;
@@ -20,30 +25,33 @@ export function BusStopPagination({
   pageSize,
   onPageChange,
   onPageSizeChange,
-  loading
+  loading,
 }: BusStopPaginationProps) {
   const pageSizeOptions = [5, 10, 25, 50, 100];
-  
+
   const startRecord = currentPage * pageSize + 1;
   const endRecord = Math.min((currentPage + 1) * pageSize, totalElements);
 
   const getPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     if (totalPages <= maxVisiblePages) {
       for (let i = 0; i < totalPages; i++) {
         pages.push(i);
       }
     } else {
-      const start = Math.max(0, Math.min(currentPage - 2, totalPages - maxVisiblePages));
+      const start = Math.max(
+        0,
+        Math.min(currentPage - 2, totalPages - maxVisiblePages)
+      );
       const end = Math.min(totalPages, start + maxVisiblePages);
-      
+
       for (let i = start; i < end; i++) {
         pages.push(i);
       }
     }
-    
+
     return pages;
   };
 
@@ -59,16 +67,15 @@ export function BusStopPagination({
     }
   };
 
-  if (totalPages <= 1) return null;
-
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
       <div className="flex items-center justify-between px-6 py-4">
         {/* Records Info */}
         <div className="flex items-center text-sm text-gray-500">
           <span>
-            Showing {startRecord.toLocaleString()} to {endRecord.toLocaleString()} of{' '}
-            {totalElements.toLocaleString()} results
+            Showing {startRecord.toLocaleString()} to{' '}
+            {endRecord.toLocaleString()} of {totalElements.toLocaleString()}{' '}
+            results
           </span>
         </div>
 
@@ -94,36 +101,37 @@ export function BusStopPagination({
             </select>
           </div>
 
-          {/* Navigation Buttons */}
-          <div className="flex items-center space-x-1">
-            {/* First Page */}
-            <button
-              onClick={() => handlePageChange(0)}
-              disabled={currentPage === 0 || loading}
-              className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="First page"
-            >
-              <ChevronsLeft className="w-4 h-4" />
-            </button>
-
-            {/* Previous Page */}
-            <button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 0 || loading}
-              className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Previous page"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-
-            {/* Page Numbers */}
+          {/* Navigation Buttons - Only show if more than 1 page */}
+          {totalPages > 1 && (
             <div className="flex items-center space-x-1">
-              {getPageNumbers().map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
-                  disabled={loading}
-                  className={`
+              {/* First Page */}
+              <button
+                onClick={() => handlePageChange(0)}
+                disabled={currentPage === 0 || loading}
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="First page"
+              >
+                <ChevronsLeft className="w-4 h-4" />
+              </button>
+
+              {/* Previous Page */}
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 0 || loading}
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Previous page"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              {/* Page Numbers */}
+              <div className="flex items-center space-x-1">
+                {getPageNumbers().map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    disabled={loading}
+                    className={`
                     px-3 py-2 text-sm font-medium rounded-md transition-colors
                     ${
                       page === currentPage
@@ -132,32 +140,33 @@ export function BusStopPagination({
                     }
                     disabled:opacity-50 disabled:cursor-not-allowed
                   `}
-                >
-                  {page + 1}
-                </button>
-              ))}
+                  >
+                    {page + 1}
+                  </button>
+                ))}
+              </div>
+
+              {/* Next Page */}
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages - 1 || loading}
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Next page"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+
+              {/* Last Page */}
+              <button
+                onClick={() => handlePageChange(totalPages - 1)}
+                disabled={currentPage === totalPages - 1 || loading}
+                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Last page"
+              >
+                <ChevronsRight className="w-4 h-4" />
+              </button>
             </div>
-
-            {/* Next Page */}
-            <button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages - 1 || loading}
-              className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Next page"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-
-            {/* Last Page */}
-            <button
-              onClick={() => handlePageChange(totalPages - 1)}
-              disabled={currentPage === totalPages - 1 || loading}
-              className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Last page"
-            >
-              <ChevronsRight className="w-4 h-4" />
-            </button>
-          </div>
+          )}
         </div>
       </div>
 

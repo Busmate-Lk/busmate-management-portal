@@ -13,9 +13,9 @@ export type PageBusResponse = {
     content?: Array<BusResponse>;
     number?: number;
     sort?: Sortnull;
-    numberOfElements?: number;
     first?: boolean;
     last?: boolean;
+    numberOfElements?: number;
     empty?: boolean;
 };
 

@@ -54,7 +54,7 @@ export interface QuickAction {
 export const kpiMetrics: DashboardKPI[] = [
   {
     title: 'Total Buses',
-    value: 1247,
+    value: 13,
     change: 5.2,
     trend: 'up',
     icon: 'bus',
@@ -62,7 +62,7 @@ export const kpiMetrics: DashboardKPI[] = [
   },
   {
     title: 'Active Operators',
-    value: 89,
+    value: 20,
     change: 2.1,
     trend: 'up',
     icon: 'users',
@@ -70,7 +70,7 @@ export const kpiMetrics: DashboardKPI[] = [
   },
   {
     title: 'Total Routes',
-    value: 156,
+    value: 18,
     change: -1.3,
     trend: 'down',
     icon: 'route',
@@ -78,7 +78,7 @@ export const kpiMetrics: DashboardKPI[] = [
   },
   {
     title: 'Valid Permits',
-    value: 1089,
+    value: 13,
     change: 3.7,
     trend: 'up',
     icon: 'shield',
@@ -86,7 +86,7 @@ export const kpiMetrics: DashboardKPI[] = [
   },
   {
     title: 'Active Schedules',
-    value: 342,
+    value: 6,
     change: 1.8,
     trend: 'up',
     icon: 'calendar',
@@ -94,7 +94,7 @@ export const kpiMetrics: DashboardKPI[] = [
   },
   {
     title: 'Active Trips',
-    value: 78,
+    value: 87,
     change: 12.4,
     trend: 'up',
     icon: 'activity',
@@ -107,7 +107,7 @@ export const fleetDistributionData: ChartData = {
   labels: ['Normal Bus', 'Semi-Luxury', 'Luxury', 'Air Conditioned', 'Super Luxury', 'Intercity'],
   datasets: [{
     label: 'Number of Buses',
-    data: [456, 289, 178, 156, 98, 70],
+    data: [5, 3, 1, 1, 2, 2],
     backgroundColor: [
       '#3B82F6', // blue
       '#10B981', // green
