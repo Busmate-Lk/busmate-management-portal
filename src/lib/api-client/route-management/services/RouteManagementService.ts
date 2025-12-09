@@ -4,11 +4,12 @@
 /* eslint-disable */
 import type { PageRouteGroupResponse } from '../models/PageRouteGroupResponse';
 import type { PageRouteResponse } from '../models/PageRouteResponse';
+import type { RouteFilterOptionsResponse } from '../models/RouteFilterOptionsResponse';
 import type { RouteGroupRequest } from '../models/RouteGroupRequest';
 import type { RouteGroupResponse } from '../models/RouteGroupResponse';
-import type { RouteImportResponse } from '../models/RouteImportResponse';
 import type { RouteResponse } from '../models/RouteResponse';
 import type { RouteStatisticsResponse } from '../models/RouteStatisticsResponse';
+import type { RouteUnifiedImportResponse } from '../models/RouteUnifiedImportResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -23,6 +24,7 @@ export class RouteManagementService {
      * @param search Search text to filter routes by name, description, route group name, start/end stop names
      * @param routeGroupId Filter by route group ID
      * @param direction Filter by direction (INBOUND or OUTBOUND)
+     * @param roadType Filter by road type (NORMALWAY or EXPRESSWAY)
      * @param minDistance Minimum distance in kilometers
      * @param maxDistance Maximum distance in kilometers
      * @param minDuration Minimum estimated duration in minutes
@@ -38,6 +40,7 @@ export class RouteManagementService {
         search?: string,
         routeGroupId?: string,
         direction?: 'OUTBOUND' | 'INBOUND',
+        roadType?: 'NORMALWAY' | 'EXPRESSWAY',
         minDistance?: number,
         maxDistance?: number,
         minDuration?: number,
@@ -54,6 +57,7 @@ export class RouteManagementService {
                 'search': search,
                 'routeGroupId': routeGroupId,
                 'direction': direction,
+                'roadType': roadType,
                 'minDistance': minDistance,
                 'maxDistance': maxDistance,
                 'minDuration': minDuration,
@@ -77,72 +81,15 @@ export class RouteManagementService {
         });
     }
     /**
-     * Get routes by route group ID
-     * Retrieve all routes belonging to a specific route group.
-     * @param routeGroupId Route Group ID
-     * @returns RouteResponse Routes retrieved successfully
+     * Get all route filter options
+     * Retrieve all filter options in one consolidated response including directions, route groups, distance range, and duration range. This endpoint provides everything needed for the UI filtering functionality in a single API call.
+     * @returns RouteFilterOptionsResponse All filter options retrieved successfully
      * @throws ApiError
      */
-    public static getRoutesByRouteGroupId(
-        routeGroupId: string,
-    ): CancelablePromise<Array<RouteResponse>> {
+    public static getRouteFilterOptions(): CancelablePromise<RouteFilterOptionsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/routes/by-group/{routeGroupId}',
-            path: {
-                'routeGroupId': routeGroupId,
-            },
-            errors: {
-                400: `Invalid UUID format`,
-            },
-        });
-    }
-    /**
-     * Get distinct directions
-     * Retrieve all distinct directions available in the routes database for filter dropdown options.
-     * @returns string Distinct directions retrieved successfully
-     * @throws ApiError
-     */
-    public static getDistinctDirections(): CancelablePromise<Array<'OUTBOUND' | 'INBOUND'>> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/routes/filter-options/directions',
-        });
-    }
-    /**
-     * Get distance range
-     * Retrieve the minimum and maximum distance values available in the routes database for range filter options.
-     * @returns any Distance range retrieved successfully
-     * @throws ApiError
-     */
-    public static getDistanceRange(): CancelablePromise<Record<string, any>> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/routes/filter-options/distance-range',
-        });
-    }
-    /**
-     * Get duration range
-     * Retrieve the minimum and maximum duration values available in the routes database for range filter options.
-     * @returns any Duration range retrieved successfully
-     * @throws ApiError
-     */
-    public static getDurationRange(): CancelablePromise<Record<string, any>> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/routes/filter-options/duration-range',
-        });
-    }
-    /**
-     * Get distinct route groups
-     * Retrieve all distinct route groups available in the routes database for filter dropdown options.
-     * @returns any Distinct route groups retrieved successfully
-     * @throws ApiError
-     */
-    public static getDistinctRouteGroups(): CancelablePromise<Array<Record<string, any>>> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/routes/filter-options/route-groups',
+            url: '/api/routes/filters/options',
         });
     }
     /**
@@ -286,23 +233,49 @@ export class RouteManagementService {
         });
     }
     /**
-     * Import routes from CSV file
-     * Bulk import routes from a CSV file. Expected CSV format: name,description,routeGroupName,startStopName,endStopName,distanceKm,estimatedDurationMinutes,direction (header row required). Direction should be OUTBOUND or INBOUND. Route group and stops must already exist in the system. Requires authentication.
+     * Import complete route data from unified CSV file
+     * Import route groups, routes, and route stops from a single CSV file with flexible options. CSV format includes all route-related entities in one row. Supports intelligent duplicate handling, validation options, and partial imports. The CSV should include columns for route group, route, and route stop information.
+     * @param routeGroupDuplicateStrategy Import options for handling duplicates and validation
+     * @param routeDuplicateStrategy
+     * @param validateStopsExist
+     * @param createMissingStops
+     * @param allowPartialRouteStops
+     * @param validateCoordinates
+     * @param continueOnError
+     * @param defaultRoadType
      * @param formData
-     * @returns RouteImportResponse Import completed (check response for detailed results)
+     * @returns RouteUnifiedImportResponse Import completed (check response for detailed results)
      * @throws ApiError
      */
-    public static importRoutes(
+    public static importRoutesUnified(
+        routeGroupDuplicateStrategy: string = 'REUSE',
+        routeDuplicateStrategy: string = 'SKIP',
+        validateStopsExist: boolean = true,
+        createMissingStops: boolean = false,
+        allowPartialRouteStops: boolean = true,
+        validateCoordinates: boolean = false,
+        continueOnError: boolean = true,
+        defaultRoadType: string = 'NORMALWAY',
         formData?: {
             /**
-             * CSV file containing route data
+             * CSV file containing complete route data
              */
             file: Blob;
         },
-    ): CancelablePromise<RouteImportResponse> {
+    ): CancelablePromise<RouteUnifiedImportResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/routes/import',
+            query: {
+                'routeGroupDuplicateStrategy': routeGroupDuplicateStrategy,
+                'routeDuplicateStrategy': routeDuplicateStrategy,
+                'validateStopsExist': validateStopsExist,
+                'createMissingStops': createMissingStops,
+                'allowPartialRouteStops': allowPartialRouteStops,
+                'validateCoordinates': validateCoordinates,
+                'continueOnError': continueOnError,
+                'defaultRoadType': defaultRoadType,
+            },
             formData: formData,
             mediaType: 'multipart/form-data',
             errors: {
@@ -312,15 +285,15 @@ export class RouteManagementService {
         });
     }
     /**
-     * Download CSV import template
-     * Download a CSV template file with sample data and correct format for route import.
+     * Download unified CSV import template
+     * Download a CSV template file with sample data for unified route import. This template includes all route-related entities (route groups, routes, route stops) in a single format.
      * @returns string Template downloaded successfully
      * @throws ApiError
      */
-    public static downloadRouteImportTemplate(): CancelablePromise<string> {
+    public static downloadUnifiedRouteImportTemplate(): CancelablePromise<string> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/routes/import-template',
+            url: '/api/routes/import/template',
         });
     }
     /**

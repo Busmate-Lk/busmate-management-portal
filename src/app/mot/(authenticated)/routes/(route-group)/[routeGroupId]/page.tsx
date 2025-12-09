@@ -39,13 +39,12 @@ export default function RouteGroupDetailsPage() {
       setIsLoading(true);
       setError(null);
 
-      // TODO: Replace with actual API call
+      // Fetch route group data which includes routes
       const routeGroupData = await RouteManagementService.getRouteGroupById(routeGroupId);
       setRouteGroup(routeGroupData);
 
-      // 🔌 API INTEGRATION POINT 2: Fetch Routes by Route Group ID
-      const routesData = await RouteManagementService.getRoutesByRouteGroupId(routeGroupId);
-      setRoutes(routesData);
+      // Set routes from the route group data (routes are included in the response)
+      setRoutes(routeGroupData.routes || []);
 
     } catch (err) {
       console.error('Error loading route group details:', err);
