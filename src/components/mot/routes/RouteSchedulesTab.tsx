@@ -40,7 +40,16 @@ export function RouteSchedulesTab({ routeId, routeName }: RouteSchedulesTabProps
         'asc' // sortDir
       );
 
-      setSchedules(response.content || []);
+      // Sort schedules by departure time from start stop
+      const sortedSchedules = (response.content || []).sort((a, b) => {
+        const aDepartureTime = getFirstStopDepartureTime(a);
+        const bDepartureTime = getFirstStopDepartureTime(b);
+        
+        if (!aDepartureTime || !bDepartureTime) return 0;
+        return aDepartureTime.localeCompare(bDepartureTime);
+      });
+
+      setSchedules(sortedSchedules);
     } catch (err) {
       console.error('Error loading schedules for route:', err);
       setError('Failed to load schedules. Please try again.');
@@ -48,6 +57,47 @@ export function RouteSchedulesTab({ routeId, routeName }: RouteSchedulesTabProps
       setIsLoading(false);
     }
   }, [routeId]);
+
+  // Helper function to get departure time from first stop
+  const getFirstStopDepartureTime = (schedule: ScheduleResponse): string | null => {
+    if (!schedule.scheduleStops || schedule.scheduleStops.length === 0) return null;
+    const firstStop = schedule.scheduleStops[0];
+    return firstStop.departureTime || null;
+  };
+
+  // Helper function to get arrival time at last stop
+  const getLastStopArrivalTime = (schedule: ScheduleResponse): string | null => {
+    if (!schedule.scheduleStops || schedule.scheduleStops.length === 0) return null;
+    const lastStop = schedule.scheduleStops[schedule.scheduleStops.length - 1];
+    return lastStop.arrivalTime || null;
+  };
+
+  // Helper function to get first stop name
+  const getFirstStopName = (schedule: ScheduleResponse): string => {
+    if (!schedule.scheduleStops || schedule.scheduleStops.length === 0) return 'Unknown';
+    return schedule.scheduleStops[0].stopName || 'Unknown';
+  };
+
+  // Helper function to get last stop name
+  const getLastStopName = (schedule: ScheduleResponse): string => {
+    if (!schedule.scheduleStops || schedule.scheduleStops.length === 0) return 'Unknown';
+    return schedule.scheduleStops[schedule.scheduleStops.length - 1].stopName || 'Unknown';
+  };
+
+  // Helper function to format time (HH:MM format)
+  const formatTime = (timeString?: string): string => {
+    if (!timeString) return 'N/A';
+    try {
+      // Handle both "HH:MM:SS" and "HH:MM" formats
+      const timeParts = timeString.split(':');
+      if (timeParts.length >= 2) {
+        return `${timeParts[0]}:${timeParts[1]}`;
+      }
+      return timeString;
+    } catch {
+      return 'Invalid time';
+    }
+  };
 
   useEffect(() => {
     loadSchedules();
@@ -198,95 +248,96 @@ export function RouteSchedulesTab({ routeId, routeName }: RouteSchedulesTabProps
       </div>
 
       {/* Schedules Grid */}
-      <div className="grid gap-4">
+      <div className="grid gap-2">
         {schedules.map((schedule) => (
           <div
             key={schedule.id}
-            className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+            className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow"
           >
-            <div className="flex items-start justify-between gap-4">
-              {/* Schedule Info */}
-              <div className="flex-1 space-y-3">
-                {/* Name and Status */}
-                <div className="flex items-start gap-3">
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-gray-900 text-lg">
-                      {schedule.name || 'Unnamed Schedule'}
-                    </h4>
-                    {schedule.description && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        {schedule.description}
-                      </p>
-                    )}
+            {/* Compact single-row layout with emphasized times */}
+            <div className="flex items-center justify-between gap-3">
+              {/* Left side: Highlighted Times (Main Focus) */}
+              <div className="flex items-center gap-2 shrink-0">
+                {/* Departure Time - Large and Bold */}
+                <div className="text-center">
+                  <div className="text-lg font-black text-blue-600">
+                    {formatTime(getFirstStopDepartureTime(schedule))}
                   </div>
-                  <div className="flex items-center gap-2">
-                    {/* Status Badge */}
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(schedule.status)}`}>
+                  <div className="text-xs text-gray-500 font-semibold">Depart</div>
+                </div>
+
+                {/* Arrow separator */}
+                <div className="text-gray-300 font-bold text-xl">→</div>
+
+                {/* Arrival Time - Large and Bold */}
+                <div className="text-center">
+                  <div className="text-lg font-black text-blue-600">
+                    {formatTime(getLastStopArrivalTime(schedule))}
+                  </div>
+                  <div className="text-xs text-gray-500 font-semibold">Arrive</div>
+                </div>
+              </div>
+
+              {/* Middle side: Schedule Name and Route Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Schedule Name */}
+                  <h4 className="font-semibold text-gray-900 text-sm">
+                    {schedule.name || 'Unnamed'}
+                  </h4>
+                  
+                  {/* Status and Type Badges - compact */}
+                  <div className="flex items-center gap-1">
+                    <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(schedule.status)}`}>
                       {getStatusIcon(schedule.status)}
                       {schedule.status || 'Unknown'}
                     </span>
-                    {/* Type Badge */}
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${getScheduleTypeColor(schedule.scheduleType)}`}>
-                      <Calendar className="w-3 h-3" />
+                    <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-medium border ${getScheduleTypeColor(schedule.scheduleType)}`}>
+                      <Calendar className="w-2.5 h-2.5" />
                       {schedule.scheduleType || 'Unknown'}
                     </span>
                   </div>
                 </div>
 
-                {/* Schedule Details Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                  {/* Effective Dates */}
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <span className="font-medium">Effective:</span>
-                      <div className="text-xs">
-                        {formatDate(schedule.effectiveStartDate)} - {formatDate(schedule.effectiveEndDate)}
-                      </div>
-                    </div>
-                  </div>
+                {/* Route Info - From and To stops */}
+                <div className="flex items-center gap-2 mt-1.5 text-xs text-gray-700">
+                  {/* <span className="text-gray-500">From</span> */}
+                  <span className="text-gray-900 font-medium truncate max-w-xs">
+                    {getFirstStopName(schedule)}
+                  </span>
+                    <span className="text-gray-300 font-bold">→</span>
+                  {/* <span className="text-gray-500">To</span> */}
+                  <span className="text-gray-900 font-medium truncate max-w-xs">
+                    {getLastStopName(schedule)}
+                  </span>
+                </div>
 
-                  {/* Days of Week */}
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <span className="font-medium">Days:</span>
-                      <div className="text-xs">
-                        {getDaysOfWeek(schedule.scheduleCalendars)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Created Date */}
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <span className="font-medium">Created:</span>
-                      <div className="text-xs">
-                        {formatDate(schedule.createdAt)}
-                      </div>
-                    </div>
-                  </div>
+                {/* Additional Info - single compact line */}
+                <div className="flex items-center gap-3 mt-1 text-xs text-gray-600">
+                  <span>
+                    <span className="font-medium">Days:</span> {getDaysOfWeek(schedule.scheduleCalendars)}
+                  </span>
+                  <span>
+                    <span className="font-medium">Valid from:</span> {formatDate(schedule.effectiveStartDate)}
+                  </span>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col gap-2">
+              {/* Right side: Action Buttons - compact */}
+              <div className="flex gap-1 shrink-0">
                 <button
                   onClick={() => handleView(schedule.id!)}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+                  className="p-2 text-blue-600 border border-blue-300 rounded hover:bg-blue-50 transition-colors"
                   title="View schedule details"
                 >
                   <Eye className="w-4 h-4" />
-                  View
                 </button>
                 <button
                   onClick={() => handleEdit(schedule.id!)}
-                  className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="p-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
                   title="Edit schedule"
                 >
                   <Edit className="w-4 h-4" />
-                  Edit
                 </button>
               </div>
             </div>
