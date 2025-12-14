@@ -183,15 +183,15 @@ export function ScheduleStopsTab({ schedule, route }: ScheduleStopsTabProps) {
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-900">
-              {formatTime(scheduleStops[0]?.arrivalTime)}
+              {formatTime(scheduleStops[0]?.departureTime)}
             </div>
-            <div className="text-blue-600">First Stop</div>
+            <div className="text-blue-600">Departure from start</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-900">
-              {formatTime(scheduleStops[scheduleStops.length - 1]?.departureTime)}
+              {formatTime(scheduleStops[scheduleStops.length - 1]?.arrivalTime)}
             </div>
-            <div className="text-blue-600">Last Departure</div>
+            <div className="text-blue-600">Arrival at end</div>
           </div>
         </div>
       </div>
