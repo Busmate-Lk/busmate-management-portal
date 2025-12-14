@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { RouteResponse, RouteStopResponse } from '@/lib/api-client/route-management';
 import { RouteMap } from './RouteMap';
+import { RouteSchedulesTab } from './RouteSchedulesTab';
 
 interface RouteTabType {
   id: string;
@@ -373,21 +374,10 @@ export function RoutesTabsSection({ routes }: RoutesTabsSectionProps) {
 
             {/* Schedules Tab */}
             {activeSubTab === 'schedules' && (
-              <div className="space-y-4">
-                <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                  <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Route Schedules</h3>
-                  <p className="text-gray-600 mb-4">
-                    🔌 <strong>API Integration Point:</strong> Fetch and display route schedules
-                  </p>
-                  <div className="text-sm text-gray-500 space-y-1">
-                    <p>• Show bus schedules for this route</p>
-                    <p>• Display departure/arrival times</p>
-                    <p>• Filter by date range</p>
-                    <p>• Add/edit schedule functionality</p>
-                  </div>
-                </div>
-              </div>
+              <RouteSchedulesTab 
+                routeId={activeRoute.id!} 
+                routeName={activeRoute.name || 'Unnamed Route'} 
+              />
             )}
 
             {/* More Tab */}
