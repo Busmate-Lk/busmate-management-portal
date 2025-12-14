@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   Navigation, 
   List, 
@@ -8,10 +9,13 @@ import {
   Clock, 
   MoreHorizontal, 
   Plus,
-  Route as RouteIcon
+  Route as RouteIcon,
+  Eye,
+  Edit
 } from 'lucide-react';
 import type { RouteResponse, RouteStopResponse } from '@/lib/api-client/route-management';
 import { RouteMap } from './RouteMap';
+import { RouteSchedulesTab } from './RouteSchedulesTab';
 
 interface RouteTabType {
   id: string;
@@ -24,8 +28,9 @@ interface RoutesTabsSectionProps {
 }
 
 export function RoutesTabsSection({ routes }: RoutesTabsSectionProps) {
+  const router = useRouter();
   const [activeRouteTab, setActiveRouteTab] = useState<string>(routes.length > 0 ? routes[0].id || '' : '');
-  const [activeSubTab, setActiveSubTab] = useState<string>('map');
+  const [activeSubTab, setActiveSubTab] = useState<string>('details');
 
   const subTabs: RouteTabType[] = [
     { id: 'map', label: 'Visual View', icon: <Map className="w-4 h-4" /> },
@@ -58,19 +63,19 @@ export function RoutesTabsSection({ routes }: RoutesTabsSectionProps) {
       // If no intermediate stops, just return start and end
       return {
         startStop: {
+          stopId: undefined,
           stopName: route.startStopName,
           location: route.startStopLocation,
-          distanceFromStartKm: 0,
           stopOrder: 0,
-          isStart: true
+          distanceFromStartKm: 0
         },
         intermediateStops: [],
         endStop: {
+          stopId: undefined,
           stopName: route.endStopName,
           location: route.endStopLocation,
-          distanceFromStartKm: route.distanceKm || 0,
           stopOrder: 999,
-          isEnd: true
+          distanceFromStartKm: route.distanceKm || 0
         }
       };
     }
@@ -98,19 +103,19 @@ export function RoutesTabsSection({ routes }: RoutesTabsSectionProps) {
 
     return {
       startStop: startStop || {
+        stopId: undefined,
         stopName: route.startStopName,
         location: route.startStopLocation,
-        distanceFromStartKm: 0,
         stopOrder: 0,
-        isStart: true
+        distanceFromStartKm: 0
       },
       intermediateStops,
       endStop: endStop || {
+        stopId: undefined,
         stopName: route.endStopName,
         location: route.endStopLocation,
-        distanceFromStartKm: route.distanceKm || 0,
         stopOrder: 999,
-        isEnd: true
+        distanceFromStartKm: route.distanceKm || 0
       }
     };
   };
@@ -229,12 +234,13 @@ export function RoutesTabsSection({ routes }: RoutesTabsSectionProps) {
                   <div className="space-y-3">
                     {(() => {
                       const { startStop, intermediateStops, endStop } = getOrderedStops(activeRoute);
+                      const totalStops = intermediateStops.length + 2;
 
                       return (
                         <>
                           {/* Start Stop */}
                           <div className="flex items-center gap-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs font-medium text-gray-700">1</div>
                             <div className="flex-1">
                               <div className="font-medium text-gray-900">
                                 {startStop.stopName || 'Start Stop'}
@@ -243,30 +249,49 @@ export function RoutesTabsSection({ routes }: RoutesTabsSectionProps) {
                                 {startStop.distanceFromStartKm || 0} km • Starting Point
                               </div>
                             </div>
-                            <div className="text-sm font-medium text-green-700">START</div>
+                            {startStop.stopId && (
+                              <div className="flex items-center gap-2">
+                                <button onClick={() => router.push(`/mot/bus-stops/${startStop.stopId}`)} className="p-1 text-gray-400 hover:text-gray-600 transition-colors" title="View stop details">
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => router.push(`/mot/bus-stops/${startStop.stopId}/edit`)} className="p-1 text-gray-400 hover:text-gray-600 transition-colors" title="Edit stop">
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                              </div>
+                            )}
                           </div>
 
                           {/* Intermediate Stops - Properly ordered */}
-                          {intermediateStops.map((stop, index) => (
-                            <div key={stop.stopId || index} className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg">
-                              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                              <div className="flex-1">
-                                <div className="font-medium text-gray-900">
-                                  {stop.stopName || `Stop ${index + 1}`}
+                          {intermediateStops.map((stop, index) => {
+                            const sequence = index + 2;
+                            return (
+                              <div key={stop.stopId || index} className="flex items-center gap-4 p-3 border border-gray-200 rounded-lg">
+                                <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs font-medium text-gray-700">{sequence}</div>
+                                <div className="flex-1">
+                                  <div className="font-medium text-gray-900">
+                                    {stop.stopName || `Stop ${sequence}`}
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    {stop.distanceFromStartKm || 0} km from start
+                                  </div>
                                 </div>
-                                <div className="text-sm text-gray-600">
-                                  {stop.distanceFromStartKm || 0} km from start
-                                </div>
+                                {stop.stopId && (
+                                  <div className="flex items-center gap-2">
+                                    <button onClick={() => router.push(`/mot/bus-stops/${stop.stopId}`)} className="p-1 text-gray-400 hover:text-gray-600 transition-colors" title="View stop details">
+                                      <Eye className="w-4 h-4" />
+                                    </button>
+                                    <button onClick={() => router.push(`/mot/bus-stops/${stop.stopId}/edit`)} className="p-1 text-gray-400 hover:text-gray-600 transition-colors" title="Edit stop">
+                                      <Edit className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                )}
                               </div>
-                              <div className="text-sm text-gray-500">
-                                Stop #{stop.stopOrder || index + 1}
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
 
                           {/* End Stop */}
                           <div className="flex items-center gap-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                            <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs font-medium text-gray-700">{totalStops}</div>
                             <div className="flex-1">
                               <div className="font-medium text-gray-900">
                                 {endStop.stopName || 'End Stop'}
@@ -275,7 +300,16 @@ export function RoutesTabsSection({ routes }: RoutesTabsSectionProps) {
                                 {endStop.distanceFromStartKm || activeRoute.distanceKm || 0} km • Final Destination
                               </div>
                             </div>
-                            <div className="text-sm font-medium text-red-700">END</div>
+                            {endStop.stopId && (
+                              <div className="flex items-center gap-2">
+                                <button onClick={() => router.push(`/mot/bus-stops/${endStop.stopId}`)} className="p-1 text-gray-400 hover:text-gray-600 transition-colors" title="View stop details">
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => router.push(`/mot/bus-stops/${endStop.stopId}/edit`)} className="p-1 text-gray-400 hover:text-gray-600 transition-colors" title="Edit stop">
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </>
                       );
@@ -340,21 +374,10 @@ export function RoutesTabsSection({ routes }: RoutesTabsSectionProps) {
 
             {/* Schedules Tab */}
             {activeSubTab === 'schedules' && (
-              <div className="space-y-4">
-                <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                  <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Route Schedules</h3>
-                  <p className="text-gray-600 mb-4">
-                    🔌 <strong>API Integration Point:</strong> Fetch and display route schedules
-                  </p>
-                  <div className="text-sm text-gray-500 space-y-1">
-                    <p>• Show bus schedules for this route</p>
-                    <p>• Display departure/arrival times</p>
-                    <p>• Filter by date range</p>
-                    <p>• Add/edit schedule functionality</p>
-                  </div>
-                </div>
-              </div>
+              <RouteSchedulesTab 
+                routeId={activeRoute.id!} 
+                routeName={activeRoute.name || 'Unnamed Route'} 
+              />
             )}
 
             {/* More Tab */}
