@@ -54,7 +54,10 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
     const fetchNotifications = async () => {
       try {
         setLoading(true)
-        const data = await listNotifications(5) // Get latest 5 notifications
+        // const data = await listNotifications(5) // Get latest 5 notifications
+        // use empty notifications array instead of real backend api for dev period
+        const data: NotificationListItem[] = []
+
         if (mounted) {
           // Filter based on role and map to our Notification interface
           const isMot = pathname?.startsWith("/mot")
