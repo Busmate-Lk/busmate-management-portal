@@ -7,14 +7,15 @@ interface RouteStop {
     stopName: string;
     type: 'S' | 'E' | 'I';
     distanceFromStart: number;
+    isExisting: boolean;
 }
 
 const dummyStops: RouteStop[] = [
-    { orderNumber: 0, stopName: 'Embilipitiya', type: 'S', distanceFromStart: 0 },
-    { orderNumber: 1, stopName: 'Ratnapura', type: 'I', distanceFromStart: 50 },
-    { orderNumber: 2, stopName: 'Kuruwita', type: 'I', distanceFromStart: 90 },
-    { orderNumber: 3, stopName: 'Avissawella', type: 'I', distanceFromStart: 120 },
-    { orderNumber: 4, stopName: 'Colombo', type: 'E', distanceFromStart: 160 }
+    { orderNumber: 0, stopName: 'Embilipitiya', type: 'S', distanceFromStart: 0, isExisting: true },
+    { orderNumber: 1, stopName: 'Ratnapura', type: 'I', distanceFromStart: 50, isExisting: true },
+    { orderNumber: 2, stopName: 'Kuruwita', type: 'I', distanceFromStart: 90, isExisting: false },
+    { orderNumber: 3, stopName: 'Avissawella', type: 'I', distanceFromStart: 120, isExisting: true },
+    { orderNumber: 4, stopName: 'Colombo', type: 'E', distanceFromStart: 160, isExisting: true }
 ];
 
 export default function RouteStopsList() {
@@ -27,7 +28,7 @@ export default function RouteStopsList() {
         }));
     };
 
-    const handleFieldChange = (index: number, field: 'stopName' | 'distanceFromStart', value: string | number) => {
+    const handleFieldChange = (index: number, field: 'stopName' | 'distanceFromStart' | 'isExisting', value: string | number | boolean) => {
         const updatedStops = stops.map((stop, i) => {
             if (i === index) {
                 return { ...stop, [field]: value };
@@ -55,8 +56,9 @@ export default function RouteStopsList() {
                 <table className="w-full border-collapse border border-gray-300">
                     <thead>
                         <tr className="bg-gray-100">
-                            <th className="border border-gray-300 px-4 py-2 text-left">Order</th>
+                            <th className="border border-gray-300 px-2 py-2 text-left">#</th>
                             <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
+                            <th className="border border-gray-300 px-4 py-2 text-left">Existing?</th>
                             <th className="border border-gray-300 px-4 py-2 text-left">Distance (km)</th>
                         </tr>
                     </thead>
@@ -65,25 +67,34 @@ export default function RouteStopsList() {
                             const actualIndex = stops.findIndex(s => s.orderNumber === stop.orderNumber);
                             return (
                                 <tr key={stop.orderNumber} className="hover:bg-gray-50">
-                                    <td className="border border-gray-300 px-4 py-2">
-                                        <span className={`${getOrderBadgeColor(stop.type)} text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold`}>
-                                            {stop.orderNumber}
-                                        </span>
+                                    <td className={`border border-gray-300 px-2 py-2 ${getOrderBadgeColor(stop.type)} text-white text-center`}>
+                                        {stop.orderNumber}
                                     </td>
-                                    <td className="border border-gray-300 px-4 py-2">
+                                    <td className="border border-gray-300">
                                         <input
                                             type="text"
                                             value={stop.stopName}
                                             onChange={(e) => handleFieldChange(actualIndex, 'stopName', e.target.value)}
-                                            className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="w-full px-4 py-2 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
                                     </td>
-                                    <td className="border border-gray-300 px-4 py-2">
+                                    <td className="border border-gray-300 px-4 py-2 text-center flex items-center justify-center">
+                                        <span className={`inline-block px-2 py-1 rounded-full text-white text-sm ${stop.isExisting ? 'bg-yellow-500' : 'bg-red-500'}`}>
+                                            {stop.isExisting ? 'exist' : 'new'}
+                                        </span>
+                                        <button
+                                            onClick={() => console.log(`Searching for availability of ${stop.stopName}`)}
+                                            className="ml-2 px-2 py-1 border border-blue-500 text-white text-sm rounded hover:bg-blue-600"
+                                        >
+                                            🔍
+                                        </button>
+                                    </td>
+                                    <td className="border border-gray-300">
                                         <input
                                             type="number"
                                             value={stop.distanceFromStart}
                                             onChange={(e) => handleFieldChange(actualIndex, 'distanceFromStart', parseFloat(e.target.value) || 0)}
-                                            className="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            className="w-full px-4 py-2 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
                                     </td>
                                 </tr>

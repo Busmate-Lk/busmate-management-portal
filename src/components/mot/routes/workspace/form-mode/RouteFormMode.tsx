@@ -41,7 +41,7 @@ function RouteGroupInfo() {
             <span className="mb-2 underline">Route Group Info</span>
             <form className="space-y-4">
                 <div className="flex">
-                    <label className="block text-sm font-medium w-32">Name (English)</label>
+                    <label className="block text-sm font-medium w-32">Name (English) <span className="text-red-500">*</span></label>
                     <input type="text" className="w-200 border border-gray-400 rounded px-2 bg-white" />
                 </div>
                 <div className="flex">
@@ -69,7 +69,7 @@ function RouteInfo() {
                 <form className="space-y-4">
                     <div className="flex gap-4 w-full">
                         <div className="flex flex-col w-full">
-                            <label className="block text-sm font-medium mb-2">Name (English)</label>
+                            <label className="block text-sm font-medium mb-2">Name (English) <span className="text-red-500">*</span></label>
                             <input type="text" className="w-full border border-gray-400 rounded px-2 bg-white" />
                         </div>
                         <div className="flex flex-col w-full">
