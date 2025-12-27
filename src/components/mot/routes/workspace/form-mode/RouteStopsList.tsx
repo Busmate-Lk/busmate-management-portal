@@ -23,6 +23,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useState, useRef, useEffect } from 'react';
+import { fetchRouteDirections, applyDistancesToRouteStops, extractValidStops } from '@/services/routeWorkspaceMap';
 
 interface RouteStopsListProps {
     routeIndex: number;
@@ -76,28 +77,18 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
     const stops = route.routeStops || [];
 
     const handleFetchDistancesFromMap = async () => {
-        // Check if start stop has coordinates
-        const startStop = stops[0];
-        if (!startStop || 
-            !startStop.stop?.location?.latitude || 
-            !startStop.stop?.location?.longitude) {
-            alert('Start stop coordinates are required to fetch distances.');
+        // Check if we have enough stops with coordinates
+        const validStops = extractValidStops(stops);
+        
+        if (validStops.length < 2) {
+            alert('At least 2 stops with valid coordinates are required to calculate distances.');
             return;
         }
 
-        // Filter stops with valid coordinates and keep track of their original index
-        const stopsWithCoordinates = stops.map((stop, index) => ({
-            ...stop,
-            originalIndex: index
-        })).filter(stop => 
-            stop.stop?.location?.latitude && 
-            stop.stop?.location?.longitude &&
-            typeof stop.stop.location.latitude === 'number' &&
-            typeof stop.stop.location.longitude === 'number'
-        );
-
-        if (stopsWithCoordinates.length < 2) {
-            alert('At least 2 stops with coordinates are required to calculate distances.');
+        // Check if start stop (first stop in list) has coordinates
+        const firstStopHasCoordinates = stops[0]?.stop?.location?.latitude && stops[0]?.stop?.location?.longitude;
+        if (!firstStopHasCoordinates) {
+            alert('Start stop coordinates are required to fetch distances.');
             return;
         }
 
@@ -105,94 +96,18 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
         setIsDistanceMenuOpen(false);
 
         try {
-            if (!window.google || !window.google.maps) {
-                throw new Error('Google Maps API not loaded');
-            }
+            // Use the shared service to fetch directions and calculate distances
+            const result = await fetchRouteDirections(stops, (currentChunk, totalChunks) => {
+                console.log(`Fetching distances: chunk ${currentChunk} of ${totalChunks}`);
+            });
 
-            const directionsService = new google.maps.DirectionsService();
-            const updatedStops = [...stops];
-
-            // Set start stop distance to 0
-            updatedStops[stopsWithCoordinates[0].originalIndex] = {
-                ...updatedStops[stopsWithCoordinates[0].originalIndex],
-                distanceFromStart: 0
-            };
-
-            let cumulativeDistance = 0;
-            const MAX_WAYPOINTS = 25; // Google Maps API limit for waypoints (plus origin and destination)
-            let currentIndex = 0;
-
-            // Process the route in chunks if necessary (though unlikely for typical bus routes to exceed limits often)
-            while (currentIndex < stopsWithCoordinates.length - 1) {
-                // Determine the chunk for this request
-                // We start at currentIndex (Origin)
-                // We can have up to MAX_WAYPOINTS intermediate stops
-                // The destination will be at currentIndex + waypointsCount + 1
-                
-                const remainingStops = stopsWithCoordinates.length - 1 - currentIndex;
-                // Number of waypoints is remaining stops minus 1 (the destination)
-                // But capped at MAX_WAYPOINTS
-                const waypointsCount = Math.min(remainingStops - 1, MAX_WAYPOINTS);
-                
-                const originStop = stopsWithCoordinates[currentIndex];
-                const destinationIndex = currentIndex + waypointsCount + 1;
-                const destinationStop = stopsWithCoordinates[destinationIndex];
-                
-                // Intermediate stops between origin and destination
-                const waypoints = stopsWithCoordinates.slice(currentIndex + 1, destinationIndex).map(s => ({
-                    location: new google.maps.LatLng(s.stop.location!.latitude!, s.stop.location!.longitude!),
-                    stopover: true
-                }));
-
-                const request: google.maps.DirectionsRequest = {
-                    origin: new google.maps.LatLng(originStop.stop.location!.latitude!, originStop.stop.location!.longitude!),
-                    destination: new google.maps.LatLng(destinationStop.stop.location!.latitude!, destinationStop.stop.location!.longitude!),
-                    waypoints: waypoints,
-                    travelMode: google.maps.TravelMode.DRIVING,
-                };
-
-                const result = await new Promise<google.maps.DirectionsResult>((resolve, reject) => {
-                    directionsService.route(request, (response, status) => {
-                        if (status === 'OK' && response) {
-                            resolve(response);
-                        } else {
-                            reject(new Error(`Directions request failed: ${status}`));
-                        }
-                    });
-                });
-
-                const legs = result.routes[0].legs;
-                
-                // Process legs to update distances
-                for (let i = 0; i < legs.length; i++) {
-                    const leg = legs[i];
-                    const distanceInKm = (leg.distance?.value || 0) / 1000;
-                    cumulativeDistance += distanceInKm;
-                    
-                    // The leg ends at stopsWithCoordinates[currentIndex + 1 + i]
-                    // i=0 -> ends at first waypoint (or destination if no waypoints) -> index + 1
-                    const stopIndex = currentIndex + 1 + i;
-                    const originalIndex = stopsWithCoordinates[stopIndex].originalIndex;
-                    
-                    updatedStops[originalIndex] = {
-                        ...updatedStops[originalIndex],
-                        distanceFromStart: parseFloat(cumulativeDistance.toFixed(2))
-                    };
-                }
-
-                // Prepare for next chunk
-                currentIndex = destinationIndex;
-                
-                // Small delay to avoid rate limiting if we have multiple chunks
-                if (currentIndex < stopsWithCoordinates.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                }
-            }
+            // Apply the calculated distances to the route stops
+            const updatedStops = applyDistancesToRouteStops(stops, result.distances);
 
             // Update the route with new distances
             updateRoute(routeIndex, { routeStops: updatedStops });
             
-            alert('Distances fetched successfully!');
+            alert(`Distances fetched successfully! Total distance: ${result.totalDistanceKm} km`);
         } catch (error) {
             console.error('Error fetching distances:', error);
             alert(`Failed to fetch distances. Please try again. Error: ${error instanceof Error ? error.message : 'Unknown error'}`);

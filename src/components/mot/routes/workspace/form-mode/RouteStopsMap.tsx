@@ -3,6 +3,16 @@
 import { GoogleMap, useLoadScript, Marker, DirectionsRenderer } from '@react-google-maps/api';
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { useRouteWorkspace } from '@/context/RouteWorkspace/useRouteWorkspace';
+import { 
+  fetchRouteDirections, 
+  extractValidStops, 
+  calculateCenter, 
+  getMarkerIconUrl, 
+  getStopType,
+  applyDistancesToRouteStops,
+  DirectionsChunk,
+  RouteDirectionsResult 
+} from '@/services/routeWorkspaceMap';
 
 interface RouteStopsMapProps {
     onToggle: () => void;
@@ -12,7 +22,7 @@ interface RouteStopsMapProps {
 
 const mapContainerStyle = {
   width: '100%',
-  height: '100%',
+  height: '750px',
   borderRadius: '0.375rem', // rounded-md
 };
 
@@ -24,9 +34,10 @@ const mapOptions = {
 };
 
 export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: RouteStopsMapProps) {
-  const { data, coordinateEditingMode, updateRouteStop } = useRouteWorkspace();
-  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+  const { data, coordinateEditingMode, updateRouteStop, updateRoute } = useRouteWorkspace();
+  const [directionsChunks, setDirectionsChunks] = useState<DirectionsChunk[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastFetchedDistances, setLastFetchedDistances] = useState<Map<number, number> | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
 
   // Load Google Maps script
@@ -38,89 +49,48 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
   const route = data.routeGroup.routes[routeIndex];
   const routeStops = route?.routeStops || [];
 
-  // Filter stops with valid coordinates
+  // Extract valid stops using the shared service
   const validStops = useMemo(() => {
-    return routeStops
-      .filter(rs => 
-        rs.stop?.location?.latitude && 
-        rs.stop?.location?.longitude &&
-        typeof rs.stop.location.latitude === 'number' &&
-        typeof rs.stop.location.longitude === 'number'
-      )
-      .map((rs, index) => ({
-        id: rs.stop.id || `stop-${index}`,
-        name: rs.stop.name || 'Unnamed Stop',
-        lat: rs.stop.location!.latitude!,
-        lng: rs.stop.location!.longitude!,
-        type: index === 0 ? 'start' : (index === routeStops.length - 1 ? 'end' : 'intermediate'),
-        stopIndex: index
-      }));
+    return extractValidStops(routeStops);
   }, [routeStops]);
 
-  // Calculate center based on valid stops
+  // Calculate center using the shared service
   const center = useMemo(() => {
-    if (validStops.length === 0) {
-      return { lat: 6.9271, lng: 79.8612 }; // Default to Colombo
-    }
-    
-    const avgLat = validStops.reduce((sum, stop) => sum + stop.lat, 0) / validStops.length;
-    const avgLng = validStops.reduce((sum, stop) => sum + stop.lng, 0) / validStops.length;
-    
-    return { lat: avgLat, lng: avgLng };
+    return calculateCenter(validStops);
   }, [validStops]);
 
-  const getMarkerIcon = (type: string) => {
-    const icons = {
-      start: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
-      end: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
-      intermediate: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-    };
-    return icons[type as keyof typeof icons];
+  const getMarkerIcon = (stopIndex: number) => {
+    const type = getStopType(stopIndex, validStops.length);
+    return getMarkerIconUrl(type);
   };
 
-  const fetchDirections = useCallback(() => {
-    if (typeof window !== 'undefined' && window.google && window.google.maps) {
-      // Need at least 2 valid stops to create a route
-      if (validStops.length < 2) {
-        setIsLoading(false);
-        return;
-      }
-
-      const directionsService = new google.maps.DirectionsService();
-
-      const origin = { lat: validStops[0].lat, lng: validStops[0].lng };
-      const destination = { lat: validStops[validStops.length - 1].lat, lng: validStops[validStops.length - 1].lng };
-      const waypoints = validStops.slice(1, -1).map(stop => ({
-        location: { lat: stop.lat, lng: stop.lng },
-        stopover: true,
-      }));
-
-      directionsService.route(
-        {
-          origin,
-          destination,
-          waypoints,
-          travelMode: google.maps.TravelMode.DRIVING,
-        },
-        (result, status) => {
-          if (status === google.maps.DirectionsStatus.OK && result) {
-            setDirections(result);
-          } else {
-            console.error('Directions request failed:', status);
-          }
-          setIsLoading(false);
-        }
-      );
+  const fetchDirections = useCallback(async () => {
+    if (!isLoaded || validStops.length < 2) {
+      setIsLoading(false);
+      setDirectionsChunks([]);
+      return;
     }
-  }, [validStops]);
+
+    setIsLoading(true);
+    
+    try {
+      const result = await fetchRouteDirections(routeStops);
+      setDirectionsChunks(result.directionsChunks);
+      setLastFetchedDistances(result.distances);
+    } catch (error) {
+      console.error('Error fetching directions:', error);
+      setDirectionsChunks([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoaded, validStops.length, routeStops]);
 
   // Refetch directions when valid stops change
   useEffect(() => {
-    if (!collapsed) {
-      setIsLoading(true);
+    if (!collapsed && isLoaded) {
       fetchDirections();
     }
-  }, [validStops, collapsed, fetchDirections]);
+  }, [validStops, collapsed, isLoaded, fetchDirections]);
 
   const onMapLoad = useCallback(() => {
     fetchDirections();
@@ -242,21 +212,24 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
                 onLoad={handleMapLoad}
                 onClick={onMapClick}
               >
-                {directions && validStops.length >= 2 && (
-                  <DirectionsRenderer
-                    directions={directions}
-                    options={directionsRendererOptions}
-                  />
+                {directionsChunks.length > 0 && validStops.length >= 2 && (
+                  directionsChunks.map((chunk, index) => (
+                    <DirectionsRenderer
+                      key={`directions-chunk-${index}`}
+                      directions={chunk.directions}
+                      options={directionsRendererOptions}
+                    />
+                  ))
                 )}
-                {validStops.map((stop) => {
-                  const isEditingThisStop = coordinateEditingMode?.routeIndex === routeIndex && coordinateEditingMode?.stopIndex === stop.stopIndex;
+                {validStops.map((stop, index) => {
+                  const isEditingThisStop = coordinateEditingMode?.routeIndex === routeIndex && coordinateEditingMode?.stopIndex === stop.originalIndex;
                   return (
                     <Marker
                       key={stop.id}
                       position={{ lat: stop.lat, lng: stop.lng }}
                       title={stop.name}
                       icon={{
-                        url: getMarkerIcon(stop.type),
+                        url: getMarkerIcon(index),
                         // Make marker larger and more prominent when in editing mode
                         scaledSize: isEditingThisStop ? new google.maps.Size(40, 40) : undefined,
                       }}
