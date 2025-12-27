@@ -3,7 +3,15 @@
 export default function StopEditor() {
     return (
         <div className="col-span-1 flex flex-col rounded-md px-4 py-2 bg-gray-100">
-            <span className="underline">StopEditor</span>
+            <div className="flex justify-between items-center mb-2">
+                <span className="underline">StopEditor</span>
+                <span>
+                    {/* public/icons/Sidebar-Collapse--Streamline-Iconoir.svg */}
+                    <button className="ml-2 text-white text-sm rounded  flex items-center justify-center">
+                        <img src="/icons/Sidebar-Collapse--Streamline-Iconoir.svg" className="w-5 h-5" alt="Collapse" />
+                    </button>
+                </span>
+            </div>
             <div>
                 <form className="space-y-4">
                     <div>

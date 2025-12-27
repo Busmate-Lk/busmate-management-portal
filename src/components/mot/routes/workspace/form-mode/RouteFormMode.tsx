@@ -150,20 +150,6 @@ function RouteInfo() {
                         <label className="block text-sm font-medium w-32">Description</label>
                         <textarea className="w-full border border-gray-400 rounded px-2 bg-white" rows={3}></textarea>
                     </div>
-                    <div className="flex gap-4 w-full">
-                        <div className="flex flex-col w-full">
-                            <label className="block text-sm font-medium mb-2">Start Stop</label>
-                            <select className="w-full border border-gray-400 rounded px-2 bg-white">
-                                <option value="">Select start stop</option>
-                            </select>
-                        </div>
-                        <div className="flex flex-col w-full">
-                            <label className="block text-sm font-medium mb-2">End Stop</label>
-                            <select className="w-full border border-gray-400 rounded px-2 bg-white">
-                                <option value="">Select end stop</option>
-                            </select>
-                        </div>
-                    </div>
                 </form>
             </div>
 

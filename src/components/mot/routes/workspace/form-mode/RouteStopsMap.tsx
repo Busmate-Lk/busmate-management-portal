@@ -46,7 +46,7 @@ export default function RouteStopsMap() {
   const fetchDirections = useCallback(() => {
     if (typeof window !== 'undefined' && window.google && window.google.maps) {
       const directionsService = new google.maps.DirectionsService();
-      
+
       const origin = { lat: sampleRouteStops[0].lat, lng: sampleRouteStops[0].lng };
       const destination = { lat: sampleRouteStops[sampleRouteStops.length - 1].lat, lng: sampleRouteStops[sampleRouteStops.length - 1].lng };
       const waypoints = sampleRouteStops.slice(1, -1).map(stop => ({
@@ -87,8 +87,15 @@ export default function RouteStopsMap() {
   };
 
   return (
-    <div className="col-span-2 flex flex-col rounded-md px-0 pt-0 bg-gray-100">
-      {/* <span className="underline my-2 block">RouteStopsMap</span> */}
+    <div className="col-span-2 flex flex-col rounded-md px-0 pt-2 bg-gray-100">
+      <div className="flex justify-between items-center mb-2 px-2">
+        <span className="underline">RouteStopsMap</span>
+        <span>
+          <button className="ml-2 text-white text-sm rounded  flex items-center justify-center">
+            <img src="/icons/Sidebar-Collapse--Streamline-Iconoir.svg" className="w-5 h-5 rotate-180" alt="Collapse" />
+          </button>
+        </span>
+      </div>
       {isLoading && <div className="text-sm text-gray-600 mb-2">Loading route...</div>}
       <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''}>
         <GoogleMap
