@@ -15,8 +15,8 @@ export enum DirectionEnum {
 }
 
 export enum RoadTypeEnum {
-  EXPRESSWAY = 'EXPRESSWAY',
   NORMALWAY = 'NORMALWAY',
+  EXPRESSWAY = 'EXPRESSWAY',
 }
 
 export enum StopTypeEnum {

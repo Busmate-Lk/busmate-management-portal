@@ -14,17 +14,22 @@ export function serializeToYaml(data: RouteWorkspaceData): string {
     }
   };
 
+  // Add route group ID if it exists
+  if (data.routeGroup.id) {
+    yamlData.route_group.id = data.routeGroup.id;
+  }
+
   // Add routes if they exist
   if (data.routeGroup.routes && data.routeGroup.routes.length > 0) {
-    yamlData.route_group.routes = data.routeGroup.routes.map(route => ({
-      route: {
+    yamlData.route_group.routes = data.routeGroup.routes.map(route => {
+      const routeObj: any = {
         name: route.name || '',
         name_sinhala: route.nameSinhala || '',
         name_tamil: route.nameTamil || '',
         route_number: route.routeNumber || '',
         description: route.description || '',
         direction: route.direction || 'OUTBOUND',
-        road_type: route.roadType || 'MAIN_ROAD',
+        road_type: route.roadType || 'NORMALWAY',
         route_through: route.routeThrough || '',
         route_through_sinhala: route.routeThroughSinhala || '',
         route_through_tamil: route.routeThroughTamil || '',
@@ -32,22 +37,69 @@ export function serializeToYaml(data: RouteWorkspaceData): string {
         estimated_duration_minutes: route.estimatedDurationMinutes || 0,
         start_stop_id: route.startStopId || '',
         end_stop_id: route.endStopId || '',
-        route_stops: route.routeStops.map(routeStop => ({
-          route_stop: {
-            stop_order: routeStop.orderNumber,
-            distance_from_start_km: routeStop.distanceFromStart,
-            estimated_time_minutes: 0, // You can add this to the RouteStop interface if needed
-            stop: {
-              id: routeStop.stop.id || '',
-              name: routeStop.stop.name || '',
-              name_sinhala: routeStop.stop.nameSinhala || '',
-              name_tamil: routeStop.stop.nameTamil || '',
-              type: routeStop.stop.type || 'new',
+        route_stops: route.routeStops.map((routeStop, index) => {
+          const stopObj: any = {
+            id: routeStop.stop.id || '',
+            name: routeStop.stop.name || '',
+            name_sinhala: routeStop.stop.nameSinhala || '',
+            name_tamil: routeStop.stop.nameTamil || '',
+            type: routeStop.stop.type || 'new',
+          };
+
+          // Add description if exists
+          if (routeStop.stop.description) {
+            stopObj.description = routeStop.stop.description;
+          }
+
+          // Add isAccessible if defined
+          if (routeStop.stop.isAccessible !== undefined) {
+            stopObj.is_accessible = routeStop.stop.isAccessible;
+          }
+
+          // Add location if exists and has data
+          if (routeStop.stop.location) {
+            const loc = routeStop.stop.location;
+            const locationObj: any = {};
+
+            if (loc.latitude !== undefined && loc.latitude !== 0) locationObj.latitude = loc.latitude;
+            if (loc.longitude !== undefined && loc.longitude !== 0) locationObj.longitude = loc.longitude;
+            if (loc.address) locationObj.address = loc.address;
+            if (loc.city) locationObj.city = loc.city;
+            if (loc.state) locationObj.state = loc.state;
+            if (loc.zipCode) locationObj.zip_code = loc.zipCode;
+            if (loc.country) locationObj.country = loc.country;
+            if (loc.addressSinhala) locationObj.address_sinhala = loc.addressSinhala;
+            if (loc.citySinhala) locationObj.city_sinhala = loc.citySinhala;
+            if (loc.stateSinhala) locationObj.state_sinhala = loc.stateSinhala;
+            if (loc.countrySinhala) locationObj.country_sinhala = loc.countrySinhala;
+            if (loc.addressTamil) locationObj.address_tamil = loc.addressTamil;
+            if (loc.cityTamil) locationObj.city_tamil = loc.cityTamil;
+            if (loc.stateTamil) locationObj.state_tamil = loc.stateTamil;
+            if (loc.countryTamil) locationObj.country_tamil = loc.countryTamil;
+
+            if (Object.keys(locationObj).length > 0) {
+              stopObj.location = locationObj;
             }
           }
-        }))
+
+          return {
+            route_stop: {
+              order_number: routeStop.orderNumber,
+              distance_from_start: routeStop.distanceFromStart,
+              stop_type: index === 0 ? 'S' : index === route.routeStops.length - 1 ? 'E' : 'I',
+              stop: stopObj
+            }
+          };
+        })
+      };
+
+      // Add route ID if it exists
+      if (route.id) {
+        routeObj.id = route.id;
       }
-    }));
+
+      return { route: routeObj };
+    });
   }
 
   return yaml.dump(yamlData, {
@@ -80,6 +132,11 @@ export function parseFromYaml(yamlText: string): Partial<RouteWorkspaceData> {
       const routeGroup: Partial<RouteGroup> = {
         routes: []
       };
+      
+      // Add route group ID if exists
+      if (parsed.route_group.id !== undefined) {
+        routeGroup.id = String(parsed.route_group.id);
+      }
       
       if (parsed.route_group.name !== undefined) {
         routeGroup.name = String(parsed.route_group.name);
@@ -117,6 +174,11 @@ export function parseFromYaml(yamlText: string): Partial<RouteWorkspaceData> {
             routeStops: []
           };
 
+          // Add route ID if exists
+          if (routeData.id !== undefined) {
+            route.id = String(routeData.id);
+          }
+
           // Parse route stops
           if (routeData.route_stops && Array.isArray(routeData.route_stops)) {
             route.routeStops = routeData.route_stops.map((stopWrapper: any) => {
@@ -127,12 +189,37 @@ export function parseFromYaml(yamlText: string): Partial<RouteWorkspaceData> {
                 name: String(stopData.stop.name || ''),
                 nameSinhala: stopData.stop.name_sinhala ? String(stopData.stop.name_sinhala) : undefined,
                 nameTamil: stopData.stop.name_tamil ? String(stopData.stop.name_tamil) : undefined,
+                description: stopData.stop.description ? String(stopData.stop.description) : undefined,
                 type: (stopData.stop.type as StopExistenceType) || StopExistenceType.NEW,
+                isAccessible: stopData.stop.is_accessible !== undefined ? Boolean(stopData.stop.is_accessible) : undefined,
               };
 
+              // Parse location if exists
+              if (stopData.stop.location) {
+                const locData = stopData.stop.location;
+                stop.location = {
+                  latitude: locData.latitude !== undefined ? Number(locData.latitude) : 0,
+                  longitude: locData.longitude !== undefined ? Number(locData.longitude) : 0,
+                  address: locData.address ? String(locData.address) : undefined,
+                  city: locData.city ? String(locData.city) : undefined,
+                  state: locData.state ? String(locData.state) : undefined,
+                  zipCode: locData.zip_code ? String(locData.zip_code) : undefined,
+                  country: locData.country ? String(locData.country) : undefined,
+                  addressSinhala: locData.address_sinhala ? String(locData.address_sinhala) : undefined,
+                  citySinhala: locData.city_sinhala ? String(locData.city_sinhala) : undefined,
+                  stateSinhala: locData.state_sinhala ? String(locData.state_sinhala) : undefined,
+                  countrySinhala: locData.country_sinhala ? String(locData.country_sinhala) : undefined,
+                  addressTamil: locData.address_tamil ? String(locData.address_tamil) : undefined,
+                  cityTamil: locData.city_tamil ? String(locData.city_tamil) : undefined,
+                  stateTamil: locData.state_tamil ? String(locData.state_tamil) : undefined,
+                  countryTamil: locData.country_tamil ? String(locData.country_tamil) : undefined,
+                };
+              }
+
               const routeStop: RouteStop = {
-                orderNumber: Number(stopData.stop_order || 0),
-                distanceFromStart: Number(stopData.distance_from_start_km || 0),
+                orderNumber: stopData.order_number !== undefined ? Number(stopData.order_number) : 0,
+                distanceFromStart: stopData.distance_from_start !== undefined ? Number(stopData.distance_from_start) : 
+                                   stopData.distance_from_start_km !== undefined ? Number(stopData.distance_from_start_km) : 0,
                 stop: stop
               };
 
