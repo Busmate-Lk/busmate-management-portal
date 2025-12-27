@@ -2,7 +2,7 @@
 
 import { useRouteWorkspace } from '@/context/RouteWorkspace/useRouteWorkspace';
 import { StopTypeEnum, StopExistenceType, createEmptyRouteStop } from '@/types/RouteWorkspaceData';
-import { GripVertical, LocationEditIcon, Trash } from 'lucide-react';
+import { GripVertical, LocationEditIcon, Trash, EllipsisVertical, Loader2 } from 'lucide-react';
 import {
     DndContext,
     closestCenter,
@@ -22,7 +22,7 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface RouteStopsListProps {
     routeIndex: number;
@@ -32,6 +32,9 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
     const { data, updateRoute, updateRouteStop, addRouteStop, removeRouteStop, reorderRouteStop, setSelectedStop, selectedRouteIndex, selectedStopIndex, coordinateEditingMode, setCoordinateEditingMode, clearCoordinateEditingMode } = useRouteWorkspace();
     const route = data.routeGroup.routes[routeIndex];
     const [activeId, setActiveId] = useState<string | null>(null);
+    const [isDistanceMenuOpen, setIsDistanceMenuOpen] = useState(false);
+    const [isFetchingDistances, setIsFetchingDistances] = useState(false);
+    const distanceMenuRef = useRef<HTMLDivElement>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -44,6 +47,23 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
         })
     );
 
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (distanceMenuRef.current && !distanceMenuRef.current.contains(event.target as Node)) {
+                setIsDistanceMenuOpen(false);
+            }
+        };
+
+        if (isDistanceMenuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isDistanceMenuOpen]);
+
     if (!route) {
         return (
             <div className="flex flex-col rounded-md px-4 py-2 bg-gray-100">
@@ -54,6 +74,132 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
     }
 
     const stops = route.routeStops || [];
+
+    const handleFetchDistancesFromMap = async () => {
+        // Check if start stop has coordinates
+        const startStop = stops[0];
+        if (!startStop || 
+            !startStop.stop?.location?.latitude || 
+            !startStop.stop?.location?.longitude) {
+            alert('Start stop coordinates are required to fetch distances.');
+            return;
+        }
+
+        // Filter stops with valid coordinates and keep track of their original index
+        const stopsWithCoordinates = stops.map((stop, index) => ({
+            ...stop,
+            originalIndex: index
+        })).filter(stop => 
+            stop.stop?.location?.latitude && 
+            stop.stop?.location?.longitude &&
+            typeof stop.stop.location.latitude === 'number' &&
+            typeof stop.stop.location.longitude === 'number'
+        );
+
+        if (stopsWithCoordinates.length < 2) {
+            alert('At least 2 stops with coordinates are required to calculate distances.');
+            return;
+        }
+
+        setIsFetchingDistances(true);
+        setIsDistanceMenuOpen(false);
+
+        try {
+            if (!window.google || !window.google.maps) {
+                throw new Error('Google Maps API not loaded');
+            }
+
+            const directionsService = new google.maps.DirectionsService();
+            const updatedStops = [...stops];
+
+            // Set start stop distance to 0
+            updatedStops[stopsWithCoordinates[0].originalIndex] = {
+                ...updatedStops[stopsWithCoordinates[0].originalIndex],
+                distanceFromStart: 0
+            };
+
+            let cumulativeDistance = 0;
+            const MAX_WAYPOINTS = 25; // Google Maps API limit for waypoints (plus origin and destination)
+            let currentIndex = 0;
+
+            // Process the route in chunks if necessary (though unlikely for typical bus routes to exceed limits often)
+            while (currentIndex < stopsWithCoordinates.length - 1) {
+                // Determine the chunk for this request
+                // We start at currentIndex (Origin)
+                // We can have up to MAX_WAYPOINTS intermediate stops
+                // The destination will be at currentIndex + waypointsCount + 1
+                
+                const remainingStops = stopsWithCoordinates.length - 1 - currentIndex;
+                // Number of waypoints is remaining stops minus 1 (the destination)
+                // But capped at MAX_WAYPOINTS
+                const waypointsCount = Math.min(remainingStops - 1, MAX_WAYPOINTS);
+                
+                const originStop = stopsWithCoordinates[currentIndex];
+                const destinationIndex = currentIndex + waypointsCount + 1;
+                const destinationStop = stopsWithCoordinates[destinationIndex];
+                
+                // Intermediate stops between origin and destination
+                const waypoints = stopsWithCoordinates.slice(currentIndex + 1, destinationIndex).map(s => ({
+                    location: new google.maps.LatLng(s.stop.location!.latitude!, s.stop.location!.longitude!),
+                    stopover: true
+                }));
+
+                const request: google.maps.DirectionsRequest = {
+                    origin: new google.maps.LatLng(originStop.stop.location!.latitude!, originStop.stop.location!.longitude!),
+                    destination: new google.maps.LatLng(destinationStop.stop.location!.latitude!, destinationStop.stop.location!.longitude!),
+                    waypoints: waypoints,
+                    travelMode: google.maps.TravelMode.DRIVING,
+                };
+
+                const result = await new Promise<google.maps.DirectionsResult>((resolve, reject) => {
+                    directionsService.route(request, (response, status) => {
+                        if (status === 'OK' && response) {
+                            resolve(response);
+                        } else {
+                            reject(new Error(`Directions request failed: ${status}`));
+                        }
+                    });
+                });
+
+                const legs = result.routes[0].legs;
+                
+                // Process legs to update distances
+                for (let i = 0; i < legs.length; i++) {
+                    const leg = legs[i];
+                    const distanceInKm = (leg.distance?.value || 0) / 1000;
+                    cumulativeDistance += distanceInKm;
+                    
+                    // The leg ends at stopsWithCoordinates[currentIndex + 1 + i]
+                    // i=0 -> ends at first waypoint (or destination if no waypoints) -> index + 1
+                    const stopIndex = currentIndex + 1 + i;
+                    const originalIndex = stopsWithCoordinates[stopIndex].originalIndex;
+                    
+                    updatedStops[originalIndex] = {
+                        ...updatedStops[originalIndex],
+                        distanceFromStart: parseFloat(cumulativeDistance.toFixed(2))
+                    };
+                }
+
+                // Prepare for next chunk
+                currentIndex = destinationIndex;
+                
+                // Small delay to avoid rate limiting if we have multiple chunks
+                if (currentIndex < stopsWithCoordinates.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                }
+            }
+
+            // Update the route with new distances
+            updateRoute(routeIndex, { routeStops: updatedStops });
+            
+            alert('Distances fetched successfully!');
+        } catch (error) {
+            console.error('Error fetching distances:', error);
+            alert(`Failed to fetch distances. Please try again. Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        } finally {
+            setIsFetchingDistances(false);
+        }
+    };
 
     const handleFieldChange = (stopIndex: number, field: string, value: any) => {
         const currentStop = stops[stopIndex];
@@ -293,7 +439,38 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                                     <th className="border border-gray-300 px-4 py-2 text-left">Id</th>
                                     <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
                                     <th className="border border-gray-300 px-4 py-2 text-left">Existing?</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left">Distance (km)</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left relative">
+                                        <div className="flex items-center justify-between">
+                                            <span>Distance (km)</span>
+                                            <div className="relative" ref={distanceMenuRef}>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setIsDistanceMenuOpen(!isDistanceMenuOpen);
+                                                    }}
+                                                    className="p-1 hover:bg-gray-200 rounded transition-colors"
+                                                    title="Distance options"
+                                                    disabled={isFetchingDistances}
+                                                >
+                                                    {isFetchingDistances ? (
+                                                        <Loader2 className="animate-spin" size={16} />
+                                                    ) : (
+                                                        <EllipsisVertical size={16} />
+                                                    )}
+                                                </button>
+                                                {isDistanceMenuOpen && (
+                                                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 min-w-[180px]">
+                                                        <button
+                                                            onClick={handleFetchDistancesFromMap}
+                                                            className="w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors text-sm"
+                                                        >
+                                                            Fetch from map
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </th>
                                     <th className="border border-gray-300 w-6"></th>
                                     <th className="border border-gray-300 w-6"></th>
                                 </tr>
