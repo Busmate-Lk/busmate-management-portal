@@ -112,7 +112,7 @@ export default function RouteStopsList() {
     );
 
     return (
-        <div className="col-span-2 flex flex-col rounded-md px-4 py-2 bg-gray-100">
+        <div className="flex flex-col rounded-md px-4 py-2 bg-gray-100">
             <span className="underline mb-2">RouteStopsList</span>
 
             <div className="space-y-6">
