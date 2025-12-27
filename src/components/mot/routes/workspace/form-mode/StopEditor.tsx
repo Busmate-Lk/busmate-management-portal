@@ -30,6 +30,11 @@ export default function StopEditor({ onToggle, collapsed }: StopEditorProps) {
             {!collapsed && (
                 <div>
                     <form className="space-y-4">
+                        <div className="flex gap-4 items-center">
+                            <label className="block text-sm font-medium">Id :</label>
+                            {/* <input type="text" readOnly className="w-full border border-gray-400 rounded px-2 py-0 bg-white" /> */}
+                            <span className="text-gray-600">new</span>
+                        </div>
                         <div>
                             <label className="block text-sm font-medium">Name (English)</label>
                             <input type="text" className="w-full border border-gray-400 rounded px-2 py-1 bg-white" />
