@@ -2,6 +2,7 @@
 
 import { useRouteWorkspace } from '@/context/RouteWorkspace/useRouteWorkspace';
 import { StopTypeEnum, StopExistenceType, createEmptyRouteStop } from '@/types/RouteWorkspaceData';
+import { Grip, GripVertical, Trash } from 'lucide-react';
 
 interface RouteStopsListProps {
     routeIndex: number;
@@ -87,11 +88,13 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                 <table className="w-full border-collapse border border-gray-300 bg-white">
                     <thead>
                         <tr className="bg-gray-100">
+                            <th className="w-6"></th>
                             <th className="border border-gray-300 px-2 py-2 text-left">#</th>
                             <th className="border border-gray-300 px-4 py-2 text-left">Id</th>
                             <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
                             <th className="border border-gray-300 px-4 py-2 text-left">Existing?</th>
                             <th className="border border-gray-300 px-4 py-2 text-left">Distance (km)</th>
+                            <th className="w-6"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -108,6 +111,9 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                                             : 'hover:bg-gray-50'
                                     }`}
                                 >
+                                    <td className="border border-gray-300 w-6">
+                                        <GripVertical className="text-gray-400" />
+                                    </td>
                                     <td className={`border border-gray-300 px-2 py-2 ${getOrderBadgeColor(actualIndex)} text-white text-center font-bold`}>
                                         {actualIndex + 1}
                                     </td>
@@ -144,6 +150,20 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                                             onChange={(e) => handleFieldChange(actualIndex, 'distanceFromStart', parseFloat(e.target.value) || 0)}
                                             className="w-full px-4 py-2 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
+                                    </td>
+                                    <td className="border border-gray-300 w-8">
+                                        {actualIndex !== 0 && actualIndex !== stops.length - 1 && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    // handleDeleteStop(actualIndex);
+                                                }}
+                                                className="text-red-500 hover:text-red-700 p-1"
+                                                title="Delete stop"
+                                            >
+                                                <Trash size={16} />
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             );
