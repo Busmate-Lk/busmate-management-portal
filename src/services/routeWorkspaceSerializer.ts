@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import { RouteWorkspaceData, RouteGroupInfo } from '@/types/RouteWorkspaceData';
+import { RouteWorkspaceData, RouteGroup } from '@/types/RouteWorkspaceData';
 
 /**
  * Serialize RouteWorkspaceData to YAML format
@@ -7,7 +7,7 @@ import { RouteWorkspaceData, RouteGroupInfo } from '@/types/RouteWorkspaceData';
 export function serializeToYaml(data: RouteWorkspaceData): string {
   const yamlData = {
     route_group: {
-      name: data.routeGroup.nameEnglish || '',
+      name: data.routeGroup.name || '',
       name_sinhala: data.routeGroup.nameSinhala || '',
       name_tamil: data.routeGroup.nameTamil || '',
       description: data.routeGroup.description || '',
@@ -41,10 +41,10 @@ export function parseFromYaml(yamlText: string): Partial<RouteWorkspaceData> {
 
     // Parse route group info
     if (parsed.route_group) {
-      const routeGroup: Partial<RouteGroupInfo> = {};
+      const routeGroup: Partial<RouteGroup> = {};
       
       if (parsed.route_group.name !== undefined) {
-        routeGroup.nameEnglish = String(parsed.route_group.name);
+        routeGroup.name = String(parsed.route_group.name);
       }
       if (parsed.route_group.name_sinhala !== undefined) {
         routeGroup.nameSinhala = String(parsed.route_group.name_sinhala);
@@ -57,7 +57,7 @@ export function parseFromYaml(yamlText: string): Partial<RouteWorkspaceData> {
       }
 
       if (Object.keys(routeGroup).length > 0) {
-        result.routeGroup = routeGroup as RouteGroupInfo;
+        result.routeGroup = routeGroup as RouteGroup;
       }
     }
 

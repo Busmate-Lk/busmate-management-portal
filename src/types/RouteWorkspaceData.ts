@@ -1,19 +1,282 @@
-export interface RouteGroupInfo {
-  nameEnglish: string;
-  nameSinhala: string;
-  nameTamil: string;
-  description: string;
+/**
+ * Route Workspace Types
+ * 
+ * These types represent the complete structure for managing route group data
+ * in the Route Workspace, including route groups, routes, and stops.
+ */
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+export enum DirectionEnum {
+  UP = 'UP',
+  DOWN = 'DOWN',
 }
+
+export enum RoadTypeEnum {
+  EXPRESSWAY = 'EXPRESSWAY',
+  HIGHWAY = 'HIGHWAY',
+  MAIN_ROAD = 'MAIN_ROAD',
+  SECONDARY_ROAD = 'SECONDARY_ROAD',
+  LOCAL_ROAD = 'LOCAL_ROAD',
+}
+
+export enum StopTypeEnum {
+  START = 'S',
+  END = 'E',
+  INTERMEDIATE = 'I',
+}
+
+export enum StopExistenceType {
+  EXISTING = 'existing',
+  NEW = 'new',
+}
+
+// ============================================================================
+// LOCATION TYPES
+// ============================================================================
+
+export interface Location {
+  latitude: number;
+  longitude: number;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+  addressSinhala?: string;
+  citySinhala?: string;
+  stateSinhala?: string;
+  countrySinhala?: string;
+  addressTamil?: string;
+  cityTamil?: string;
+  stateTamil?: string;
+  countryTamil?: string;
+}
+
+// ============================================================================
+// STOP TYPES
+// ============================================================================
+
+export interface Stop {
+  id: string; // UUID or empty string for new stops
+  name: string;
+  nameSinhala?: string;
+  nameTamil?: string;
+  description?: string;
+  location?: Location;
+  isAccessible?: boolean;
+  type: StopExistenceType; // 'existing' or 'new'
+}
+
+// ============================================================================
+// ROUTE STOP TYPES
+// ============================================================================
+
+export interface RouteStop {
+  orderNumber: number;
+  distanceFromStart: number; // in kilometers
+  stop: Stop;
+  // Computed property - determines if this is Start (S), End (E), or Intermediate (I)
+  stopType?: StopTypeEnum;
+}
+
+// ============================================================================
+// ROUTE TYPES
+// ============================================================================
+
+export interface Route {
+  id?: string; // UUID - optional for new routes
+  name: string;
+  nameSinhala?: string;
+  nameTamil?: string;
+  routeNumber?: string;
+  description?: string;
+  direction: DirectionEnum;
+  roadType: RoadTypeEnum;
+  routeThrough?: string;
+  routeThroughSinhala?: string;
+  routeThroughTamil?: string;
+  distanceKm?: number;
+  estimatedDurationMinutes?: number;
+  // Start and end stop IDs are derived from routeStops (first and last)
+  startStopId?: string;
+  endStopId?: string;
+  routeStops: RouteStop[];
+}
+
+// ============================================================================
+// ROUTE GROUP TYPES
+// ============================================================================
+
+export interface RouteGroup {
+  id?: string; // UUID - optional for new route groups
+  name: string;
+  nameSinhala?: string;
+  nameTamil?: string;
+  description?: string;
+  routes: Route[];
+}
+
+// ============================================================================
+// WORKSPACE DATA TYPES
+// ============================================================================
 
 export interface RouteWorkspaceData {
-  routeGroup: RouteGroupInfo;
+  routeGroup: RouteGroup;
+  // Active route being edited (index in routes array)
+  activeRouteIndex?: number;
+  // Active direction (for outbound/inbound tabs)
+  activeDirection?: 'outbound' | 'inbound';
 }
 
-export const createEmptyRouteWorkspaceData = (): RouteWorkspaceData => ({
-  routeGroup: {
-    nameEnglish: '',
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+export function createEmptyLocation(): Location {
+  return {
+    latitude: 0,
+    longitude: 0,
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'Sri Lanka',
+  };
+}
+
+export function createEmptyStop(): Stop {
+  return {
+    id: '',
+    name: '',
     nameSinhala: '',
     nameTamil: '',
     description: '',
-  },
-});
+    location: createEmptyLocation(),
+    isAccessible: true,
+    type: StopExistenceType.NEW,
+  };
+}
+
+export function createEmptyRouteStop(orderNumber: number): RouteStop {
+  return {
+    orderNumber,
+    distanceFromStart: 0,
+    stop: createEmptyStop(),
+    stopType: StopTypeEnum.INTERMEDIATE,
+  };
+}
+
+export function createEmptyRoute(): Route {
+  return {
+    name: '',
+    nameSinhala: '',
+    nameTamil: '',
+    routeNumber: '',
+    description: '',
+    direction: DirectionEnum.UP,
+    roadType: RoadTypeEnum.MAIN_ROAD,
+    routeThrough: '',
+    routeThroughSinhala: '',
+    routeThroughTamil: '',
+    distanceKm: 0,
+    estimatedDurationMinutes: 0,
+    routeStops: [
+      createEmptyRouteStop(0), // Start stop
+      createEmptyRouteStop(1), // End stop
+    ],
+  };
+}
+
+export function createEmptyRouteGroup(): RouteGroup {
+  return {
+    name: '',
+    nameSinhala: '',
+    nameTamil: '',
+    description: '',
+    routes: [],
+  };
+}
+
+export function createEmptyRouteWorkspaceData(): RouteWorkspaceData {
+  return {
+    routeGroup: createEmptyRouteGroup(),
+    activeRouteIndex: undefined,
+    activeDirection: 'outbound',
+  };
+}
+
+// ============================================================================
+// TYPE GUARDS
+// ============================================================================
+
+export function isExistingStop(stop: Stop): boolean {
+  return stop.type === StopExistenceType.EXISTING && stop.id !== '';
+}
+
+export function isNewStop(stop: Stop): boolean {
+  return stop.type === StopExistenceType.NEW || stop.id === '';
+}
+
+// ============================================================================
+// COMPUTED PROPERTIES HELPERS
+// ============================================================================
+
+/**
+ * Updates stop types based on their position in the array
+ * First stop = START, Last stop = END, Others = INTERMEDIATE
+ */
+export function updateStopTypes(routeStops: RouteStop[]): RouteStop[] {
+  return routeStops.map((stop, index) => ({
+    ...stop,
+    stopType: 
+      index === 0 
+        ? StopTypeEnum.START 
+        : index === routeStops.length - 1 
+        ? StopTypeEnum.END 
+        : StopTypeEnum.INTERMEDIATE,
+  }));
+}
+
+/**
+ * Calculates the total distance of a route from its stops
+ */
+export function calculateTotalDistance(routeStops: RouteStop[]): number {
+  if (routeStops.length === 0) return 0;
+  return Math.max(...routeStops.map(stop => stop.distanceFromStart));
+}
+
+/**
+ * Gets the start stop from route stops
+ */
+export function getStartStop(routeStops: RouteStop[]): RouteStop | undefined {
+  return routeStops.find(stop => stop.stopType === StopTypeEnum.START) || routeStops[0];
+}
+
+/**
+ * Gets the end stop from route stops
+ */
+export function getEndStop(routeStops: RouteStop[]): RouteStop | undefined {
+  return routeStops.find(stop => stop.stopType === StopTypeEnum.END) || routeStops[routeStops.length - 1];
+}
+
+/**
+ * Gets intermediate stops (excluding start and end)
+ */
+export function getIntermediateStops(routeStops: RouteStop[]): RouteStop[] {
+  return routeStops.filter(stop => stop.stopType === StopTypeEnum.INTERMEDIATE);
+}
+
+/**
+ * Re-orders route stops and updates their order numbers
+ */
+export function reorderRouteStops(routeStops: RouteStop[]): RouteStop[] {
+  return routeStops
+    .map((stop, index) => ({
+      ...stop,
+      orderNumber: index,
+    }))
+    .sort((a, b) => a.orderNumber - b.orderNumber);
+}

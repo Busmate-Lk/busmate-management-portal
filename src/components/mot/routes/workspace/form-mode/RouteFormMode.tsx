@@ -48,8 +48,8 @@ function RouteGroupInfo() {
                     <input 
                         type="text" 
                         className="w-200 border border-gray-400 rounded px-2 bg-white"
-                        value={data.routeGroup.nameEnglish}
-                        onChange={(e) => updateRouteGroup({ nameEnglish: e.target.value })}
+                        value={data.routeGroup.name}
+                        onChange={(e) => updateRouteGroup({ name: e.target.value })}
                     />
                 </div>
                 <div className="flex">

@@ -1,9 +1,9 @@
 import { createContext } from 'react';
-import { RouteWorkspaceData, createEmptyRouteWorkspaceData } from '@/types/RouteWorkspaceData';
+import { RouteWorkspaceData, createEmptyRouteWorkspaceData, RouteGroup } from '@/types/RouteWorkspaceData';
 
 export interface RouteWorkspaceContextType {
   data: RouteWorkspaceData;
-  updateRouteGroup: (routeGroup: Partial<RouteWorkspaceData['routeGroup']>) => void;
+  updateRouteGroup: (routeGroup: Partial<RouteGroup>) => void;
   updateFromYaml: (yaml: string) => void;
   getYaml: () => string;
 }

@@ -2,7 +2,7 @@
 
 import { ReactNode, useState, useCallback } from 'react';
 import { RouteWorkspaceContext } from './RouteWorkspaceContext';
-import { RouteWorkspaceData, createEmptyRouteWorkspaceData } from '@/types/RouteWorkspaceData';
+import { RouteWorkspaceData, createEmptyRouteWorkspaceData, RouteGroup } from '@/types/RouteWorkspaceData';
 import { serializeToYaml, parseFromYaml } from '@/services/routeWorkspaceSerializer';
 
 interface RouteWorkspaceProviderProps {
@@ -12,7 +12,7 @@ interface RouteWorkspaceProviderProps {
 export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps) {
   const [data, setData] = useState<RouteWorkspaceData>(createEmptyRouteWorkspaceData());
 
-  const updateRouteGroup = useCallback((routeGroup: Partial<RouteWorkspaceData['routeGroup']>) => {
+  const updateRouteGroup = useCallback((routeGroup: Partial<RouteGroup>) => {
     setData(prevData => ({
       ...prevData,
       routeGroup: {
