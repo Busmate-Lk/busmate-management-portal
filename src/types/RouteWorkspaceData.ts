@@ -10,16 +10,13 @@
 // ============================================================================
 
 export enum DirectionEnum {
-  UP = 'UP',
-  DOWN = 'DOWN',
+  OUTBOUND = 'OUTBOUND',
+  INBOUND = 'INBOUND',
 }
 
 export enum RoadTypeEnum {
   EXPRESSWAY = 'EXPRESSWAY',
-  HIGHWAY = 'HIGHWAY',
-  MAIN_ROAD = 'MAIN_ROAD',
-  SECONDARY_ROAD = 'SECONDARY_ROAD',
-  LOCAL_ROAD = 'LOCAL_ROAD',
+  NORMALWAY = 'NORMALWAY',
 }
 
 export enum StopTypeEnum {
@@ -176,8 +173,8 @@ export function createEmptyRoute(): Route {
     nameTamil: '',
     routeNumber: '',
     description: '',
-    direction: DirectionEnum.UP,
-    roadType: RoadTypeEnum.MAIN_ROAD,
+    direction: DirectionEnum.OUTBOUND,
+    roadType: RoadTypeEnum.NORMALWAY,
     routeThrough: '',
     routeThroughSinhala: '',
     routeThroughTamil: '',

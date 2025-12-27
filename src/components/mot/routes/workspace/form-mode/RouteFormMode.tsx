@@ -14,7 +14,7 @@ export default function RouteFormMode() {
         if (data.routeGroup.routes.length === 0) {
             // Add default outbound route
             const outboundRoute = createEmptyRoute();
-            outboundRoute.direction = DirectionEnum.UP;
+            outboundRoute.direction = DirectionEnum.OUTBOUND;
             addRoute(outboundRoute);
             setActiveRouteIndex(0);
         }
@@ -165,11 +165,8 @@ function RouteInfo({ routeIndex }: { routeIndex: number }) {
                                 onChange={(e) => updateRoute(routeIndex, { roadType: e.target.value as RoadTypeEnum })}
                             >
                                 <option value="">Select road type</option>
+                                <option value={RoadTypeEnum.NORMALWAY}>Normalway</option>
                                 <option value={RoadTypeEnum.EXPRESSWAY}>Expressway</option>
-                                <option value={RoadTypeEnum.HIGHWAY}>Highway</option>
-                                <option value={RoadTypeEnum.MAIN_ROAD}>Main Road</option>
-                                <option value={RoadTypeEnum.SECONDARY_ROAD}>Secondary Road</option>
-                                <option value={RoadTypeEnum.LOCAL_ROAD}>Local Road</option>
                             </select>
                         </div>
                         <div className="flex flex-col w-full">
@@ -180,8 +177,8 @@ function RouteInfo({ routeIndex }: { routeIndex: number }) {
                                 onChange={(e) => updateRoute(routeIndex, { direction: e.target.value as DirectionEnum })}
                             >
                                 <option value="">Select direction</option>
-                                <option value={DirectionEnum.UP}>Up/Outbound</option>
-                                <option value={DirectionEnum.DOWN}>Down/Inbound</option>
+                                <option value={DirectionEnum.OUTBOUND}>Outbound/Up</option>
+                                <option value={DirectionEnum.INBOUND}>Inbound/Down</option>
                             </select>
                         </div>
                     </div>
