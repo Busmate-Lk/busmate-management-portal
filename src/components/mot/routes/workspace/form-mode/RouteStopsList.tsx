@@ -2,7 +2,7 @@
 
 import { useRouteWorkspace } from '@/context/RouteWorkspace/useRouteWorkspace';
 import { StopTypeEnum, StopExistenceType, createEmptyRouteStop } from '@/types/RouteWorkspaceData';
-import { Grip, GripVertical, Trash } from 'lucide-react';
+import { GripVertical, LocationEditIcon, Trash } from 'lucide-react';
 
 interface RouteStopsListProps {
     routeIndex: number;
@@ -108,7 +108,8 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                             <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
                             <th className="border border-gray-300 px-4 py-2 text-left">Existing?</th>
                             <th className="border border-gray-300 px-4 py-2 text-left">Distance (km)</th>
-                            <th className="w-6"></th>
+                            <th className="border border-gray-300 w-6"></th>
+                            <th className="border border-gray-300 w-6"></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -166,6 +167,17 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                                             onBlur={(e) => handleFieldChange(actualIndex, 'distanceFromStart', parseFloat(e.target.value) || 0)}
                                             className="w-full px-4 py-2 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
+                                    </td>
+                                    <td className="border border-gray-300 w-8">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                            }}
+                                            className="text-gray-500 hover:text-gray-700 p-1"
+                                            title="Coordinates editing mode on map"
+                                        >
+                                            <LocationEditIcon size={16} />
+                                        </button>
                                     </td>
                                     <td className="border border-gray-300 w-8">
                                         {actualIndex !== 0 && actualIndex !== stops.length - 1 && (
