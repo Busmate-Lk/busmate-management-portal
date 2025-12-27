@@ -1,56 +1,77 @@
 'use client';
 
-import { useState } from 'react';
+import { useRouteWorkspace } from '@/context/RouteWorkspace/useRouteWorkspace';
+import { StopTypeEnum, StopExistenceType, createEmptyRouteStop } from '@/types/RouteWorkspaceData';
 
-interface RouteStop {
-    orderNumber: number;
-    id: string;
-    stopName: string;
-    type: 'S' | 'E' | 'I';
-    distanceFromStart: number;
-    isExisting: boolean;
+interface RouteStopsListProps {
+    routeIndex: number;
 }
 
-const dummyStops: RouteStop[] = [
-    { orderNumber: 0, id: 'STOP001', stopName: 'Embilipitiya', type: 'S', distanceFromStart: 0, isExisting: true },
-    { orderNumber: 1, id: 'STOP002', stopName: 'Ratnapura', type: 'I', distanceFromStart: 50, isExisting: true },
-    { orderNumber: 2, id: '', stopName: 'Kuruwita', type: 'I', distanceFromStart: 90, isExisting: false },
-    { orderNumber: 3, id: 'STOP003', stopName: 'Avissawella', type: 'I', distanceFromStart: 120, isExisting: true },
-    { orderNumber: 4, id: 'STOP004', stopName: 'Colombo', type: 'E', distanceFromStart: 160, isExisting: true }
-];
+export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
+    const { data, updateRouteStop, addRouteStop } = useRouteWorkspace();
+    const route = data.routeGroup.routes[routeIndex];
 
-export default function RouteStopsList() {
-    const [stops, setStops] = useState<RouteStop[]>(dummyStops);
+    if (!route) {
+        return (
+            <div className="flex flex-col rounded-md px-4 py-2 bg-gray-100">
+                <span className="underline mb-2">RouteStopsList</span>
+                <p className="text-gray-600">No route data available</p>
+            </div>
+        );
+    }
 
-    const updateStopType = (stops: RouteStop[]): RouteStop[] => {
-        return stops.map((stop, index) => ({
-            ...stop,
-            type: index === 0 ? 'S' : index === stops.length - 1 ? 'E' : 'I'
-        }));
-    };
+    const stops = route.routeStops || [];
 
-    const handleFieldChange = (index: number, field: 'stopName' | 'distanceFromStart' | 'isExisting', value: string | number | boolean) => {
-        const updatedStops = stops.map((stop, i) => {
-            if (i === index) {
-                return { ...stop, [field]: value };
-            }
-            return stop;
-        });
-        setStops(updateStopType(updatedStops));
-    };
-
-    const getOrderBadgeColor = (type: 'S' | 'E' | 'I') => {
-        switch (type) {
-            case 'S': return 'bg-green-500';
-            case 'E': return 'bg-red-500';
-            case 'I': return 'bg-blue-500';
+    const handleFieldChange = (stopIndex: number, field: string, value: any) => {
+        const currentStop = stops[stopIndex];
+        if (field === 'stopName') {
+            updateRouteStop(routeIndex, stopIndex, {
+                stop: { ...currentStop.stop, name: value }
+            });
+        } else if (field === 'stopNameSinhala') {
+            updateRouteStop(routeIndex, stopIndex, {
+                stop: { ...currentStop.stop, nameSinhala: value }
+            });
+        } else if (field === 'stopNameTamil') {
+            updateRouteStop(routeIndex, stopIndex, {
+                stop: { ...currentStop.stop, nameTamil: value }
+            });
+        } else if (field === 'distanceFromStart') {
+            updateRouteStop(routeIndex, stopIndex, {
+                distanceFromStart: value
+            });
+        } else if (field === 'isExisting') {
+            updateRouteStop(routeIndex, stopIndex, {
+                stop: { 
+                    ...currentStop.stop, 
+                    type: value ? StopExistenceType.EXISTING : StopExistenceType.NEW 
+                }
+            });
         }
     };
 
-    const startEndStops = stops.filter(stop => stop.type === 'S' || stop.type === 'E');
-    const intermediateStops = stops.filter(stop => stop.type === 'I');
+    const handleAddIntermediateStop = () => {
+        const newOrderNumber = stops.length;
+        const newStop = createEmptyRouteStop(newOrderNumber);
+        addRouteStop(routeIndex, newStop);
+    };
 
-    const StopTable = ({ stops, title }: { stops: RouteStop[], title: string }) => (
+    const getOrderBadgeColor = (stopIndex: number) => {
+        if (stopIndex === 0) return 'bg-green-500'; // Start
+        if (stopIndex === stops.length - 1) return 'bg-red-500'; // End
+        return 'bg-blue-500'; // Intermediate
+    };
+
+    const getStopTypeLabel = (stopIndex: number) => {
+        if (stopIndex === 0) return 'S'; // Start
+        if (stopIndex === stops.length - 1) return 'E'; // End
+        return 'I'; // Intermediate
+    };
+
+    const startEndStops = stops.filter((_, idx) => idx === 0 || idx === stops.length - 1);
+    const intermediateStops = stops.filter((_, idx) => idx !== 0 && idx !== stops.length - 1);
+
+    const StopTable = ({ stops: tableStops, title }: { stops: typeof stops, title: string }) => (
         <div>
             <h3 className="font-semibold mb-3">{title}</h3>
             <div className="overflow-x-auto">
@@ -65,39 +86,43 @@ export default function RouteStopsList() {
                         </tr>
                     </thead>
                     <tbody>
-                        {stops.map((stop, idx) => {
-                            const actualIndex = stops.findIndex(s => s.orderNumber === stop.orderNumber);
+                        {tableStops.map((routeStop) => {
+                            const actualIndex = stops.findIndex(s => s.orderNumber === routeStop.orderNumber);
                             return (
-                                <tr key={stop.orderNumber} className="hover:bg-gray-50">
-                                    <td className={`border border-gray-300 px-2 py-2 ${getOrderBadgeColor(stop.type)} text-white text-center`}>
-                                        {stop.orderNumber}
+                                <tr key={routeStop.orderNumber} className="hover:bg-gray-50">
+                                    <td className={`border border-gray-300 px-2 py-2 ${getOrderBadgeColor(actualIndex)} text-white text-center font-bold`}>
+                                        {getStopTypeLabel(actualIndex)}
                                     </td>
-                                    <td className="border border-gray-300 px-4 py-2">
-                                        {stop.id}
+                                    <td className="border border-gray-300 px-4 py-2 text-sm text-gray-600">
+                                        {routeStop.stop.id || '(new)'}
                                     </td>
                                     <td className="border border-gray-300">
                                         <input
                                             type="text"
-                                            value={stop.stopName}
+                                            value={routeStop.stop.name || ''}
                                             onChange={(e) => handleFieldChange(actualIndex, 'stopName', e.target.value)}
                                             className="w-full px-4 py-2 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
                                     </td>
-                                    <td className="border border-gray-300 px-4 py-2 text-center flex items-center justify-center">
-                                        <span className={`inline-block px-2 py-1 rounded-full text-white text-sm ${stop.isExisting ? 'bg-yellow-500' : 'bg-red-500'}`}>
-                                            {stop.isExisting ? 'exist' : 'new'}
-                                        </span>
-                                        <button
-                                            onClick={() => console.log(`Searching for availability of ${stop.stopName}`)}
-                                            className="ml-2 px-2 py-1 border border-blue-500 text-white text-sm rounded hover:bg-blue-600"
-                                        >
-                                            🔍
-                                        </button>
+                                    <td className="border border-gray-300 px-4 py-2 text-center">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <span className={`inline-block px-2 py-1 rounded-full text-white text-sm ${routeStop.stop.type === StopExistenceType.EXISTING ? 'bg-yellow-500' : 'bg-red-500'}`}>
+                                                {routeStop.stop.type === StopExistenceType.EXISTING ? 'exist' : 'new'}
+                                            </span>
+                                            <button
+                                                onClick={() => console.log(`Searching for availability of ${routeStop.stop.name}`)}
+                                                className="px-2 py-1 border border-blue-500 text-blue-500 text-sm rounded hover:bg-blue-50"
+                                                title="Search for existing stop"
+                                            >
+                                                🔍
+                                            </button>
+                                        </div>
                                     </td>
                                     <td className="border border-gray-300">
                                         <input
                                             type="number"
-                                            value={stop.distanceFromStart}
+                                            step="0.1"
+                                            value={routeStop.distanceFromStart || 0}
                                             onChange={(e) => handleFieldChange(actualIndex, 'distanceFromStart', parseFloat(e.target.value) || 0)}
                                             className="w-full px-4 py-2 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         />
@@ -119,7 +144,10 @@ export default function RouteStopsList() {
                 <StopTable stops={startEndStops} title="Start & End Stops" />
                 <StopTable stops={intermediateStops} title="Intermediate Stops" />
                 
-                <button className="w-full p-3 text-blue-600 border border-dashed border-blue-600 rounded hover:bg-blue-50">
+                <button 
+                    onClick={handleAddIntermediateStop}
+                    className="w-full p-3 text-blue-600 border border-dashed border-blue-600 rounded hover:bg-blue-50"
+                >
                     + Add Intermediate Stop
                 </button>
             </div>

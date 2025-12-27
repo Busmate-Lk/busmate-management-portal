@@ -5,7 +5,11 @@ import RouteStopsList from "./RouteStopsList";
 import RouteStopsMap from "./RouteStopsMap";
 import StopEditor from "./StopEditor";
 
-export default function RouteStopsEditor() {
+interface RouteStopsEditorProps {
+    routeIndex: number;
+}
+
+export default function RouteStopsEditor({ routeIndex }: RouteStopsEditorProps) {
     const [stopEditorCollapsed, setStopEditorCollapsed] = useState(false);
     const [routeStopsMapCollapsed, setRouteStopsMapCollapsed] = useState(false);
 
@@ -29,8 +33,8 @@ export default function RouteStopsEditor() {
                 <span className="underline">RouteStopsEditor</span>
                 <div className="grid gap-2 mt-4" style={{ gridTemplateColumns }}>
                     <StopEditor collapsed={stopEditorCollapsed} onToggle={() => setStopEditorCollapsed(!stopEditorCollapsed)} />
-                    <RouteStopsList />
-                    <RouteStopsMap collapsed={routeStopsMapCollapsed} onToggle={() => setRouteStopsMapCollapsed(!routeStopsMapCollapsed)} />
+                    <RouteStopsList routeIndex={routeIndex} />
+                    {/* <RouteStopsMap collapsed={routeStopsMapCollapsed} onToggle={() => setRouteStopsMapCollapsed(!routeStopsMapCollapsed)} /> */}
                 </div>
             </div>
         </>

@@ -1,11 +1,27 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import RouteStopsEditor from "./RouteStopsEditor";
 import { useRouteWorkspace } from "@/context/RouteWorkspace/useRouteWorkspace";
+import { createEmptyRoute, RoadTypeEnum, DirectionEnum } from "@/types/RouteWorkspaceData";
 
 export default function RouteFormMode() {
     const [activeTab, setActiveTab] = useState<'outbound' | 'inbound'>('outbound');
+    const { data, addRoute, setActiveRouteIndex } = useRouteWorkspace();
+
+    // Ensure we have at least one route for each direction
+    useEffect(() => {
+        if (data.routeGroup.routes.length === 0) {
+            // Add default outbound route
+            const outboundRoute = createEmptyRoute();
+            outboundRoute.direction = DirectionEnum.UP;
+            addRoute(outboundRoute);
+            setActiveRouteIndex(0);
+        }
+    }, []);
+
+    // Get the active route index based on the tab
+    const activeRouteIndex = data.activeRouteIndex ?? 0;
 
     return (
         <div className="space-y-4">
@@ -31,7 +47,7 @@ export default function RouteFormMode() {
                     Inbound Route
                 </button>
             </div>
-            <RouteInfo />
+            <RouteInfo routeIndex={activeRouteIndex} />
         </div>
     )
 }
@@ -84,7 +100,19 @@ function RouteGroupInfo() {
     );
 }
 
-function RouteInfo() {
+function RouteInfo({ routeIndex }: { routeIndex: number }) {
+    const { data, updateRoute } = useRouteWorkspace();
+    const route = data.routeGroup.routes[routeIndex];
+
+    // If no route exists at this index, show a message
+    if (!route) {
+        return (
+            <div className="flex flex-col rounded-md px-6 py-4 bg-gray-200">
+                <span className="mb-2 text-gray-600">No route data available. Paste YAML in Textual Mode to load route data.</span>
+            </div>
+        );
+    }
+
     return (
         <>
             <div className="flex flex-col rounded-md px-6 py-4 bg-gray-200">
@@ -93,67 +121,133 @@ function RouteInfo() {
                     <div className="flex gap-4 w-full">
                         <div className="flex flex-col w-full">
                             <label className="block text-sm font-medium mb-2">Name (English) <span className="text-red-500">*</span></label>
-                            <input type="text" className="w-full border border-gray-400 rounded px-2 bg-white" />
+                            <input 
+                                type="text" 
+                                className="w-full border border-gray-400 rounded px-2 bg-white"
+                                value={route.name || ''}
+                                onChange={(e) => updateRoute(routeIndex, { name: e.target.value })}
+                            />
                         </div>
                         <div className="flex flex-col w-full">
                             <label className="block text-sm font-medium mb-2">Name (Sinhala)</label>
-                            <input type="text" className="w-full border border-gray-400 rounded px-2 bg-white" />
+                            <input 
+                                type="text" 
+                                className="w-full border border-gray-400 rounded px-2 bg-white"
+                                value={route.nameSinhala || ''}
+                                onChange={(e) => updateRoute(routeIndex, { nameSinhala: e.target.value })}
+                            />
                         </div>
                         <div className="flex flex-col w-full">
                             <label className="block text-sm font-medium mb-2">Name (Tamil)</label>
-                            <input type="text" className="w-full border border-gray-400 rounded px-2 bg-white" />
+                            <input 
+                                type="text" 
+                                className="w-full border border-gray-400 rounded px-2 bg-white"
+                                value={route.nameTamil || ''}
+                                onChange={(e) => updateRoute(routeIndex, { nameTamil: e.target.value })}
+                            />
                         </div>
                     </div>
                     <div className="flex gap-4 w-full">
                         <div className="flex flex-col w-full">
                             <label className="block text-sm font-medium mb-2">Route Number</label>
-                            <input type="text" className="w-full border border-gray-400 rounded px-2 bg-white" />
+                            <input 
+                                type="text" 
+                                className="w-full border border-gray-400 rounded px-2 bg-white"
+                                value={route.routeNumber || ''}
+                                onChange={(e) => updateRoute(routeIndex, { routeNumber: e.target.value })}
+                            />
                         </div>
                         <div className="flex flex-col w-full">
                             <label className="block text-sm font-medium mb-2">Road Type</label>
-                            <select className="w-full border border-gray-400 rounded px-2 bg-white">
+                            <select 
+                                className="w-full border border-gray-400 rounded px-2 bg-white"
+                                value={route.roadType || ''}
+                                onChange={(e) => updateRoute(routeIndex, { roadType: e.target.value as RoadTypeEnum })}
+                            >
                                 <option value="">Select road type</option>
+                                <option value={RoadTypeEnum.EXPRESSWAY}>Expressway</option>
+                                <option value={RoadTypeEnum.HIGHWAY}>Highway</option>
+                                <option value={RoadTypeEnum.MAIN_ROAD}>Main Road</option>
+                                <option value={RoadTypeEnum.SECONDARY_ROAD}>Secondary Road</option>
+                                <option value={RoadTypeEnum.LOCAL_ROAD}>Local Road</option>
                             </select>
                         </div>
                         <div className="flex flex-col w-full">
                             <label className="block text-sm font-medium mb-2">Direction</label>
-                            <select className="w-full border border-gray-400 rounded px-2 bg-white">
+                            <select 
+                                className="w-full border border-gray-400 rounded px-2 bg-white"
+                                value={route.direction || ''}
+                                onChange={(e) => updateRoute(routeIndex, { direction: e.target.value as DirectionEnum })}
+                            >
                                 <option value="">Select direction</option>
+                                <option value={DirectionEnum.UP}>Up/Outbound</option>
+                                <option value={DirectionEnum.DOWN}>Down/Inbound</option>
                             </select>
                         </div>
                     </div>
                     <div className="flex gap-4 w-full">
                         <div className="flex flex-col w-full">
                             <label className="block text-sm font-medium mb-2">Route Through (English)</label>
-                            <input type="text" className="w-full border border-gray-400 rounded px-2 bg-white" />
+                            <input 
+                                type="text" 
+                                className="w-full border border-gray-400 rounded px-2 bg-white"
+                                value={route.routeThrough || ''}
+                                onChange={(e) => updateRoute(routeIndex, { routeThrough: e.target.value })}
+                            />
                         </div>
                         <div className="flex flex-col w-full">
                             <label className="block text-sm font-medium mb-2">Route Through (Sinhala)</label>
-                            <input type="text" className="w-full border border-gray-400 rounded px-2 bg-white" />
+                            <input 
+                                type="text" 
+                                className="w-full border border-gray-400 rounded px-2 bg-white"
+                                value={route.routeThroughSinhala || ''}
+                                onChange={(e) => updateRoute(routeIndex, { routeThroughSinhala: e.target.value })}
+                            />
                         </div>
                         <div className="flex flex-col w-full">
                             <label className="block text-sm font-medium mb-2">Route Through (Tamil)</label>
-                            <input type="text" className="w-full border border-gray-400 rounded px-2 bg-white" />
+                            <input 
+                                type="text" 
+                                className="w-full border border-gray-400 rounded px-2 bg-white"
+                                value={route.routeThroughTamil || ''}
+                                onChange={(e) => updateRoute(routeIndex, { routeThroughTamil: e.target.value })}
+                            />
                         </div>
                     </div>
                     <div className="flex gap-4 w-full">
                         <div className="flex flex-col w-full">
                             <label className="block text-sm font-medium mb-2">Distance (km)</label>
-                            <input type="number" step="0.01" className="w-full border border-gray-400 rounded px-2 bg-white" />
+                            <input 
+                                type="number" 
+                                step="0.01" 
+                                className="w-full border border-gray-400 rounded px-2 bg-white"
+                                value={route.distanceKm || ''}
+                                onChange={(e) => updateRoute(routeIndex, { distanceKm: parseFloat(e.target.value) || 0 })}
+                            />
                         </div>
                         <div className="flex flex-col w-full">
                             <label className="block text-sm font-medium mb-2">Estimated Duration (minutes)</label>
-                            <input type="number" className="w-full border border-gray-400 rounded px-2 bg-white" />
+                            <input 
+                                type="number" 
+                                className="w-full border border-gray-400 rounded px-2 bg-white"
+                                value={route.estimatedDurationMinutes || ''}
+                                onChange={(e) => updateRoute(routeIndex, { estimatedDurationMinutes: parseInt(e.target.value) || 0 })}
+                            />
                         </div>
                     </div>
                     <div className="flex flex-col">
                         <label className="block text-sm font-medium w-32">Description</label>
-                        <textarea className="w-full border border-gray-400 rounded px-2 bg-white" rows={3}></textarea>
+                        <textarea 
+                            className="w-full border border-gray-400 rounded px-2 bg-white" 
+                            rows={3}
+                            value={route.description || ''}
+                            onChange={(e) => updateRoute(routeIndex, { description: e.target.value })}
+                        ></textarea>
                     </div>
                 </form>
             </div>
 
-            <RouteStopsEditor />
+            <RouteStopsEditor routeIndex={routeIndex} />
         </>
     );
 }

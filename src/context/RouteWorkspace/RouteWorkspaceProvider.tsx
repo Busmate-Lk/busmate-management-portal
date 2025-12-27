@@ -2,7 +2,7 @@
 
 import { ReactNode, useState, useCallback } from 'react';
 import { RouteWorkspaceContext } from './RouteWorkspaceContext';
-import { RouteWorkspaceData, createEmptyRouteWorkspaceData, RouteGroup } from '@/types/RouteWorkspaceData';
+import { RouteWorkspaceData, createEmptyRouteWorkspaceData, RouteGroup, Route, RouteStop, createEmptyRoute } from '@/types/RouteWorkspaceData';
 import { serializeToYaml, parseFromYaml } from '@/services/routeWorkspaceSerializer';
 
 interface RouteWorkspaceProviderProps {
@@ -51,6 +51,95 @@ export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps
     return data.routeGroup;
   }, [data]);
 
+  const updateRoute = useCallback((routeIndex: number, route: Partial<Route>) => {
+    setData(prevData => {
+      const routes = [...prevData.routeGroup.routes];
+      if (routes[routeIndex]) {
+        routes[routeIndex] = { ...routes[routeIndex], ...route };
+      }
+      return {
+        ...prevData,
+        routeGroup: {
+          ...prevData.routeGroup,
+          routes,
+        },
+      };
+    });
+  }, []);
+
+  const updateRouteStop = useCallback((routeIndex: number, stopIndex: number, routeStop: Partial<RouteStop>) => {
+    setData(prevData => {
+      const routes = [...prevData.routeGroup.routes];
+      if (routes[routeIndex]) {
+        const routeStops = [...routes[routeIndex].routeStops];
+        if (routeStops[stopIndex]) {
+          routeStops[stopIndex] = { ...routeStops[stopIndex], ...routeStop };
+          routes[routeIndex] = { ...routes[routeIndex], routeStops };
+        }
+      }
+      return {
+        ...prevData,
+        routeGroup: {
+          ...prevData.routeGroup,
+          routes,
+        },
+      };
+    });
+  }, []);
+
+  const addRoute = useCallback((route: Route) => {
+    setData(prevData => ({
+      ...prevData,
+      routeGroup: {
+        ...prevData.routeGroup,
+        routes: [...prevData.routeGroup.routes, route],
+      },
+    }));
+  }, []);
+
+  const addRouteStop = useCallback((routeIndex: number, routeStop: RouteStop) => {
+    setData(prevData => {
+      const routes = [...prevData.routeGroup.routes];
+      if (routes[routeIndex]) {
+        routes[routeIndex] = {
+          ...routes[routeIndex],
+          routeStops: [...routes[routeIndex].routeStops, routeStop],
+        };
+      }
+      return {
+        ...prevData,
+        routeGroup: {
+          ...prevData.routeGroup,
+          routes,
+        },
+      };
+    });
+  }, []);
+
+  const removeRouteStop = useCallback((routeIndex: number, stopIndex: number) => {
+    setData(prevData => {
+      const routes = [...prevData.routeGroup.routes];
+      if (routes[routeIndex]) {
+        const routeStops = routes[routeIndex].routeStops.filter((_, idx) => idx !== stopIndex);
+        routes[routeIndex] = { ...routes[routeIndex], routeStops };
+      }
+      return {
+        ...prevData,
+        routeGroup: {
+          ...prevData.routeGroup,
+          routes,
+        },
+      };
+    });
+  }, []);
+
+  const setActiveRouteIndex = useCallback((index: number) => {
+    setData(prevData => ({
+      ...prevData,
+      activeRouteIndex: index,
+    }));
+  }, []);
+
   return (
     <RouteWorkspaceContext.Provider
       value={{
@@ -59,6 +148,12 @@ export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps
         updateFromYaml,
         getYaml,
         getRouteGroupData,
+        updateRoute,
+        updateRouteStop,
+        addRoute,
+        addRouteStop,
+        removeRouteStop,
+        setActiveRouteIndex,
       }}
     >
       {children}

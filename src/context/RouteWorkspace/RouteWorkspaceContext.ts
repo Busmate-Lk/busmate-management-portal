@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { RouteWorkspaceData, createEmptyRouteWorkspaceData, RouteGroup } from '@/types/RouteWorkspaceData';
+import { RouteWorkspaceData, createEmptyRouteWorkspaceData, RouteGroup, Route, RouteStop } from '@/types/RouteWorkspaceData';
 
 export interface RouteWorkspaceContextType {
   data: RouteWorkspaceData;
@@ -7,6 +7,12 @@ export interface RouteWorkspaceContextType {
   updateFromYaml: (yaml: string) => void;
   getYaml: () => string;
   getRouteGroupData: () => RouteGroup;
+  updateRoute: (routeIndex: number, route: Partial<Route>) => void;
+  updateRouteStop: (routeIndex: number, stopIndex: number, routeStop: Partial<RouteStop>) => void;
+  addRoute: (route: Route) => void;
+  addRouteStop: (routeIndex: number, routeStop: RouteStop) => void;
+  removeRouteStop: (routeIndex: number, stopIndex: number) => void;
+  setActiveRouteIndex: (index: number) => void;
 }
 
 export const RouteWorkspaceContext = createContext<RouteWorkspaceContextType>({
@@ -15,4 +21,10 @@ export const RouteWorkspaceContext = createContext<RouteWorkspaceContextType>({
   updateFromYaml: () => {},
   getYaml: () => '',
   getRouteGroupData: () => createEmptyRouteWorkspaceData().routeGroup,
+  updateRoute: () => {},
+  updateRouteStop: () => {},
+  addRoute: () => {},
+  addRouteStop: () => {},
+  removeRouteStop: () => {},
+  setActiveRouteIndex: () => {},
 });
