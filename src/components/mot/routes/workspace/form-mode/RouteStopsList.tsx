@@ -8,7 +8,7 @@ interface RouteStopsListProps {
 }
 
 export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
-    const { data, updateRouteStop, addRouteStop } = useRouteWorkspace();
+    const { data, updateRouteStop, addRouteStop, setSelectedStop, selectedRouteIndex, selectedStopIndex } = useRouteWorkspace();
     const route = data.routeGroup.routes[routeIndex];
 
     if (!route) {
@@ -88,8 +88,17 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                     <tbody>
                         {tableStops.map((routeStop) => {
                             const actualIndex = stops.findIndex(s => s.orderNumber === routeStop.orderNumber);
+                            const isSelected = selectedRouteIndex === routeIndex && selectedStopIndex === actualIndex;
                             return (
-                                <tr key={routeStop.orderNumber} className="hover:bg-gray-50">
+                                <tr 
+                                    key={routeStop.orderNumber} 
+                                    onClick={() => setSelectedStop(routeIndex, actualIndex)}
+                                    className={`cursor-pointer transition-colors ${
+                                        isSelected 
+                                            ? 'bg-blue-100 hover:bg-blue-150' 
+                                            : 'hover:bg-gray-50'
+                                    }`}
+                                >
                                     <td className={`border border-gray-300 px-2 py-2 ${getOrderBadgeColor(actualIndex)} text-white text-center font-bold`}>
                                         {getStopTypeLabel(actualIndex)}
                                     </td>

@@ -11,6 +11,8 @@ interface RouteWorkspaceProviderProps {
 
 export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps) {
   const [data, setData] = useState<RouteWorkspaceData>(createEmptyRouteWorkspaceData());
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(null);
+  const [selectedStopIndex, setSelectedStopIndex] = useState<number | null>(null);
 
   const updateRouteGroup = useCallback((routeGroup: Partial<RouteGroup>) => {
     setData(prevData => ({
@@ -140,6 +142,16 @@ export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps
     }));
   }, []);
 
+  const setSelectedStop = useCallback((routeIndex: number, stopIndex: number) => {
+    setSelectedRouteIndex(routeIndex);
+    setSelectedStopIndex(stopIndex);
+  }, []);
+
+  const clearSelectedStop = useCallback(() => {
+    setSelectedRouteIndex(null);
+    setSelectedStopIndex(null);
+  }, []);
+
   return (
     <RouteWorkspaceContext.Provider
       value={{
@@ -154,6 +166,10 @@ export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps
         addRouteStop,
         removeRouteStop,
         setActiveRouteIndex,
+        selectedRouteIndex,
+        selectedStopIndex,
+        setSelectedStop,
+        clearSelectedStop,
       }}
     >
       {children}
