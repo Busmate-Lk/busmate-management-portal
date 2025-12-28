@@ -33,9 +33,9 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
     const { data, updateRoute, updateRouteStop, addRouteStop, removeRouteStop, reorderRouteStop, setSelectedStop, selectedRouteIndex, selectedStopIndex, coordinateEditingMode, setCoordinateEditingMode, clearCoordinateEditingMode, mapActions } = useRouteWorkspace();
     const route = data.routeGroup.routes[routeIndex];
     const [activeId, setActiveId] = useState<string | null>(null);
-    const [isDistanceMenuOpen, setIsDistanceMenuOpen] = useState(false);
+    const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
     const [isFetchingDistances, setIsFetchingDistances] = useState(false);
-    const distanceMenuRef = useRef<HTMLDivElement>(null);
+    const actionsMenuRef = useRef<HTMLDivElement>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -51,19 +51,19 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
     // Close menu when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (distanceMenuRef.current && !distanceMenuRef.current.contains(event.target as Node)) {
-                setIsDistanceMenuOpen(false);
+            if (actionsMenuRef.current && !actionsMenuRef.current.contains(event.target as Node)) {
+                setIsActionsMenuOpen(false);
             }
         };
 
-        if (isDistanceMenuOpen) {
+        if (isActionsMenuOpen) {
             document.addEventListener('mousedown', handleClickOutside);
         }
 
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [isDistanceMenuOpen]);
+    }, [isActionsMenuOpen]);
 
     if (!route) {
         return (
@@ -93,7 +93,7 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
         }
 
         setIsFetchingDistances(true);
-        setIsDistanceMenuOpen(false);
+        setIsActionsMenuOpen(false);
 
         try {
             // Use the shared service to fetch directions and calculate distances
@@ -354,37 +354,8 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                                     <th className="border border-gray-300 px-4 py-2 text-left">Id</th>
                                     <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
                                     <th className="border border-gray-300 px-4 py-2 text-left">Existing?</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left relative">
-                                        <div className="flex items-center justify-between">
-                                            <span>Distance (km)</span>
-                                            <div className="relative" ref={distanceMenuRef}>
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setIsDistanceMenuOpen(!isDistanceMenuOpen);
-                                                    }}
-                                                    className="p-1 hover:bg-gray-200 rounded transition-colors"
-                                                    title="Distance options"
-                                                    disabled={isFetchingDistances}
-                                                >
-                                                    {isFetchingDistances ? (
-                                                        <Loader2 className="animate-spin" size={16} />
-                                                    ) : (
-                                                        <EllipsisVertical size={16} />
-                                                    )}
-                                                </button>
-                                                {isDistanceMenuOpen && (
-                                                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 min-w-[180px]">
-                                                        <button
-                                                            onClick={handleFetchDistancesFromMap}
-                                                            className="w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors text-sm"
-                                                        >
-                                                            Fetch from map
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
+                                    <th className="border border-gray-300 px-4 py-2 text-left">
+                                        Distance (km)
                                     </th>
                                     <th className="border border-gray-300 w-6"></th>
                                     <th className="border border-gray-300 w-6"></th>
@@ -417,7 +388,8 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
         <div className="flex flex-col rounded-md px-4 py-2 bg-gray-100">
             <div className="flex justify-between items-center mb-2">
                 <span className="underline">RouteStopsList</span>
-                <button
+                <div className='flex gap-2'>
+                    <button
                     onClick={() => mapActions.fitBoundsToRoute?.()}
                     disabled={!mapActions.fitBoundsToRoute}
                     className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
@@ -429,6 +401,44 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                     </svg>
                     View Full Route
                 </button>
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsActionsMenuOpen(!isActionsMenuOpen);
+                    }}
+                    className="px-1 py-1 text-sm text-black rounded hover:bg-gray-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1 relative"
+                    title="Actions"
+                >
+                    <EllipsisVertical size={16} />
+                    {isActionsMenuOpen && (
+                        <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 min-w-[200px]" ref={actionsMenuRef}>
+                            <button
+                                onClick={handleFetchDistancesFromMap}
+                                disabled={isFetchingDistances}
+                                className="w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isFetchingDistances ? (
+                                    <div className="flex items-center gap-2">
+                                        <Loader2 className="animate-spin" size={14} />
+                                        Fetching...
+                                    </div>
+                                ) : (
+                                    'Fetch all distances from map'
+                                )}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    console.log('Sample action 2 triggered');
+                                    setIsActionsMenuOpen(false);
+                                }}
+                                className="w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors text-sm"
+                            >
+                                Sample action 2
+                            </button>
+                        </div>
+                    )}
+                </button>
+                </div>
             </div>
 
             <DndContext
