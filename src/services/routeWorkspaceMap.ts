@@ -347,13 +347,29 @@ export function applyDistancesToRouteStops(
 }
 
 /**
+ * Generate a custom SVG bullet marker for intermediate stops
+ * Returns a data URL that can be used directly as a marker icon
+ */
+function generateBulletMarkerSvg(color: string, size: number = 12): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${size / 2}" cy="${size / 2}" r="${size / 2}" fill="${color}" stroke="white" stroke-width="1"/>
+  </svg>`;
+  
+  // Convert SVG to base64 data URL
+  const encodedSvg = encodeURIComponent(svg);
+  return `data:image/svg+xml,${encodedSvg}`;
+}
+
+/**
  * Get marker icon URL based on stop type
+ * Start and End stops use Google Maps location pins
+ * Intermediate stops use custom small bullet markers
  */
 export function getMarkerIconUrl(type: 'start' | 'end' | 'intermediate'): string {
   const icons = {
     start: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png',
     end: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png',
-    intermediate: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+    intermediate: generateBulletMarkerSvg('#3b82f6', 12), // Blue bullet for intermediate stops
   };
   return icons[type];
 }

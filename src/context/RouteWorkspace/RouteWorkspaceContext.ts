@@ -21,6 +21,11 @@ export interface RouteWorkspaceContextType {
   coordinateEditingMode: { routeIndex: number; stopIndex: number } | null;
   setCoordinateEditingMode: (routeIndex: number | null, stopIndex: number | null) => void;
   clearCoordinateEditingMode: () => void;
+  mapActions: {
+    fitBoundsToRoute: (() => void) | null;
+  };
+  registerMapAction: (action: 'fitBoundsToRoute', callback: () => void) => void;
+  unregisterMapAction: (action: 'fitBoundsToRoute') => void;
 }
 
 export const RouteWorkspaceContext = createContext<RouteWorkspaceContextType>({
@@ -43,4 +48,9 @@ export const RouteWorkspaceContext = createContext<RouteWorkspaceContextType>({
   coordinateEditingMode: null,
   setCoordinateEditingMode: () => {},
   clearCoordinateEditingMode: () => {},
+  mapActions: {
+    fitBoundsToRoute: null,
+  },
+  registerMapAction: () => {},
+  unregisterMapAction: () => {},
 });

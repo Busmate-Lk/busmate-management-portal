@@ -34,10 +34,11 @@ const mapOptions = {
 };
 
 export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: RouteStopsMapProps) {
-  const { data, coordinateEditingMode, updateRouteStop, updateRoute } = useRouteWorkspace();
+  const { data, coordinateEditingMode, updateRouteStop, updateRoute, selectedRouteIndex, selectedStopIndex, registerMapAction, unregisterMapAction } = useRouteWorkspace();
   const [directionsChunks, setDirectionsChunks] = useState<DirectionsChunk[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastFetchedDistances, setLastFetchedDistances] = useState<Map<number, number> | null>(null);
+  const [currentZoom, setCurrentZoom] = useState<number>(9);
   const mapRef = useRef<google.maps.Map | null>(null);
 
   // Load Google Maps script
@@ -63,6 +64,55 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
     const type = getStopType(stopIndex, validStops.length);
     return getMarkerIconUrl(type);
   };
+
+  // Filter intermediate stops based on zoom level
+  const getVisibleStops = useCallback(() => {
+    if (validStops.length <= 2) return validStops; // Always show start and end
+    
+    // Start and end stops always visible
+    const startStop = validStops[0];
+    const endStop = validStops[validStops.length - 1];
+    const intermediateStops = validStops.slice(1, -1);
+    
+    if (intermediateStops.length === 0) return validStops;
+    
+    // Determine how many intermediate stops to show based on zoom
+    let showEveryNth = 1;
+    if (currentZoom < 10) {
+      showEveryNth = Math.ceil(intermediateStops.length / 6); // Show ~3 intermediate stops
+    } else if (currentZoom < 12) {
+      showEveryNth = Math.ceil(intermediateStops.length / 12); // Show ~5 intermediate stops
+    } else if (currentZoom < 14) {
+      showEveryNth = Math.ceil(intermediateStops.length / 24); // Show ~8 intermediate stops
+    } else {
+      showEveryNth = 1; // Show all intermediate stops
+    }
+    
+    // Filter intermediate stops
+    const visibleIntermediateStops = intermediateStops.filter((_, idx) => idx % showEveryNth === 0);
+    
+    return [startStop, ...visibleIntermediateStops, endStop];
+  }, [validStops, currentZoom]);
+
+  // Expose function to fit bounds to all stops
+  const fitBoundsToRoute = useCallback(() => {
+    if (!mapRef.current || validStops.length === 0) return;
+    
+    const bounds = new google.maps.LatLngBounds();
+    validStops.forEach(stop => {
+      bounds.extend({ lat: stop.lat, lng: stop.lng });
+    });
+    
+    mapRef.current.fitBounds(bounds);
+  }, [validStops]);
+
+  // Register and unregister the fitBoundsToRoute function
+  useEffect(() => {
+    registerMapAction('fitBoundsToRoute', fitBoundsToRoute);
+    return () => {
+      unregisterMapAction('fitBoundsToRoute');
+    };
+  }, [fitBoundsToRoute, registerMapAction, unregisterMapAction]);
 
   const fetchDirections = useCallback(async () => {
     if (!isLoaded || validStops.length < 2) {
@@ -126,6 +176,15 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
   // Store map reference and focus on selected stop when coordinate editing mode is activated
   const handleMapLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
+    
+    // Track zoom changes
+    map.addListener('zoom_changed', () => {
+      const zoom = map.getZoom();
+      if (zoom !== undefined) {
+        setCurrentZoom(zoom);
+      }
+    });
+    
     fetchDirections();
   }, [fetchDirections]);
 
@@ -145,6 +204,22 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
       }
     }
   }, [coordinateEditingMode, routeIndex, routeStops]);
+
+  // Focus on the stop when it's selected from the list
+  useEffect(() => {
+    if (selectedRouteIndex === routeIndex && selectedStopIndex !== null && mapRef.current) {
+      const stop = routeStops[selectedStopIndex];
+      
+      if (stop?.stop?.location?.latitude && stop?.stop?.location?.longitude) {
+        const lat = stop.stop.location.latitude;
+        const lng = stop.stop.location.longitude;
+        
+        // Pan and zoom to the stop
+        mapRef.current.panTo({ lat, lng });
+        mapRef.current.setZoom(14);
+      }
+    }
+  }, [selectedRouteIndex, selectedStopIndex, routeIndex, routeStops]);
 
   const directionsRendererOptions = {
     suppressMarkers: true,
@@ -221,8 +296,13 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
                     />
                   ))
                 )}
-                {validStops.map((stop, index) => {
+                {getVisibleStops().map((stop, index) => {
                   const isEditingThisStop = coordinateEditingMode?.routeIndex === routeIndex && coordinateEditingMode?.stopIndex === stop.originalIndex;
+                  const isSelectedStop = selectedRouteIndex === routeIndex && selectedStopIndex === stop.originalIndex;
+                  const stopType = getStopType(index, validStops.length);
+                  // Use scaledSize only for start/end markers, not for custom bullet markers
+                  const useScaledSize = stopType !== 'intermediate' && (isEditingThisStop || isSelectedStop);
+                  
                   return (
                     <Marker
                       key={stop.id}
@@ -230,10 +310,10 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
                       title={stop.name}
                       icon={{
                         url: getMarkerIcon(index),
-                        // Make marker larger and more prominent when in editing mode
-                        scaledSize: isEditingThisStop ? new google.maps.Size(40, 40) : undefined,
+                        // Only apply scaledSize for start/end pins when editing/selected, not for bullet markers
+                        scaledSize: useScaledSize ? new google.maps.Size(40, 40) : undefined,
                       }}
-                      animation={isEditingThisStop ? google.maps.Animation.BOUNCE : undefined}
+                      animation={(isEditingThisStop || isSelectedStop) ? google.maps.Animation.BOUNCE : undefined}
                     />
                   );
                 })}
