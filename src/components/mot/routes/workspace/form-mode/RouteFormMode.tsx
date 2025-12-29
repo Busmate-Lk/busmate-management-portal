@@ -166,7 +166,7 @@ function RouteGroupInfo() {
                     <input
                         type="text"
                         className="w-200 border border-gray-400 rounded px-2 bg-white"
-                        value={data.routeGroup.name}
+                        value={data.routeGroup.name || ''}
                         onChange={(e) => updateRouteGroup({ name: e.target.value })}
                     />
                 </div>
@@ -175,7 +175,7 @@ function RouteGroupInfo() {
                     <input
                         type="text"
                         className="w-200 border border-gray-400 rounded px-2 bg-white"
-                        value={data.routeGroup.nameSinhala}
+                        value={data.routeGroup.nameSinhala || ''}
                         onChange={(e) => updateRouteGroup({ nameSinhala: e.target.value })}
                     />
                 </div>
@@ -184,7 +184,7 @@ function RouteGroupInfo() {
                     <input
                         type="text"
                         className="w-200 border border-gray-400 rounded px-2 bg-white"
-                        value={data.routeGroup.nameTamil}
+                        value={data.routeGroup.nameTamil || ''}
                         onChange={(e) => updateRouteGroup({ nameTamil: e.target.value })}
                     />
                 </div>
@@ -193,7 +193,7 @@ function RouteGroupInfo() {
                     <textarea
                         className="w-200 border border-gray-400 rounded px-2 bg-white"
                         rows={3}
-                        value={data.routeGroup.description}
+                        value={data.routeGroup.description || ''}
                         onChange={(e) => updateRouteGroup({ description: e.target.value })}
                     ></textarea>
                 </div>
