@@ -10,13 +10,13 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function RouteFormMode() {
     const [activeTab, setActiveTab] = useState<'outbound' | 'inbound'>('outbound');
-    const { 
-        data, 
-        addRoute, 
-        setActiveRouteIndex, 
+    const {
+        data,
+        addRoute,
+        setActiveRouteIndex,
         getRouteIndexByDirection,
         generateRouteFromCorresponding,
-        clearSelectedStop 
+        clearSelectedStop
     } = useRouteWorkspace();
     const { toast } = useToast();
 
@@ -53,30 +53,30 @@ export default function RouteFormMode() {
     const handleTabSwitch = useCallback((tab: 'outbound' | 'inbound') => {
         const targetDirection = tab === 'outbound' ? DirectionEnum.OUTBOUND : DirectionEnum.INBOUND;
         const existingIndex = getRouteIndexByDirection(targetDirection);
-        
+
         // If no route exists for this direction, create one
         if (existingIndex < 0) {
             const newRoute = createEmptyRoute();
             newRoute.direction = targetDirection;
             addRoute(newRoute);
         }
-        
+
         setActiveTab(tab);
     }, [getRouteIndexByDirection, addRoute]);
 
     // Handle auto-generate route
     const handleAutoGenerate = useCallback(() => {
         const targetDirection = activeTab === 'outbound' ? DirectionEnum.OUTBOUND : DirectionEnum.INBOUND;
-        
+
         const result = generateRouteFromCorresponding(targetDirection);
-        
+
         if (result.success) {
             toast({
                 title: "Route Generated Successfully",
                 description: result.message,
                 duration: 5000,
             });
-            
+
             // Show warnings if any
             if (result.warnings.length > 0) {
                 result.warnings.forEach(warning => {
@@ -128,12 +128,11 @@ export default function RouteFormMode() {
                     <button
                         onClick={handleAutoGenerate}
                         disabled={!canAutoGenerate}
-                        className={`ml-4 mx-2 my-1 px-2 py-1 text-sm font-medium text-white border-2 rounded-md transition-colors flex items-center gap-2 ${
-                            canAutoGenerate 
-                                ? 'border-purple-600 bg-purple-700 hover:bg-purple-800 cursor-pointer'
-                                : 'border-gray-400 bg-gray-400 cursor-not-allowed'
-                        }`}
-                        title={canAutoGenerate 
+                        className={`ml-4 mx-2 my-1 px-2 py-1 text-sm font-medium text-white border-2 rounded-md transition-colors flex items-center gap-2 ${canAutoGenerate
+                            ? 'border-purple-600 bg-purple-700 hover:bg-purple-800 cursor-pointer'
+                            : 'border-gray-400 bg-gray-400 cursor-not-allowed'
+                            }`}
+                        title={canAutoGenerate
                             ? `Generate ${activeTab} route by reversing the ${activeTab === 'outbound' ? 'inbound' : 'outbound'} route stops`
                             : `No ${activeTab === 'outbound' ? 'inbound' : 'outbound'} route available to generate from`
                         }
@@ -155,6 +154,13 @@ function RouteGroupInfo() {
         <div className="flex flex-col rounded-md px-6 py-4 bg-gray-200">
             <span className="mb-2 underline">Route Group Info</span>
             <form className="space-y-4">
+                {/* Route group id field(This will be a read only label field and useful in route group updating scenarios) */}
+                <div className="flex gap-0 items-center">
+                    <label className="block text-sm font-medium w-32">Route Group ID :</label>
+                    <span className={`text-sm px-2 py-1 rounded ${data.routeGroup.id ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                        {data.routeGroup.id || 'new'}
+                    </span>
+                </div>
                 <div className="flex">
                     <label className="block text-sm font-medium w-32">Name (English) <span className="text-red-500">*</span></label>
                     <input
@@ -214,6 +220,13 @@ function RouteInfo({ routeIndex }: { routeIndex: number }) {
             <div className="flex flex-col rounded-md px-6 py-4 bg-gray-200">
                 <span className="mb-2 underline">Route Info</span>
                 <form className="space-y-4">
+                    {/* Route id field(This will be a read only label field and useful in route updating scenarios) */}
+                    <div className="flex gap-0 items-center w-full">
+                        <label className="block text-sm font-medium w-32">Route ID :</label>
+                        <span className={`text-sm px-2 py-1 rounded ${route.id ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                            {route.id || 'new'}
+                        </span>
+                    </div>
                     <div className="flex gap-4 w-full">
                         <div className="flex flex-col w-full">
                             <label className="block text-sm font-medium mb-2">Name (English) <span className="text-red-500">*</span></label>
