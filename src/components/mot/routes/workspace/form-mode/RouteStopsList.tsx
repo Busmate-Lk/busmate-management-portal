@@ -2,7 +2,7 @@
 
 import { useRouteWorkspace } from '@/context/RouteWorkspace/useRouteWorkspace';
 import { StopTypeEnum, StopExistenceType, createEmptyRouteStop } from '@/types/RouteWorkspaceData';
-import { GripVertical, LocationEditIcon, Trash, EllipsisVertical, Loader2, Search } from 'lucide-react';
+import { GripVertical, LocationEditIcon, Trash, EllipsisVertical, Loader2, Search, Copy, CopyIcon } from 'lucide-react';
 import {
     DndContext,
     closestCenter,
@@ -24,12 +24,12 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useState, useRef, useEffect } from 'react';
 import { fetchRouteDirections, applyDistancesToRouteStops, extractValidStops, fetchAllStopCoordinates, fetchMissingStopCoordinates, applyCoordinatesToRouteStops, extractStopsForCoordinateFetch } from '@/services/routeWorkspaceMap';
-import { 
-    searchStopExistence, 
-    processStopExistenceResult, 
-    searchAllStopsExistence, 
+import {
+    searchStopExistence,
+    processStopExistenceResult,
+    searchAllStopsExistence,
     applyBulkSearchResultsToRouteStops,
-    canSearchStop 
+    canSearchStop
 } from '@/services/routeWorkspaceValidation';
 import { useToast } from '@/hooks/use-toast';
 
@@ -63,6 +63,30 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
         })
     );
 
+    const handleCopyStopId = (stopId: string | undefined, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!stopId) {
+            toast({
+                title: "No Stop ID",
+                description: "This is a new stop without an ID yet.",
+                variant: "destructive"
+            });
+            return;
+        }
+        navigator.clipboard.writeText(stopId).then(() => {
+            toast({
+                title: "Copied!",
+                description: "Stop ID copied to clipboard."
+            });
+        }).catch(() => {
+            toast({
+                title: "Failed to copy",
+                description: "Could not copy Stop ID to clipboard.",
+                variant: "destructive"
+            });
+        });
+    };
+
     // Close menu when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -94,7 +118,7 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
     const handleFetchDistancesFromMap = async () => {
         // Check if we have enough stops with coordinates
         const validStops = extractValidStops(stops);
-        
+
         if (validStops.length < 2) {
             alert('At least 2 stops with valid coordinates are required to calculate distances.');
             return;
@@ -121,7 +145,7 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
 
             // Update the route with new distances
             updateRoute(routeIndex, { routeStops: updatedStops });
-            
+
             alert(`Distances fetched successfully! Total distance: ${result.totalDistanceKm} km`);
         } catch (error) {
             console.error('Error fetching distances:', error);
@@ -251,7 +275,7 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
             } else {
                 // Stop not found - process result to handle ID clearing
                 const processedResult = processStopExistenceResult(routeStop.stop, result);
-                
+
                 // Update the stop with processed data
                 updateRouteStop(routeIndex, stopIndex, {
                     stop: processedResult.stop
@@ -353,9 +377,9 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
             });
         } else if (field === 'isExisting') {
             updateRouteStop(routeIndex, stopIndex, {
-                stop: { 
-                    ...currentStop.stop, 
-                    type: value ? StopExistenceType.EXISTING : StopExistenceType.NEW 
+                stop: {
+                    ...currentStop.stop,
+                    type: value ? StopExistenceType.EXISTING : StopExistenceType.NEW
                 }
             });
         }
@@ -365,28 +389,28 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
         const insertIndex = stops.length - 1;
         const newOrderNumber = insertIndex;
         const newStop = createEmptyRouteStop(newOrderNumber);
-        
+
         // Create new array with the new stop inserted before the end
         const newStops = [...stops];
         newStops.splice(insertIndex, 0, newStop);
-        
+
         // Recalculate order numbers to be sequential (0, 1, 2, ...)
         newStops.forEach((stop, index) => {
             stop.orderNumber = index;
         });
-        
+
         updateRoute(routeIndex, { routeStops: newStops });
     };
 
     const handleDeleteStop = (stopIndex: number) => {
         // Remove the stop
         const newStops = stops.filter((_, idx) => idx !== stopIndex);
-        
+
         // Recalculate order numbers to be sequential (0, 1, 2, ...)
         newStops.forEach((stop, index) => {
             stop.orderNumber = index;
         });
-        
+
         updateRoute(routeIndex, { routeStops: newStops });
     };
 
@@ -404,7 +428,7 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
 
     const handleToggleCoordinateEditingMode = (stopIndex: number, e: React.MouseEvent) => {
         e.stopPropagation();
-        
+
         // If this stop is already in editing mode, deactivate it
         if (coordinateEditingMode?.routeIndex === routeIndex && coordinateEditingMode?.stopIndex === stopIndex) {
             clearCoordinateEditingMode();
@@ -424,7 +448,7 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
         if (over && active.id !== over.id) {
             const oldIndex = stops.findIndex(stop => `stop-${stop.orderNumber}` === active.id);
             const newIndex = stops.findIndex(stop => `stop-${stop.orderNumber}` === over.id);
-            
+
             if (oldIndex !== -1 && newIndex !== -1) {
                 reorderRouteStop(routeIndex, oldIndex, newIndex);
             }
@@ -466,15 +490,14 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
         };
 
         return (
-            <tr 
+            <tr
                 ref={setNodeRef}
                 style={style}
                 onClick={() => setSelectedStop(routeIndex, actualIndex)}
-                className={`cursor-pointer transition-colors ${
-                    isSelected 
-                        ? 'bg-blue-100 hover:bg-blue-150' 
+                className={`cursor-pointer transition-colors ${isSelected
+                        ? 'bg-blue-100 hover:bg-blue-150'
                         : 'hover:bg-gray-50'
-                } ${isDragging ? 'relative z-50' : ''}`}
+                    } ${isDragging ? 'relative z-50' : ''}`}
             >
                 <td className="border border-gray-300 w-6">
                     <button
@@ -489,8 +512,46 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                 <td className={`border border-gray-300 px-2 py-2 ${getOrderBadgeColor(actualIndex)} text-white text-center font-bold`}>
                     {routeStop.orderNumber}
                 </td>
-                <td className="border border-gray-300 px-4 py-2 text-sm text-gray-600">
-                    {routeStop.stop.id || '(new)'}
+                <td className="border border-gray-300 px-2 py-2 text-sm">
+                    <div className='flex items-center gap-2'>
+                        <div className='flex flex-col gap-1 flex-grow'>
+                            <div className='flex items-center gap-2'>
+                                <span className='font-mono text-xs text-gray-700'>
+                                    {routeStop.stop.id ? routeStop.stop.id.substring(0, 8) + '...' : '(new)'}
+                                </span>
+                                <span className={`inline-block px-2 py-0.5 rounded-full text-white text-xs font-medium ${
+                                    routeStop.stop.type === StopExistenceType.EXISTING ? 'bg-green-500' : 'bg-orange-500'
+                                }`}>
+                                    {routeStop.stop.type === StopExistenceType.EXISTING ? 'Existing' : 'New'}
+                                </span>
+                            </div>
+                        </div>
+                        <div className='flex gap-1'>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSearchSingleStopExistence(actualIndex);
+                                }}
+                                disabled={isSearchingThis || isSearchingAllStops}
+                                className="px-1.5 py-1.5 border border-blue-500 text-blue-500 text-sm rounded hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                                title="Search for existing stop"
+                            >
+                                {isSearchingThis ? (
+                                    <Loader2 className="animate-spin" size={14} />
+                                ) : (
+                                    <Search size={14} />
+                                )}
+                            </button>
+                            <button
+                                onClick={(e) => handleCopyStopId(routeStop.stop.id, e)}
+                                disabled={!routeStop.stop.id}
+                                className="px-1.5 py-1.5 border border-gray-400 text-gray-600 text-sm rounded hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                                title='Copy full Stop ID'
+                            >
+                                <Copy size={14}/>
+                            </button>
+                        </div>
+                    </div>
                 </td>
                 <td className="border border-gray-300">
                     <input
@@ -500,28 +561,6 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                         onBlur={(e) => handleFieldChange(actualIndex, 'stopName', e.target.value)}
                         className="w-full px-4 py-2 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                </td>
-                <td className="border border-gray-300 px-4 py-2 text-center">
-                    <div className="flex items-center justify-center gap-2">
-                        <span className={`inline-block px-2 py-1 rounded-full text-white text-sm ${routeStop.stop.type === StopExistenceType.EXISTING ? 'bg-yellow-500' : 'bg-red-500'}`}>
-                            {routeStop.stop.type === StopExistenceType.EXISTING ? 'exist' : 'new'}
-                        </span>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleSearchSingleStopExistence(actualIndex);
-                            }}
-                            disabled={isSearchingThis || isSearchingAllStops}
-                            className="px-2 py-1 border border-blue-500 text-blue-500 text-sm rounded hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[32px]"
-                            title="Search for existing stop"
-                        >
-                            {isSearchingThis ? (
-                                <Loader2 className="animate-spin" size={14} />
-                            ) : (
-                                <Search size={14} />
-                            )}
-                        </button>
-                    </div>
                 </td>
                 <td className="border border-gray-300">
                     <input
@@ -536,11 +575,10 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                 <td className="border border-gray-300 w-8">
                     <button
                         onClick={(e) => handleToggleCoordinateEditingMode(actualIndex, e)}
-                        className={`p-1 rounded transition-colors ${
-                            isInCoordinateEditingMode 
-                                ? 'text-blue-600 bg-blue-100 hover:bg-blue-200' 
+                        className={`p-1 rounded transition-colors ${isInCoordinateEditingMode
+                                ? 'text-blue-600 bg-blue-100 hover:bg-blue-200'
                                 : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                        }`}
+                            }`}
                         title={isInCoordinateEditingMode ? "Deactivate coordinates editing mode" : "Activate coordinates editing mode on map"}
                     >
                         <LocationEditIcon size={16} />
@@ -566,7 +604,7 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
 
     const StopTable = ({ stops: tableStops, title }: { stops: typeof stops, title: string }) => {
         const sortableIds = tableStops.map(stop => `stop-${stop.orderNumber}`);
-        
+
         return (
             <div>
                 <h3 className="font-semibold mb-3">{title}</h3>
@@ -577,10 +615,9 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                                 <tr className="bg-gray-100">
                                     <th className="w-6"></th>
                                     <th className="border border-gray-300 px-2 py-2 text-left" title='Stop Order Number'>#</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left">Id</th>
+                                    <th className="border border-gray-300 px-4 py-2 text-left" title='Stop ID with existence status'>Stop Id</th>
                                     <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left">Existing?</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left">
+                                    <th className="border border-gray-300 px-4 py-2 text-left" title='Distance from start(km)'>
                                         Distance (km)
                                     </th>
                                     <th className="border border-gray-300 w-6"></th>
@@ -618,120 +655,120 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                 <span className="underline">RouteStopsList</span>
                 <div className='flex gap-2'>
                     <button
-                    onClick={() => mapActions.fitBoundsToRoute?.()}
-                    disabled={!mapActions.fitBoundsToRoute}
-                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
-                    title="View full route on map"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z" clipRule="evenodd" />
-                        <path d="M11 4a1 1 0 10-2 0v1a1 1 0 002 0V4zM10 7a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1H8a1 1 0 110-2h1V8a1 1 0 011-1zM16 9a1 1 0 100 2 1 1 0 000-2zM9 13a1 1 0 011-1h1a1 1 0 110 2v1a1 1 0 11-2 0v-1a1 1 0 01-1-1zM7 16a1 1 0 100-2H4a1 1 0 100 2h3zM15 14a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1z" />
-                    </svg>
-                    View Full Route
-                </button>
-                <div className="relative">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setIsActionsMenuOpen(!isActionsMenuOpen);
-                        }}
-                        disabled={isFetchingAllCoordinates || isFetchingMissingCoordinates || isSearchingAllStops}
-                        className="px-1 py-1 text-sm text-black rounded hover:bg-gray-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
-                        title="Actions"
+                        onClick={() => mapActions.fitBoundsToRoute?.()}
+                        disabled={!mapActions.fitBoundsToRoute}
+                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
+                        title="View full route on map"
                     >
-                        {(isFetchingAllCoordinates || isFetchingMissingCoordinates) ? (
-                            <div className="flex items-center gap-1">
-                                <Loader2 className="animate-spin" size={16} />
-                                <span className="text-xs">{coordinateFetchProgress}</span>
-                            </div>
-                        ) : isSearchingAllStops ? (
-                            <div className="flex items-center gap-1">
-                                <Loader2 className="animate-spin" size={16} />
-                                <span className="text-xs">{searchProgress}</span>
-                            </div>
-                        ) : (
-                            <EllipsisVertical size={16} />
-                        )}
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z" clipRule="evenodd" />
+                            <path d="M11 4a1 1 0 10-2 0v1a1 1 0 002 0V4zM10 7a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1H8a1 1 0 110-2h1V8a1 1 0 011-1zM16 9a1 1 0 100 2 1 1 0 000-2zM9 13a1 1 0 011-1h1a1 1 0 110 2v1a1 1 0 11-2 0v-1a1 1 0 01-1-1zM7 16a1 1 0 100-2H4a1 1 0 100 2h3zM15 14a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1z" />
+                        </svg>
+                        View Full Route
                     </button>
-                    {isActionsMenuOpen && (
-                        <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 min-w-[250px]" ref={actionsMenuRef}>
-                            {/* Coordinates Section */}
-                            <div className="px-3 py-1 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase">
-                                Coordinates
+                    <div className="relative">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsActionsMenuOpen(!isActionsMenuOpen);
+                            }}
+                            disabled={isFetchingAllCoordinates || isFetchingMissingCoordinates || isSearchingAllStops}
+                            className="px-1 py-1 text-sm text-black rounded hover:bg-gray-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
+                            title="Actions"
+                        >
+                            {(isFetchingAllCoordinates || isFetchingMissingCoordinates) ? (
+                                <div className="flex items-center gap-1">
+                                    <Loader2 className="animate-spin" size={16} />
+                                    <span className="text-xs">{coordinateFetchProgress}</span>
+                                </div>
+                            ) : isSearchingAllStops ? (
+                                <div className="flex items-center gap-1">
+                                    <Loader2 className="animate-spin" size={16} />
+                                    <span className="text-xs">{searchProgress}</span>
+                                </div>
+                            ) : (
+                                <EllipsisVertical size={16} />
+                            )}
+                        </button>
+                        {isActionsMenuOpen && (
+                            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 min-w-[250px]" ref={actionsMenuRef}>
+                                {/* Coordinates Section */}
+                                <div className="px-3 py-1 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase">
+                                    Coordinates
+                                </div>
+                                <button
+                                    onClick={handleFetchAllCoordinates}
+                                    disabled={isFetchingAllCoordinates || isFetchingMissingCoordinates}
+                                    className="w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Fetch coordinates for all stops using their names via Google Directions API"
+                                >
+                                    {isFetchingAllCoordinates ? (
+                                        <div className="flex items-center gap-2">
+                                            <Loader2 className="animate-spin" size={14} />
+                                            Fetching all coordinates...
+                                        </div>
+                                    ) : (
+                                        '📍 Fetch all coordinates by names'
+                                    )}
+                                </button>
+                                <button
+                                    onClick={handleFetchMissingCoordinates}
+                                    disabled={isFetchingAllCoordinates || isFetchingMissingCoordinates}
+                                    className="w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Fetch coordinates only for stops that are missing coordinates, using existing coordinates as anchors"
+                                >
+                                    {isFetchingMissingCoordinates ? (
+                                        <div className="flex items-center gap-2">
+                                            <Loader2 className="animate-spin" size={14} />
+                                            Fetching missing coordinates...
+                                        </div>
+                                    ) : (
+                                        '📍 Fetch missing coordinates only'
+                                    )}
+                                </button>
+
+                                {/* Distances Section */}
+                                <div className="px-3 py-1 bg-gray-50 border-b border-t border-gray-200 text-xs font-semibold text-gray-500 uppercase mt-1">
+                                    Distances
+                                </div>
+                                <button
+                                    onClick={handleFetchDistancesFromMap}
+                                    disabled={isFetchingDistances || isFetchingAllCoordinates || isFetchingMissingCoordinates || isSearchingAllStops}
+                                    className="w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Calculate distances from start for all stops using Google Directions API"
+                                >
+                                    {isFetchingDistances ? (
+                                        <div className="flex items-center gap-2">
+                                            <Loader2 className="animate-spin" size={14} />
+                                            Fetching distances...
+                                        </div>
+                                    ) : (
+                                        '📏 Fetch all distances from map'
+                                    )}
+                                </button>
+
+                                {/* Validate Section */}
+                                <div className="px-3 py-1 bg-gray-50 border-b border-t border-gray-200 text-xs font-semibold text-gray-500 uppercase mt-1">
+                                    Validate
+                                </div>
+                                <button
+                                    onClick={handleSearchAllStopsExistence}
+                                    disabled={isFetchingAllCoordinates || isFetchingMissingCoordinates || isFetchingDistances || isSearchingAllStops}
+                                    className="w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Search for existence of all stops in the system by their ID or name"
+                                >
+                                    {isSearchingAllStops ? (
+                                        <div className="flex items-center gap-2">
+                                            <Loader2 className="animate-spin" size={14} />
+                                            {searchProgress || 'Searching stops...'}
+                                        </div>
+                                    ) : (
+                                        '🔍 Search all stops existence'
+                                    )}
+                                </button>
                             </div>
-                            <button
-                                onClick={handleFetchAllCoordinates}
-                                disabled={isFetchingAllCoordinates || isFetchingMissingCoordinates}
-                                className="w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Fetch coordinates for all stops using their names via Google Directions API"
-                            >
-                                {isFetchingAllCoordinates ? (
-                                    <div className="flex items-center gap-2">
-                                        <Loader2 className="animate-spin" size={14} />
-                                        Fetching all coordinates...
-                                    </div>
-                                ) : (
-                                    '📍 Fetch all coordinates by names'
-                                )}
-                            </button>
-                            <button
-                                onClick={handleFetchMissingCoordinates}
-                                disabled={isFetchingAllCoordinates || isFetchingMissingCoordinates}
-                                className="w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Fetch coordinates only for stops that are missing coordinates, using existing coordinates as anchors"
-                            >
-                                {isFetchingMissingCoordinates ? (
-                                    <div className="flex items-center gap-2">
-                                        <Loader2 className="animate-spin" size={14} />
-                                        Fetching missing coordinates...
-                                    </div>
-                                ) : (
-                                    '📍 Fetch missing coordinates only'
-                                )}
-                            </button>
-                            
-                            {/* Distances Section */}
-                            <div className="px-3 py-1 bg-gray-50 border-b border-t border-gray-200 text-xs font-semibold text-gray-500 uppercase mt-1">
-                                Distances
-                            </div>
-                            <button
-                                onClick={handleFetchDistancesFromMap}
-                                disabled={isFetchingDistances || isFetchingAllCoordinates || isFetchingMissingCoordinates || isSearchingAllStops}
-                                className="w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Calculate distances from start for all stops using Google Directions API"
-                            >
-                                {isFetchingDistances ? (
-                                    <div className="flex items-center gap-2">
-                                        <Loader2 className="animate-spin" size={14} />
-                                        Fetching distances...
-                                    </div>
-                                ) : (
-                                    '📏 Fetch all distances from map'
-                                )}
-                            </button>
-                            
-                            {/* Validate Section */}
-                            <div className="px-3 py-1 bg-gray-50 border-b border-t border-gray-200 text-xs font-semibold text-gray-500 uppercase mt-1">
-                                Validate
-                            </div>
-                            <button
-                                onClick={handleSearchAllStopsExistence}
-                                disabled={isFetchingAllCoordinates || isFetchingMissingCoordinates || isFetchingDistances || isSearchingAllStops}
-                                className="w-full px-4 py-2 text-left hover:bg-gray-100 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                title="Search for existence of all stops in the system by their ID or name"
-                            >
-                                {isSearchingAllStops ? (
-                                    <div className="flex items-center gap-2">
-                                        <Loader2 className="animate-spin" size={14} />
-                                        {searchProgress || 'Searching stops...'}
-                                    </div>
-                                ) : (
-                                    '🔍 Search all stops existence'
-                                )}
-                            </button>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -745,8 +782,8 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                 <div className="space-y-6">
                     <StopTable stops={startEndStops} title="Start & End Stops" />
                     <StopTable stops={intermediateStops} title="Intermediate Stops" />
-                    
-                    <button 
+
+                    <button
                         onClick={handleAddIntermediateStop}
                         className="w-full p-3 text-blue-600 border border-dashed border-blue-600 rounded hover:bg-blue-50"
                     >
