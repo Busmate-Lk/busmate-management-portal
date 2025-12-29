@@ -392,10 +392,14 @@ export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps
       const existingIndex = findRouteIndexByDirection(data.routeGroup.routes, targetDirection);
 
       if (existingIndex >= 0) {
-        // Replace the existing route
+        // Replace the existing route, preserving its ID
         setData(prevData => {
           const routes = [...prevData.routeGroup.routes];
-          routes[existingIndex] = result.route;
+          const existingRouteId = routes[existingIndex].id;
+          routes[existingIndex] = {
+            ...result.route,
+            id: existingRouteId, // Preserve the existing route ID
+          };
           return {
             ...prevData,
             routeGroup: {
@@ -405,7 +409,7 @@ export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps
           };
         });
       } else {
-        // Add as new route
+        // Add as new route (ID will be undefined, which is correct for new routes)
         setData(prevData => ({
           ...prevData,
           routeGroup: {
