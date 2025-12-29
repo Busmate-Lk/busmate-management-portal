@@ -2,7 +2,20 @@ import { createContext } from 'react';
 import { RouteWorkspaceData, createEmptyRouteWorkspaceData, RouteGroup, Route, RouteStop, DirectionEnum, createEmptyRoute } from '@/types/RouteWorkspaceData';
 import { RouteAutoGenerationResult, AutoGenerationOptions } from '@/services/routeAutoGeneration';
 
+// Workspace mode: 'create' for new route groups, 'edit' for existing ones
+export type WorkspaceMode = 'create' | 'edit';
+
 export interface RouteWorkspaceContextType {
+  // Mode and loading state
+  mode: WorkspaceMode;
+  isLoading: boolean;
+  loadError: string | null;
+  routeGroupId: string | null;
+  // Load existing route group for editing
+  loadRouteGroup: (routeGroupId: string) => Promise<boolean>;
+  // Reset to create mode
+  resetToCreateMode: () => void;
+  // Data and operations
   data: RouteWorkspaceData;
   updateRouteGroup: (routeGroup: Partial<RouteGroup>) => void;
   updateFromYaml: (yaml: string) => void;
@@ -36,6 +49,14 @@ export interface RouteWorkspaceContextType {
 }
 
 export const RouteWorkspaceContext = createContext<RouteWorkspaceContextType>({
+  // Mode and loading state defaults
+  mode: 'create',
+  isLoading: false,
+  loadError: null,
+  routeGroupId: null,
+  loadRouteGroup: async () => false,
+  resetToCreateMode: () => {},
+  // Data and operations defaults
   data: createEmptyRouteWorkspaceData(),
   updateRouteGroup: () => {},
   updateFromYaml: () => {},

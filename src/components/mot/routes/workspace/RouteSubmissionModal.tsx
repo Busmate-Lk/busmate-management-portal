@@ -9,7 +9,7 @@ import {
   applyBulkSearchResultsToRouteStops,
   BulkStopExistenceSearchResult 
 } from '@/services/routeWorkspaceValidation';
-import { BusStopManagementService, StopRequest, RouteManagementService, RouteGroupRequest } from '@/lib/api-client/route-management';
+import { BusStopManagementService, StopRequest, RouteManagementService, RouteGroupRequest, RouteRequest } from '@/lib/api-client/route-management';
 import { 
   RouteGroup, 
   Route, 
@@ -73,7 +73,7 @@ const initialState: SubmissionState = {
 };
 
 export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissionModalProps) {
-  const { data, updateRoute } = useRouteWorkspace();
+  const { data, updateRoute, mode, routeGroupId } = useRouteWorkspace();
   const [state, setState] = useState<SubmissionState>(initialState);
   const [progress, setProgress] = useState({ current: 0, total: 0, label: '' });
 
@@ -498,12 +498,14 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
         description: routeGroup.description,
         routes: validatedRoutes.map(route => {
           const routeStopsWithIds = route.routeStops.map((routeStop, index) => ({
+            id: routeStop.id, // Include route stop ID for updates
             stopId: getStopId(routeStop.stop),
             stopOrder: index,
             distanceFromStartKm: routeStop.distanceFromStart
           }));
 
           return {
+            id: route.id, // Include route ID for updates
             name: route.name,
             nameSinhala: route.nameSinhala,
             nameTamil: route.nameTamil,
@@ -525,7 +527,7 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
 
       // Console log the final route group object
       console.log('='.repeat(80));
-      console.log('ROUTE GROUP SUBMISSION - Final Request Object');
+      console.log(`ROUTE GROUP ${mode === 'edit' ? 'UPDATE' : 'SUBMISSION'} - Final Request Object`);
       console.log('='.repeat(80));
       console.log(JSON.stringify(routeGroupRequest, null, 2));
       console.log('='.repeat(80));
@@ -533,13 +535,20 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
       setProgress({
         current: 2,
         total: 2,
-        label: 'Submitting route group to server...'
+        label: mode === 'edit' ? 'Updating route group on server...' : 'Submitting route group to server...'
       });
 
-      // Call the API to create the route group
-      const createdRouteGroup = await RouteManagementService.createRouteGroup(routeGroupRequest);
-
-      console.log('Route group created successfully:', createdRouteGroup);
+      // Call the appropriate API based on mode
+      let resultRouteGroup;
+      if (mode === 'edit' && routeGroupId) {
+        // Update existing route group
+        resultRouteGroup = await RouteManagementService.updateRouteGroup(routeGroupId, routeGroupRequest);
+        console.log('Route group updated successfully:', resultRouteGroup);
+      } else {
+        // Create new route group
+        resultRouteGroup = await RouteManagementService.createRouteGroup(routeGroupRequest);
+        console.log('Route group created successfully:', resultRouteGroup);
+      }
 
       setState(prev => ({
         ...prev,
@@ -548,23 +557,23 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
           ...prev.steps,
           routeBuilding: { 
             status: 'completed',
-            message: 'Route group created successfully',
+            message: mode === 'edit' ? 'Route group updated successfully' : 'Route group created successfully',
             details: [
               `Route Group: ${routeGroup.name}`,
-              `Route Group ID: ${createdRouteGroup.id}`,
+              `Route Group ID: ${resultRouteGroup.id}`,
               `Routes: ${validatedRoutes.length}`,
               `Total Stops: ${validatedRoutes.reduce((acc, r) => acc + r.routeStops.length, 0)}`
             ]
           }
         },
         currentStep: 'completed',
-        createdRouteGroupId: createdRouteGroup.id
+        createdRouteGroupId: resultRouteGroup.id
       }));
 
       return true;
     } catch (error: any) {
-      const errorMessage = error.body?.message || error.message || 'Failed to create route group';
-      console.error('Failed to create route group:', error);
+      const errorMessage = error.body?.message || error.message || `Failed to ${mode === 'edit' ? 'update' : 'create'} route group`;
+      console.error(`Failed to ${mode === 'edit' ? 'update' : 'create'} route group:`, error);
       
       setState(prev => ({
         ...prev,
@@ -572,7 +581,7 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
           ...prev.steps,
           routeBuilding: { 
             status: 'failed',
-            message: 'Failed to create route group',
+            message: `Failed to ${mode === 'edit' ? 'update' : 'create'} route group`,
             details: [errorMessage]
           }
         },
@@ -581,7 +590,7 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
       }));
       return false;
     }
-  }, [data.routeGroup]);
+  }, [data.routeGroup, mode, routeGroupId]);
 
   // Main submission flow
   const handleProceed = useCallback(async () => {
@@ -701,30 +710,35 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
   const renderConfirmation = () => (
     <>
       <DialogHeader>
-        <DialogTitle>Submit Route Group</DialogTitle>
+        <DialogTitle>{mode === 'edit' ? 'Update Route Group' : 'Submit Route Group'}</DialogTitle>
         <DialogDescription>
-          Are you sure you want to submit this route group?
+          {mode === 'edit' 
+            ? 'Are you sure you want to update this route group?' 
+            : 'Are you sure you want to submit this route group?'}
         </DialogDescription>
       </DialogHeader>
       
       <div className="py-4">
-        <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+        <div className={`p-4 rounded-lg space-y-2 ${mode === 'edit' ? 'bg-yellow-50' : 'bg-gray-50'}`}>
           <p className="font-medium text-gray-900">{data.routeGroup.name || 'Unnamed Route Group'}</p>
+          {mode === 'edit' && routeGroupId && (
+            <p className="text-xs text-gray-500">ID: {routeGroupId}</p>
+          )}
           <div className="text-sm text-gray-600 space-y-1">
             <p>Routes: {data.routeGroup.routes.length}</p>
             <p>Total Stops: {data.routeGroup.routes.reduce((acc, r) => acc + r.routeStops.length, 0)}</p>
           </div>
         </div>
 
-        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className={`mt-4 p-4 border rounded-lg ${mode === 'edit' ? 'bg-yellow-50 border-yellow-200' : 'bg-blue-50 border-blue-200'}`}>
           <div className="flex gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-800">
-              <p className="font-medium mb-1">Submission Process:</p>
+            <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${mode === 'edit' ? 'text-yellow-600' : 'text-blue-600'}`} />
+            <div className={`text-sm ${mode === 'edit' ? 'text-yellow-800' : 'text-blue-800'}`}>
+              <p className="font-medium mb-1">{mode === 'edit' ? 'Update Process:' : 'Submission Process:'}</p>
               <ol className="list-decimal list-inside space-y-1">
                 <li>Validate all stop existence in the system</li>
                 <li>Create any new stops that don't exist</li>
-                <li>Build and submit the route group</li>
+                <li>{mode === 'edit' ? 'Update the route group' : 'Build and submit the route group'}</li>
               </ol>
             </div>
           </div>
@@ -735,9 +749,12 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
         <Button variant="outline" onClick={handleClose}>
           Cancel
         </Button>
-        <Button onClick={handleProceed}>
+        <Button 
+          onClick={handleProceed}
+          className={mode === 'edit' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
+        >
           <ArrowRight className="w-4 h-4 mr-2" />
-          Proceed
+          {mode === 'edit' ? 'Update' : 'Proceed'}
         </Button>
       </DialogFooter>
     </>
@@ -747,16 +764,18 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
   const renderProcessing = () => (
     <>
       <DialogHeader>
-        <DialogTitle>Submitting Route Group</DialogTitle>
+        <DialogTitle>{mode === 'edit' ? 'Updating Route Group' : 'Submitting Route Group'}</DialogTitle>
         <DialogDescription>
-          Please wait while we process your submission...
+          {mode === 'edit' 
+            ? 'Please wait while we process your update...' 
+            : 'Please wait while we process your submission...'}
         </DialogDescription>
       </DialogHeader>
 
       <div className="py-4 space-y-4">
         {renderStepIndicator(state.steps.validation, 'Stop Validation', 1)}
         {renderStepIndicator(state.steps.stopCreation, 'Create New Stops', 2)}
-        {renderStepIndicator(state.steps.routeBuilding, 'Build Route Group', 3)}
+        {renderStepIndicator(state.steps.routeBuilding, mode === 'edit' ? 'Update Route Group' : 'Build Route Group', 3)}
         
         {renderProgressBar()}
       </div>
@@ -769,10 +788,12 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2 text-green-700">
           <CheckCircle2 className="w-6 h-6" />
-          Submission Complete
+          {mode === 'edit' ? 'Update Complete' : 'Submission Complete'}
         </DialogTitle>
         <DialogDescription>
-          Your route group has been prepared successfully.
+          {mode === 'edit' 
+            ? 'Your route group has been updated successfully.' 
+            : 'Your route group has been created successfully.'}
         </DialogDescription>
       </DialogHeader>
 
@@ -794,7 +815,7 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
             <div className="flex gap-3">
               <CheckCircle2 className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-blue-800">
-                <p className="font-medium">Route Group Created</p>
+                <p className="font-medium">{mode === 'edit' ? 'Route Group Updated' : 'Route Group Created'}</p>
                 <p>ID: {state.createdRouteGroupId}</p>
               </div>
             </div>

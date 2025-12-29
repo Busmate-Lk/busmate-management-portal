@@ -1,8 +1,8 @@
 'use client';
 
 import { ReactNode, useState, useCallback } from 'react';
-import { RouteWorkspaceContext } from './RouteWorkspaceContext';
-import { RouteWorkspaceData, createEmptyRouteWorkspaceData, RouteGroup, Route, RouteStop, createEmptyRoute, moveRouteStop, DirectionEnum } from '@/types/RouteWorkspaceData';
+import { RouteWorkspaceContext, WorkspaceMode } from './RouteWorkspaceContext';
+import { RouteWorkspaceData, createEmptyRouteWorkspaceData, RouteGroup, Route, RouteStop, createEmptyRoute, moveRouteStop, DirectionEnum, StopExistenceType, createEmptyLocation } from '@/types/RouteWorkspaceData';
 import { serializeToYaml, parseFromYaml } from '@/services/routeWorkspaceSerializer';
 import { 
   generateRouteFromCorresponding as generateRouteFromCorrespondingService,
@@ -11,12 +11,19 @@ import {
   AutoGenerationOptions,
   RouteAutoGenerationResult
 } from '@/services/routeAutoGeneration';
+import { RouteManagementService, BusStopManagementService } from '@/lib/api-client/route-management';
 
 interface RouteWorkspaceProviderProps {
   children: ReactNode;
 }
 
 export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps) {
+  // Mode and loading state
+  const [mode, setMode] = useState<WorkspaceMode>('create');
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [routeGroupId, setRouteGroupId] = useState<string | null>(null);
+  
   const [data, setData] = useState<RouteWorkspaceData>(createEmptyRouteWorkspaceData());
   const [selectedRouteIndex, setSelectedRouteIndex] = useState<number | null>(null);
   const [selectedStopIndex, setSelectedStopIndex] = useState<number | null>(null);
@@ -24,6 +31,172 @@ export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps
   const [mapActions, setMapActions] = useState<{ fitBoundsToRoute: (() => void) | null }>({
     fitBoundsToRoute: null,
   });
+
+  // Load existing route group for editing
+  const loadRouteGroup = useCallback(async (id: string): Promise<boolean> => {
+    setIsLoading(true);
+    setLoadError(null);
+    
+    try {
+      // Fetch the route group data
+      const routeGroupResponse = await RouteManagementService.getRouteGroupById(id);
+      
+      if (!routeGroupResponse) {
+        throw new Error('Route group not found');
+      }
+
+      // Fetch full stop details for each route stop
+      const routes: Route[] = [];
+      
+      for (const routeResponse of routeGroupResponse.routes || []) {
+        const routeStops: RouteStop[] = [];
+        
+        for (const routeStopResponse of routeResponse.routeStops || []) {
+          // Fetch full stop details if we have a stopId
+          let stopData;
+          if (routeStopResponse.stopId) {
+            try {
+              const stopResponse = await BusStopManagementService.getStopById(routeStopResponse.stopId);
+              stopData = {
+                id: stopResponse.id || '',
+                name: stopResponse.name || '',
+                nameSinhala: stopResponse.nameSinhala,
+                nameTamil: stopResponse.nameTamil,
+                description: stopResponse.description,
+                location: stopResponse.location ? {
+                  latitude: stopResponse.location.latitude || 0,
+                  longitude: stopResponse.location.longitude || 0,
+                  address: stopResponse.location.address,
+                  city: stopResponse.location.city,
+                  state: stopResponse.location.state,
+                  zipCode: stopResponse.location.zipCode,
+                  country: stopResponse.location.country,
+                  addressSinhala: stopResponse.location.addressSinhala,
+                  citySinhala: stopResponse.location.citySinhala,
+                  stateSinhala: stopResponse.location.stateSinhala,
+                  countrySinhala: stopResponse.location.countrySinhala,
+                  addressTamil: stopResponse.location.addressTamil,
+                  cityTamil: stopResponse.location.cityTamil,
+                  stateTamil: stopResponse.location.stateTamil,
+                  countryTamil: stopResponse.location.countryTamil,
+                } : createEmptyLocation(),
+                isAccessible: stopResponse.isAccessible,
+                type: StopExistenceType.EXISTING,
+              };
+            } catch (error) {
+              console.error(`Failed to fetch stop ${routeStopResponse.stopId}:`, error);
+              // Use basic info from routeStopResponse if full fetch fails
+              stopData = {
+                id: routeStopResponse.stopId || '',
+                name: routeStopResponse.stopName || '',
+                location: routeStopResponse.location ? {
+                  latitude: routeStopResponse.location.latitude || 0,
+                  longitude: routeStopResponse.location.longitude || 0,
+                  address: routeStopResponse.location.address,
+                  city: routeStopResponse.location.city,
+                  state: routeStopResponse.location.state,
+                  zipCode: routeStopResponse.location.zipCode,
+                  country: routeStopResponse.location.country,
+                  addressSinhala: routeStopResponse.location.addressSinhala,
+                  citySinhala: routeStopResponse.location.citySinhala,
+                  stateSinhala: routeStopResponse.location.stateSinhala,
+                  countrySinhala: routeStopResponse.location.countrySinhala,
+                  addressTamil: routeStopResponse.location.addressTamil,
+                  cityTamil: routeStopResponse.location.cityTamil,
+                  stateTamil: routeStopResponse.location.stateTamil,
+                  countryTamil: routeStopResponse.location.countryTamil,
+                } : createEmptyLocation(),
+                type: StopExistenceType.EXISTING,
+              };
+            }
+          } else {
+            // No stopId, create from basic info
+            stopData = {
+              id: '',
+              name: routeStopResponse.stopName || '',
+              location: routeStopResponse.location ? {
+                latitude: routeStopResponse.location.latitude || 0,
+                longitude: routeStopResponse.location.longitude || 0,
+                address: routeStopResponse.location.address,
+                city: routeStopResponse.location.city,
+                state: routeStopResponse.location.state,
+                zipCode: routeStopResponse.location.zipCode,
+                country: routeStopResponse.location.country,
+                addressSinhala: routeStopResponse.location.addressSinhala,
+                citySinhala: routeStopResponse.location.citySinhala,
+                stateSinhala: routeStopResponse.location.stateSinhala,
+                countrySinhala: routeStopResponse.location.countrySinhala,
+                addressTamil: routeStopResponse.location.addressTamil,
+                cityTamil: routeStopResponse.location.cityTamil,
+                stateTamil: routeStopResponse.location.stateTamil,
+                countryTamil: routeStopResponse.location.countryTamil,
+              } : createEmptyLocation(),
+              type: StopExistenceType.NEW,
+            };
+          }
+
+          routeStops.push({
+            orderNumber: routeStopResponse.stopOrder ?? routeStops.length,
+            distanceFromStart: routeStopResponse.distanceFromStartKm ?? 0,
+            stop: stopData,
+          });
+        }
+
+        routes.push({
+          id: routeResponse.id,
+          name: routeResponse.name || '',
+          nameSinhala: routeResponse.nameSinhala,
+          nameTamil: routeResponse.nameTamil,
+          routeNumber: routeResponse.routeNumber,
+          description: routeResponse.description,
+          direction: (routeResponse.direction as DirectionEnum) || DirectionEnum.OUTBOUND,
+          roadType: routeResponse.roadType as any || 'NORMALWAY',
+          routeThrough: routeResponse.routeThrough,
+          routeThroughSinhala: routeResponse.routeThroughSinhala,
+          routeThroughTamil: routeResponse.routeThroughTamil,
+          distanceKm: routeResponse.distanceKm,
+          estimatedDurationMinutes: routeResponse.estimatedDurationMinutes,
+          startStopId: routeResponse.startStopId,
+          endStopId: routeResponse.endStopId,
+          routeStops,
+        });
+      }
+
+      // Set the loaded data
+      setData({
+        routeGroup: {
+          id: routeGroupResponse.id,
+          name: routeGroupResponse.name || '',
+          nameSinhala: routeGroupResponse.nameSinhala,
+          nameTamil: routeGroupResponse.nameTamil,
+          description: routeGroupResponse.description,
+          routes,
+        },
+      });
+
+      setRouteGroupId(id);
+      setMode('edit');
+      setIsLoading(false);
+      return true;
+    } catch (error: any) {
+      const errorMessage = error.body?.message || error.message || 'Failed to load route group';
+      console.error('Failed to load route group:', error);
+      setLoadError(errorMessage);
+      setIsLoading(false);
+      return false;
+    }
+  }, []);
+
+  // Reset to create mode
+  const resetToCreateMode = useCallback(() => {
+    setData(createEmptyRouteWorkspaceData());
+    setMode('create');
+    setRouteGroupId(null);
+    setLoadError(null);
+    setSelectedRouteIndex(null);
+    setSelectedStopIndex(null);
+    setCoordinateEditingModeState(null);
+  }, []);
 
   const updateRouteGroup = useCallback((routeGroup: Partial<RouteGroup>) => {
     setData(prevData => ({
@@ -279,6 +452,14 @@ export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps
   return (
     <RouteWorkspaceContext.Provider
       value={{
+        // Mode and loading state
+        mode,
+        isLoading,
+        loadError,
+        routeGroupId,
+        loadRouteGroup,
+        resetToCreateMode,
+        // Data and operations
         data,
         updateRouteGroup,
         updateFromYaml,
