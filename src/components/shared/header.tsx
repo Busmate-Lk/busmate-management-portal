@@ -38,6 +38,7 @@ function toRelativeTime(dateStr?: string) {
 export function Header({ pageTitle, pageDescription }: HeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const { user, logout, isLoading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
@@ -47,6 +48,11 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
 
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(false)
+
+  // Set mounted to true after component mounts to prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Fetch notifications from backend
   useEffect(() => {
@@ -247,8 +253,8 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
     }
   }
 
-  // Show loading state if auth is still loading
-  if (isLoading) {
+  // Show loading state if auth is still loading or component hasn't mounted yet
+  if (!mounted || isLoading) {
     return (
       <div className="bg-white border-b border-gray-200 px-6 py-4 h-20 flex items-center sticky top-0 z-50">
         <div className="flex items-center justify-between w-full">

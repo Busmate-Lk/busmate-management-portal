@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import RouteFormMode from '@/components/mot/routes/workspace/form-mode/RouteFormMode';
 import RouteTextualMode from '@/components/mot/routes/workspace/textual-mode/RouteTextualMode';
@@ -77,8 +77,8 @@ function RouteWorkspaceContent() {
                     <div className="flex flex-col items-center gap-4 text-center">
                         <div className="text-red-600 text-lg font-semibold">Failed to load route group</div>
                         <p className="text-gray-600">{loadError}</p>
-                        <a 
-                            href="/mot/routes/workspace" 
+                        <a
+                            href="/mot/routes/workspace"
                             className="text-blue-600 hover:underline"
                         >
                             Create a new route group instead
@@ -90,8 +90,8 @@ function RouteWorkspaceContent() {
     }
 
     const pageTitle = mode === 'edit' ? 'Edit Route Group' : 'Create Route Group';
-    const pageDescription = mode === 'edit' 
-        ? 'Update an existing route group and its routes' 
+    const pageDescription = mode === 'edit'
+        ? 'Update an existing route group and its routes'
         : 'Create a new bus route group with routes';
 
     return (
@@ -109,8 +109,8 @@ function RouteWorkspaceContent() {
                         <button
                             onClick={() => setActiveTab('form')}
                             className={`px-4 py-2 font-medium transition-colors ${activeTab === 'form'
-                                    ? 'text-white bg-blue-800'
-                                    : 'text-gray-600 hover:text-gray-900'
+                                ? 'text-white bg-blue-800'
+                                : 'text-gray-600 hover:text-gray-900'
                                 }`}
                         >
                             Form Mode
@@ -118,28 +118,26 @@ function RouteWorkspaceContent() {
                         <button
                             onClick={() => setActiveTab('textual')}
                             className={`px-4 py-2 font-medium transition-colors ${activeTab === 'textual'
-                                    ? 'text-white bg-blue-800'
-                                    : 'text-gray-600 hover:text-gray-900'
+                                ? 'text-white bg-blue-800'
+                                : 'text-gray-600 hover:text-gray-900'
                                 }`}
                         >
                             Textual Mode
                         </button>
                         {/* Mode indicator badge */}
-                        <span className={`px-3 py-1 text-xs font-medium rounded-full ml-2 ${
-                            mode === 'edit' 
-                                ? 'bg-yellow-100 text-yellow-800' 
+                        <span className={`px-3 py-1 text-xs font-medium rounded-full ml-2 ${mode === 'edit'
+                                ? 'bg-yellow-100 text-yellow-800'
                                 : 'bg-green-100 text-green-800'
-                        }`}>
+                            }`}>
                             {mode === 'edit' ? 'Edit Mode' : 'Create Mode'}
                         </span>
                     </div>
                     <button
                         onClick={handleSubmit}
-                        className={`px-4 py-2 font-medium text-white transition-colors ${
-                            mode === 'edit' 
-                                ? 'bg-yellow-600 hover:bg-yellow-700' 
+                        className={`px-4 py-2 font-medium text-white transition-colors ${mode === 'edit'
+                                ? 'bg-yellow-600 hover:bg-yellow-700'
                                 : 'bg-green-600 hover:bg-green-700'
-                        }`}
+                            }`}
                     >
                         {mode === 'edit' ? 'Update' : 'Submit'}
                     </button>
@@ -157,7 +155,14 @@ function RouteWorkspaceContent() {
 export default function RoutesWorkspacePage() {
     return (
         <RouteWorkspaceProvider>
-            <RouteWorkspaceContent />
+            <Suspense fallback={
+                <div className="flex flex-col h-96 justify-center items-center gap-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                    <p className="text-gray-600">Loading routes workspace...</p>
+                </div>
+            }>
+                <RouteWorkspaceContent />
+            </Suspense>
             <Toaster />
         </RouteWorkspaceProvider>
     );
