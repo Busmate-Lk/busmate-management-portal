@@ -86,8 +86,12 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
   }, [isOpen]);
 
   // Step 1: Validate all stops existence
-  // Returns the list of stops that need to be created
-  const validateStops = useCallback(async (): Promise<{ success: boolean; stopsToCreate: Stop[] }> => {
+  // Returns the list of stops that need to be created AND the validated routes with updated stop IDs
+  const validateStops = useCallback(async (): Promise<{ 
+    success: boolean; 
+    stopsToCreate: Stop[];
+    validatedRoutes: Route[];
+  }> => {
     setState(prev => ({
       ...prev,
       currentStep: 'validating',
@@ -121,13 +125,14 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
           currentStep: 'failed',
           error: 'No stops found in any route'
         }));
-        return { success: false, stopsToCreate: [] };
+        return { success: false, stopsToCreate: [], validatedRoutes: [] };
       }
 
-      // Validate stops for each route
+      // Validate stops for each route and build validated routes array
       const stopsToCreate: Stop[] = [];
       const existingStops: Stop[] = [];
       const validationDetails: string[] = [];
+      const validatedRoutes: Route[] = [];
 
       for (let routeIndex = 0; routeIndex < data.routeGroup.routes.length; routeIndex++) {
         const route = data.routeGroup.routes[routeIndex];
@@ -135,6 +140,8 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
 
         if (routeStops.length === 0) {
           validationDetails.push(`Route "${route.name}" has no stops`);
+          // Keep the route as-is even if it has no stops
+          validatedRoutes.push(route);
           continue;
         }
 
@@ -158,7 +165,15 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
 
         // Update route stops with validation results
         const updatedRouteStops = applyBulkSearchResultsToRouteStops(routeStops, results);
+        
+        // Still update the context for UI purposes (though it's async)
         updateRoute(routeIndex, { routeStops: updatedRouteStops });
+        
+        // Add the validated route to our array (this is what buildRouteGroup will use)
+        validatedRoutes.push({
+          ...route,
+          routeStops: updatedRouteStops
+        });
 
         // Categorize stops
         results.results.forEach(result => {
@@ -183,6 +198,7 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
       }
 
       console.log('Validation complete. Stops to create:', stopsToCreate);
+      console.log('Validated routes with updated stop IDs:', validatedRoutes.length);
 
       setState(prev => ({
         ...prev,
@@ -202,7 +218,7 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
         }
       }));
 
-      return { success: true, stopsToCreate };
+      return { success: true, stopsToCreate, validatedRoutes };
     } catch (error: any) {
       setState(prev => ({
         ...prev,
@@ -217,7 +233,7 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
         currentStep: 'failed',
         error: error.message || 'Validation failed'
       }));
-      return { success: false, stopsToCreate: [] };
+      return { success: false, stopsToCreate: [], validatedRoutes: [] };
     }
   }, [data.routeGroup.routes, updateRoute]);
 
@@ -397,9 +413,11 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
   }, [data.routeGroup.routes, updateRoute]);
 
   // Step 3: Build final route group object
-  // Now accepts createdStops mapping to look up IDs for newly created stops
-  // This avoids relying on async React state updates
-  const buildRouteGroup = useCallback(async (createdStopsMapping: { original: Stop; created: Stop }[]) => {
+  // Now accepts validatedRoutes and createdStops mapping to avoid relying on async React state updates
+  const buildRouteGroup = useCallback(async (
+    validatedRoutes: Route[],
+    createdStopsMapping: { original: Stop; created: Stop }[]
+  ) => {
     setState(prev => ({
       ...prev,
       currentStep: 'building-route',
@@ -419,7 +437,7 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
     });
 
     try {
-      // Get data from context
+      // Use the route group info from context, but use validatedRoutes for the routes themselves
       const routeGroup = data.routeGroup;
       
       // Create a map of original stop names to their created IDs
@@ -439,13 +457,14 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
         if (stop.name && createdStopIdMap.has(stop.name)) {
           return createdStopIdMap.get(stop.name)!;
         }
-        // Otherwise use the existing ID
+        // Otherwise use the existing ID (from validation)
         return stop.id || '';
       };
       
       // Validate all stops have IDs (either existing or from created mapping)
+      // Use validatedRoutes which have the correct stop IDs from validation
       const stopsWithoutIds: string[] = [];
-      routeGroup.routes.forEach(route => {
+      validatedRoutes.forEach(route => {
         route.routeStops.forEach(routeStop => {
           const stopId = getStopId(routeStop.stop);
           if (!stopId || stopId.trim() === '') {
@@ -471,13 +490,13 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
         return false;
       }
 
-      // Build the route group request object using the helper to get correct IDs
+      // Build the route group request object using validatedRoutes and the helper to get correct IDs
       const routeGroupRequest: RouteGroupRequest = {
         name: routeGroup.name,
         nameSinhala: routeGroup.nameSinhala,
         nameTamil: routeGroup.nameTamil,
         description: routeGroup.description,
-        routes: routeGroup.routes.map(route => {
+        routes: validatedRoutes.map(route => {
           const routeStopsWithIds = route.routeStops.map((routeStop, index) => ({
             stopId: getStopId(routeStop.stop),
             stopOrder: index,
@@ -533,8 +552,8 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
             details: [
               `Route Group: ${routeGroup.name}`,
               `Route Group ID: ${createdRouteGroup.id}`,
-              `Routes: ${routeGroup.routes.length}`,
-              `Total Stops: ${routeGroup.routes.reduce((acc, r) => acc + r.routeStops.length, 0)}`
+              `Routes: ${validatedRoutes.length}`,
+              `Total Stops: ${validatedRoutes.reduce((acc, r) => acc + r.routeStops.length, 0)}`
             ]
           }
         },
@@ -566,10 +585,10 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
 
   // Main submission flow
   const handleProceed = useCallback(async () => {
-    // Step 1: Validation - returns the stops that need to be created
+    // Step 1: Validation - returns the stops that need to be created AND validated routes with correct IDs
     console.log("Step 1: Starting validation...");
     const validationResult = await validateStops();
-    console.log("Step 1 complete. Success:", validationResult.success, "Stops to create:", validationResult.stopsToCreate.length);
+    console.log("Step 1 complete. Success:", validationResult.success, "Stops to create:", validationResult.stopsToCreate.length, "Validated routes:", validationResult.validatedRoutes.length);
     
     if (!validationResult.success) return;
 
@@ -580,9 +599,9 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
     
     if (!creationResult.success) return;
 
-    // Step 3: Build route group - pass the created stops mapping to avoid async state issues
+    // Step 3: Build route group - pass the validated routes AND created stops mapping to avoid async state issues
     console.log("Step 3: Building route group...");
-    await buildRouteGroup(creationResult.createdStops);
+    await buildRouteGroup(validationResult.validatedRoutes, creationResult.createdStops);
     console.log("Step 3 complete.");
   }, [validateStops, createNewStops, buildRouteGroup]);
 
