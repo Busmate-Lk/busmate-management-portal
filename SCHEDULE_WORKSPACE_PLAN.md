@@ -8,6 +8,285 @@ The workspace is designed to handle multiple schedules simultaneously in a singl
 
 The schedule workspace should provide an intuitive, dual-pane editor interface that allows users to create, edit, and visualize multiple bus schedules through both tabular and graphical representations. It must support both form-based editing and textual (YAML) editing modes, with real-time synchronization between modes.
 
+#### Data Models and Examples
+
+##### Input: Route Object (from Backend API)
+The workspace receives route data from the route-management-service. This is the foundation for creating schedules.
+
+**Sample Route Response:**
+```typescript
+{
+  id: "550e8400-e29b-41d4-a716-446655440000",
+  name: "Colombo Fort - Kaduwela",
+  nameSinhala: "කොළඹ කොටුව - කඩුවෙල",
+  nameTamil: "கொழும்பு கோட்டை - கடுவெல",
+  routeNumber: "138",
+  description: "Main route via Rajagiriya",
+  roadType: "NORMALWAY",
+  direction: "OUTBOUND",
+  distanceKm: 18.5,
+  estimatedDurationMinutes: 45,
+  routeGroupId: "660e8400-e29b-41d4-a716-446655440000",
+  routeGroupName: "Colombo - Kaduwela Route Group",
+  startStopId: "770e8400-e29b-41d4-a716-446655440001",
+  startStopName: "Colombo Fort",
+  endStopId: "770e8400-e29b-41d4-a716-446655440010",
+  endStopName: "Kaduwela",
+  routeStops: [
+    {
+      id: "880e8400-e29b-41d4-a716-446655440001",
+      stopId: "770e8400-e29b-41d4-a716-446655440001",
+      stopName: "Colombo Fort",
+      stopOrder: 0,
+      distanceFromStartKm: 0,
+      location: {
+        latitude: 6.9344,
+        longitude: 79.8428,
+        address: "Fort Railway Station",
+        city: "Colombo",
+        country: "Sri Lanka"
+      }
+    },
+    {
+      id: "880e8400-e29b-41d4-a716-446655440002",
+      stopId: "770e8400-e29b-41d4-a716-446655440002",
+      stopName: "Borella",
+      stopOrder: 1,
+      distanceFromStartKm: 3.2,
+      location: {
+        latitude: 6.9147,
+        longitude: 79.8803
+      }
+    },
+    {
+      id: "880e8400-e29b-41d4-a716-446655440003",
+      stopId: "770e8400-e29b-41d4-a716-446655440003",
+      stopName: "Rajagiriya",
+      stopOrder: 2,
+      distanceFromStartKm: 8.5,
+      location: {
+        latitude: 6.9094,
+        longitude: 79.8917
+      }
+    },
+    // ... more stops
+    {
+      id: "880e8400-e29b-41d4-a716-446655440010",
+      stopId: "770e8400-e29b-41d4-a716-446655440010",
+      stopName: "Kaduwela",
+      stopOrder: 9,
+      distanceFromStartKm: 18.5,
+      location: {
+        latitude: 6.9333,
+        longitude: 79.9833
+      }
+    }
+  ]
+}
+```
+
+##### Output: Schedule Objects (to Backend API)
+The workspace generates and sends schedule data in bulk to the backend for creation or updates.
+
+**Sample Schedule Requests (Bulk):**
+```typescript
+// Array of schedules for the same route
+[
+  // Schedule 1: Weekday Morning Schedule
+  {
+    name: "Weekday Morning Express",
+    routeId: "550e8400-e29b-41d4-a716-446655440000",
+    scheduleType: "REGULAR",
+    effectiveStartDate: "2026-01-01",
+    effectiveEndDate: "2026-12-31",
+    status: "ACTIVE",
+    description: "Express service for morning commuters",
+    calendar: {
+      monday: true,
+      tuesday: true,
+      wednesday: true,
+      thursday: true,
+      friday: true,
+      saturday: false,
+      sunday: false
+    },
+    scheduleStops: [
+      {
+        stopId: "770e8400-e29b-41d4-a716-446655440001",
+        stopOrder: 0,
+        arrivalTime: "06:00:00",
+        departureTime: "06:00:00"
+      },
+      {
+        stopId: "770e8400-e29b-41d4-a716-446655440002",
+        stopOrder: 1,
+        arrivalTime: "06:08:00",
+        departureTime: "06:09:00"
+      },
+      {
+        stopId: "770e8400-e29b-41d4-a716-446655440003",
+        stopOrder: 2,
+        arrivalTime: "06:18:00",
+        departureTime: "06:19:00"
+      },
+      // ... more stops with times
+      {
+        stopId: "770e8400-e29b-41d4-a716-446655440010",
+        stopOrder: 9,
+        arrivalTime: "06:45:00",
+        departureTime: "06:45:00"
+      }
+    ],
+    exceptions: [
+      {
+        exceptionDate: "2026-01-01",
+        exceptionType: "REMOVED" // New Year's Day - no service
+      },
+      {
+        exceptionDate: "2026-02-04",
+        exceptionType: "REMOVED" // Independence Day
+      }
+    ]
+  },
+  
+  // Schedule 2: Weekday Evening Schedule
+  {
+    name: "Weekday Evening Regular",
+    routeId: "550e8400-e29b-41d4-a716-446655440000",
+    scheduleType: "REGULAR",
+    effectiveStartDate: "2026-01-01",
+    effectiveEndDate: "2026-12-31",
+    status: "ACTIVE",
+    description: "Regular service for evening commuters",
+    calendar: {
+      monday: true,
+      tuesday: true,
+      wednesday: true,
+      thursday: true,
+      friday: true,
+      saturday: false,
+      sunday: false
+    },
+    scheduleStops: [
+      {
+        stopId: "770e8400-e29b-41d4-a716-446655440001",
+        stopOrder: 0,
+        arrivalTime: "17:30:00",
+        departureTime: "17:30:00"
+      },
+      {
+        stopId: "770e8400-e29b-41d4-a716-446655440002",
+        stopOrder: 1,
+        arrivalTime: "17:40:00",
+        departureTime: "17:42:00"
+      },
+      // ... more stops with times
+    ]
+  },
+  
+  // Schedule 3: Weekend Schedule
+  {
+    name: "Weekend Service",
+    routeId: "550e8400-e29b-41d4-a716-446655440000",
+    scheduleType: "REGULAR",
+    effectiveStartDate: "2026-01-01",
+    effectiveEndDate: "2026-12-31",
+    status: "ACTIVE",
+    description: "Relaxed weekend schedule with longer intervals",
+    calendar: {
+      monday: false,
+      tuesday: false,
+      wednesday: false,
+      thursday: false,
+      friday: false,
+      saturday: true,
+      sunday: true
+    },
+    scheduleStops: [
+      {
+        stopId: "770e8400-e29b-41d4-a716-446655440001",
+        stopOrder: 0,
+        arrivalTime: "08:00:00",
+        departureTime: "08:00:00"
+      },
+      // ... more stops with times (slower schedule)
+    ]
+  },
+  
+  // Schedule 4: Holiday Special
+  {
+    name: "Vesak Day Special",
+    routeId: "550e8400-e29b-41d4-a716-446655440000",
+    scheduleType: "SPECIAL",
+    effectiveStartDate: "2026-05-15",
+    effectiveEndDate: "2026-05-15",
+    status: "PENDING",
+    description: "Special limited service for Vesak Day",
+    calendar: {
+      monday: false,
+      tuesday: false,
+      wednesday: false,
+      thursday: false,
+      friday: true, // Vesak Day 2026
+      saturday: false,
+      sunday: false
+    },
+    scheduleStops: [
+      // Reduced stops, only major ones
+    ]
+  }
+]
+```
+
+**Sample YAML Format (for Textual Mode):**
+```yaml
+route_id: "550e8400-e29b-41d4-a716-446655440000"
+route_name: "Colombo Fort - Kaduwela"
+schedules:
+  - name: "Weekday Morning Express"
+    schedule_type: REGULAR
+    effective_start_date: "2026-01-01"
+    effective_end_date: "2026-12-31"
+    status: ACTIVE
+    description: "Express service for morning commuters"
+    calendar:
+      monday: true
+      tuesday: true
+      wednesday: true
+      thursday: true
+      friday: true
+      saturday: false
+      sunday: false
+    schedule_stops:
+      - stop_id: "770e8400-e29b-41d4-a716-446655440001"
+        stop_name: "Colombo Fort"
+        stop_order: 0
+        arrival_time: "06:00:00"
+        departure_time: "06:00:00"
+      - stop_id: "770e8400-e29b-41d4-a716-446655440002"
+        stop_name: "Borella"
+        stop_order: 1
+        arrival_time: "06:08:00"
+        departure_time: "06:09:00"
+    exceptions:
+      - exception_date: "2026-01-01"
+        exception_type: REMOVED
+        
+  - name: "Weekend Service"
+    schedule_type: REGULAR
+    effective_start_date: "2026-01-01"
+    effective_end_date: "2026-12-31"
+    status: ACTIVE
+    calendar:
+      saturday: true
+      sunday: true
+    schedule_stops:
+      - stop_id: "770e8400-e29b-41d4-a716-446655440001"
+        stop_order: 0
+        arrival_time: "08:00:00"
+        departure_time: "08:00:00"
+```
+
 #### Key Requirements
 - **Route Selection**: Users must first select an existing route from the route management service before creating or editing schedules.
 - **Bulk Schedule Operations**: The workspace handles multiple schedules simultaneously:
@@ -197,11 +476,6 @@ The schedule workspace should provide an intuitive, dual-pane editor interface t
 
 ##### 9. Additional Features
 - **Schedule Templates**: Pre-defined templates for common schedule patterns (can generate multiple schedules at once).
-- **Bulk Import/Export**: CSV/Excel import for creating multiple schedules or bulk time entry.
-- **Schedule Comparison**: Side-by-side comparison of two or more schedules in the workspace.
-- **Schedule Variants Generator**: Auto-create variants (weekend, holiday) from a base weekday schedule.
-- **Version History**: Track changes for each schedule independently.
-- **Mobile Responsiveness**: Adapt layout for different screen sizes, simplified multi-schedule view on mobile.
 
 ##### 10. Implementation Steps
 1. Set up basic page structure and routing with support for multiple schedule IDs in URL.
@@ -214,12 +488,12 @@ The schedule workspace should provide an intuitive, dual-pane editor interface t
 8. Implement validation for single and cross-schedule scenarios.
 9. Add bulk save/submission modal with per-schedule progress tracking.
 10. Implement schedule auto-generation and variant creation.
-11. Add advanced features (templates, bulk import/export, comparison).
+11. Add advanced features (templates).
 
 #### Dependencies and Libraries
-- Existing UI libraries (shadcn/ui, Tailwind CSS).
+- Existing UI libraries (Tailwind CSS).
 - Simple SVG or Canvas for diagram rendering.
-- Date/time handling (date-fns or dayjs).
+- Date/time handling (date-fns).
 - YAML parsing (js-yaml).
 - Form validation (react-hook-form or similar).
 
