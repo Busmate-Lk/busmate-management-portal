@@ -71,9 +71,15 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
     setLoadError(null);
 
     try {
+      // Fetch route details to get route stops
+      const routeDetails = await RouteManagementService.getRouteById(routeId);
+      const routeStops = routeStopsToReferences(routeDetails.routeStops);
+      
       // Fetch schedules for the route from API
       const schedulesResponse = await ScheduleManagementService.getSchedulesByRoute(routeId);
-      const schedules = (schedulesResponse.content || []).map(scheduleResponseToWorkspace);
+      const schedules = (schedulesResponse.content || []).map(response => 
+        scheduleResponseToWorkspace(response, routeStops)
+      );
       
       if (schedules.length > 0) {
         setMode('edit');
@@ -81,6 +87,7 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
           ...prev,
           schedules,
           activeScheduleIndex: 0,
+          routeStops,
         }));
       }
       
@@ -135,7 +142,9 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
 
       // Fetch existing schedules for this route
       const schedulesResponse = await ScheduleManagementService.getSchedulesByRoute(routeId);
-      let schedules = (schedulesResponse.content || []).map(scheduleResponseToWorkspace);
+      let schedules = (schedulesResponse.content || []).map(response => 
+        scheduleResponseToWorkspace(response, routeStops)
+      );
       
       // If no existing schedules, create one empty schedule for the route
       if (schedules.length === 0) {

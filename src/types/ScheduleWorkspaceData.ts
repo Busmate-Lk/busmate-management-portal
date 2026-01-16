@@ -521,8 +521,10 @@ type RouteResponseType = {
 
 /**
  * Converts an API ScheduleResponse to workspace Schedule format
+ * Note: This returns schedule with sparse stop data as received from API.
+ * Use mergeScheduleWithRouteStops() to populate all route stops.
  */
-export function scheduleResponseToWorkspace(response: ScheduleResponseType): Schedule {
+export function scheduleResponseToWorkspace(response: ScheduleResponseType, routeStops?: RouteStopReference[]): Schedule {
   // Get calendar from first calendar entry (there should only be one)
   const apiCalendar = response.scheduleCalendars?.[0];
   const calendar: ScheduleCalendar = apiCalendar ? {
@@ -535,8 +537,8 @@ export function scheduleResponseToWorkspace(response: ScheduleResponseType): Sch
     sunday: apiCalendar.sunday ?? false,
   } : createEmptyCalendar();
 
-  // Convert schedule stops
-  const scheduleStops: ScheduleStop[] = (response.scheduleStops || [])
+  // Convert schedule stops from API
+  const apiScheduleStops: ScheduleStop[] = (response.scheduleStops || [])
     .sort((a, b) => (a.stopOrder ?? 0) - (b.stopOrder ?? 0))
     .map(stop => ({
       id: stop.id,
@@ -546,6 +548,14 @@ export function scheduleResponseToWorkspace(response: ScheduleResponseType): Sch
       arrivalTime: stop.arrivalTime || '',
       departureTime: stop.departureTime || '',
     }));
+
+  // If route stops are provided, merge schedule timings with all route stops
+  let scheduleStops: ScheduleStop[];
+  if (routeStops && routeStops.length > 0) {
+    scheduleStops = mergeScheduleWithRouteStops(apiScheduleStops, routeStops);
+  } else {
+    scheduleStops = apiScheduleStops;
+  }
 
   // Convert exceptions
   const exceptions: ScheduleException[] = (response.scheduleExceptions || []).map(exc => ({
@@ -572,6 +582,46 @@ export function scheduleResponseToWorkspace(response: ScheduleResponseType): Sch
     calendar,
     exceptions,
   };
+}
+
+/**
+ * Merges schedule stop timings with full route stops list.
+ * This ensures all route stops are shown, with timings populated where available.
+ * Matches by stopOrder primarily, and by stopId as fallback.
+ */
+export function mergeScheduleWithRouteStops(
+  scheduleStops: ScheduleStop[],
+  routeStops: RouteStopReference[]
+): ScheduleStop[] {
+  // Create a map of schedule stops by stopOrder for quick lookup
+  const scheduleStopsByOrder = new Map<number, ScheduleStop>();
+  const scheduleStopsByStopId = new Map<string, ScheduleStop>();
+  
+  scheduleStops.forEach(stop => {
+    scheduleStopsByOrder.set(stop.stopOrder, stop);
+    if (stop.stopId) {
+      scheduleStopsByStopId.set(stop.stopId, stop);
+    }
+  });
+
+  // Create schedule stops for all route stops
+  return routeStops.map(routeStop => {
+    // Try to find matching schedule stop by stopOrder first, then by stopId
+    let matchingStop = scheduleStopsByOrder.get(routeStop.stopOrder);
+    
+    if (!matchingStop && routeStop.id) {
+      matchingStop = scheduleStopsByStopId.get(routeStop.id);
+    }
+
+    return {
+      id: matchingStop?.id,
+      stopId: routeStop.id,
+      stopName: routeStop.name,
+      stopOrder: routeStop.stopOrder,
+      arrivalTime: matchingStop?.arrivalTime || '',
+      departureTime: matchingStop?.departureTime || '',
+    };
+  });
 }
 
 /**
