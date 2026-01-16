@@ -285,6 +285,7 @@ export function isScheduleValid(schedule: Schedule): { valid: boolean; errors: s
 
 /**
  * Converts workspace schedule data to API request format
+ * Note: Filters out schedule stops with no timing data (both arrival and departure are empty)
  */
 export function scheduleToApiRequest(schedule: Schedule): {
   name: string;
@@ -316,6 +317,18 @@ export function scheduleToApiRequest(schedule: Schedule): {
     exceptionType: 'ADDED' | 'REMOVED';
   }[];
 } {
+  // Filter schedule stops to only include those with at least one timing value
+  // and ensure all times are in HH:mm:ss format
+  const scheduleStopsWithTimings = schedule.scheduleStops
+    .filter(stop => stop.arrivalTime || stop.departureTime)
+    .map(stop => ({
+      id: stop.id,
+      stopId: stop.stopId,
+      stopOrder: stop.stopOrder,
+      arrivalTime: stop.arrivalTime ? formatTimeForApi(stop.arrivalTime) : undefined,
+      departureTime: stop.departureTime ? formatTimeForApi(stop.departureTime) : undefined,
+    }));
+
   return {
     name: schedule.name,
     routeId: schedule.routeId,
@@ -325,13 +338,7 @@ export function scheduleToApiRequest(schedule: Schedule): {
     status: schedule.status,
     description: schedule.description || undefined,
     generateTrips: schedule.generateTrips,
-    scheduleStops: schedule.scheduleStops.map(stop => ({
-      id: stop.id,
-      stopId: stop.stopId,
-      stopOrder: stop.stopOrder,
-      arrivalTime: stop.arrivalTime || undefined,
-      departureTime: stop.departureTime || undefined,
-    })),
+    scheduleStops: scheduleStopsWithTimings,
     calendar: schedule.calendar,
     exceptions: schedule.exceptions.map(exc => ({
       exceptionDate: exc.exceptionDate,
