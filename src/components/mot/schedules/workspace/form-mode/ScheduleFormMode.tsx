@@ -1,13 +1,14 @@
 'use client';
 
 import { useScheduleWorkspace } from '@/context/ScheduleWorkspace';
+import { ScheduleTabs } from './ScheduleTabs';
 import ScheduleMetadata from './ScheduleMetadata';
 import ScheduleExceptions from './ScheduleExceptions';
 import ScheduleGrid from './ScheduleGrid';
 
 export default function ScheduleFormMode() {
-    const { data, setSelectedRoute, isLoading } = useScheduleWorkspace();
-    const { schedule, availableRoutes } = data;
+    const { data, setSelectedRoute, isLoading, activeScheduleIndex } = useScheduleWorkspace();
+    const { availableRoutes, selectedRouteId, selectedRouteName, selectedRouteGroupName, schedules } = data;
 
     const handleRouteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const routeId = e.target.value;
@@ -15,6 +16,8 @@ export default function ScheduleFormMode() {
             setSelectedRoute(routeId);
         }
     };
+
+    const hasActiveSchedule = activeScheduleIndex !== null && schedules.length > 0;
 
     return (
         <div className="space-y-4">
@@ -26,7 +29,7 @@ export default function ScheduleFormMode() {
                 <select
                     id="route"
                     name="route"
-                    value={schedule.routeId}
+                    value={selectedRouteId || ''}
                     onChange={handleRouteChange}
                     disabled={isLoading}
                     className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -42,24 +45,34 @@ export default function ScheduleFormMode() {
             </div>
 
             {/* Show selected route info */}
-            {schedule.routeId && (
+            {selectedRouteId && (
                 <div className="text-sm text-gray-600 bg-blue-50 p-2 rounded">
                     <span className="font-medium">Selected Route: </span>
-                    {schedule.routeName}
-                    {schedule.routeGroupName && (
+                    {selectedRouteName}
+                    {selectedRouteGroupName && (
                         <span className="ml-2 text-gray-500">
-                            (Group: {schedule.routeGroupName})
+                            (Group: {selectedRouteGroupName})
                         </span>
                     )}
+                    <span className="ml-4 text-blue-600 font-medium">
+                        {schedules.length} Schedule{schedules.length !== 1 ? 's' : ''}
+                    </span>
                 </div>
             )}
 
-            <div className='flex gap-4'>
-                <ScheduleMetadata />
-                <ScheduleExceptions />
-            </div>
+            {/* Schedule Tabs - Horizontal list of all schedules */}
+            {selectedRouteId && <ScheduleTabs />}
 
-            <ScheduleGrid />
+            {/* Schedule Metadata and Exceptions for Active Schedule */}
+            {hasActiveSchedule && (
+                <div className='flex gap-4'>
+                    <ScheduleMetadata />
+                    <ScheduleExceptions />
+                </div>
+            )}
+
+            {/* Schedule Grid - Shows ALL schedules with stops as rows */}
+            {selectedRouteId && <ScheduleGrid />}
         </div>
     );
 }

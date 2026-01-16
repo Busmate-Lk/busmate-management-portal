@@ -131,13 +131,30 @@ export interface RouteStopReference {
 // ============================================================================
 
 export interface ScheduleWorkspaceData {
-  schedule: Schedule;
+  // Selected route information
+  selectedRouteId: string | null;
+  selectedRouteName: string | null;
+  selectedRouteGroupId: string | null;
+  selectedRouteGroupName: string | null;
+  
+  // All schedules for the selected route
+  schedules: Schedule[];
+  
+  // Currently selected schedule index for editing metadata/exceptions
+  activeScheduleIndex: number | null;
+  
+  // Highlighted schedule index in grid (temporary highlight when selecting from tabs)
+  highlightedScheduleIndex: number | null;
+  
   // Available routes for selection
   availableRoutes: RouteReference[];
+  
   // Route stops when a route is selected (used to build schedule stops)
   routeStops: RouteStopReference[];
+  
   // Currently selected stop index for editing
   selectedStopIndex: number | null;
+  
   // Currently selected exception index for editing
   selectedExceptionIndex: number | null;
 }
@@ -196,7 +213,13 @@ export function createEmptySchedule(): Schedule {
 
 export function createEmptyScheduleWorkspaceData(): ScheduleWorkspaceData {
   return {
-    schedule: createEmptySchedule(),
+    selectedRouteId: null,
+    selectedRouteName: null,
+    selectedRouteGroupId: null,
+    selectedRouteGroupName: null,
+    schedules: [],
+    activeScheduleIndex: null,
+    highlightedScheduleIndex: null,
     availableRoutes: [],
     routeStops: [],
     selectedStopIndex: null,
@@ -363,4 +386,76 @@ export function calculateTimeOffset(baseTime: string, offsetMinutes: number): st
   const newMinutes = totalMinutes % 60;
   
   return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+}
+
+/**
+ * Validates all schedules in workspace
+ */
+export function validateAllSchedules(schedules: Schedule[]): { 
+  valid: boolean; 
+  invalidCount: number;
+  scheduleErrors: { index: number; name: string; errors: string[] }[] 
+} {
+  const scheduleErrors: { index: number; name: string; errors: string[] }[] = [];
+  
+  schedules.forEach((schedule, index) => {
+    const validation = isScheduleValid(schedule);
+    if (!validation.valid) {
+      scheduleErrors.push({
+        index,
+        name: schedule.name || `Schedule ${index + 1}`,
+        errors: validation.errors,
+      });
+    }
+  });
+  
+  return {
+    valid: scheduleErrors.length === 0,
+    invalidCount: scheduleErrors.length,
+    scheduleErrors,
+  };
+}
+
+/**
+ * Gets the first departure time from a schedule (used as identifier in grid)
+ */
+export function getScheduleStartTime(schedule: Schedule): string {
+  if (schedule.scheduleStops.length === 0) return '--:--';
+  const firstStop = schedule.scheduleStops[0];
+  return formatTimeForDisplay(firstStop.departureTime || firstStop.arrivalTime || '') || '--:--';
+}
+
+/**
+ * Creates a new schedule with route stops pre-populated
+ */
+export function createScheduleForRoute(
+  routeId: string,
+  routeName: string,
+  routeGroupId: string,
+  routeGroupName: string,
+  routeStops: RouteStopReference[],
+  scheduleName?: string
+): Schedule {
+  return {
+    name: scheduleName || `New Schedule`,
+    routeId,
+    routeName,
+    routeGroupId,
+    routeGroupName,
+    scheduleType: ScheduleTypeEnum.REGULAR,
+    effectiveStartDate: new Date().toISOString().split('T')[0],
+    effectiveEndDate: '',
+    status: ScheduleStatusEnum.PENDING,
+    description: '',
+    generateTrips: true,
+    scheduleStops: routeStops.map(stop => ({
+      stopId: stop.id,
+      stopName: stop.name,
+      stopOrder: stop.stopOrder,
+      arrivalTime: '',
+      departureTime: '',
+    })),
+    calendar: createEmptyCalendar(),
+    exceptions: [],
+  };
 }

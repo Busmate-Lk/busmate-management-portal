@@ -1,12 +1,13 @@
 'use client';
 
-import { ReactNode, useState, useCallback, useMemo } from 'react';
+import { ReactNode, useState, useCallback, useMemo, useEffect } from 'react';
 import { ScheduleWorkspaceContext, ScheduleWorkspaceMode } from './ScheduleWorkspaceContext';
 import {
   ScheduleWorkspaceData,
   createEmptyScheduleWorkspaceData,
   createEmptyCalendar,
   createEmptySchedule,
+  createScheduleForRoute,
   Schedule,
   ScheduleStop,
   ScheduleCalendar,
@@ -14,6 +15,7 @@ import {
   RouteReference,
   RouteStopReference,
   isScheduleValid,
+  validateAllSchedules as validateAllSchedulesHelper,
   scheduleToApiRequest,
   calculateTimeOffset,
   ScheduleTypeEnum,
@@ -98,69 +100,136 @@ const DUMMY_ROUTE_STOPS: Record<string, RouteStopReference[]> = {
   ],
 };
 
-// Dummy initial schedule data
-const createDummySchedule = (): Schedule => ({
-  name: 'Morning Express - Colombo to Kandy',
-  routeId: 'route-001',
-  routeName: 'Colombo - Kandy (Via Kegalle)',
-  routeGroupId: 'rg-001',
-  routeGroupName: '1 - Colombo - Kandy',
-  scheduleType: ScheduleTypeEnum.REGULAR,
-  effectiveStartDate: '2024-01-01',
-  effectiveEndDate: '2024-12-31',
-  status: ScheduleStatusEnum.ACTIVE,
-  description: 'Regular morning express service from Colombo to Kandy',
-  generateTrips: true,
-  scheduleStops: DUMMY_ROUTE_STOPS['route-001'].map((stop, index) => ({
-    stopId: stop.id,
-    stopName: stop.name,
-    stopOrder: stop.stopOrder,
-    arrivalTime: calculateTimeOffset('06:00', index * 10),
-    departureTime: calculateTimeOffset('06:00', index * 10 + 2),
-  })),
-  calendar: {
-    monday: true,
-    tuesday: true,
-    wednesday: true,
-    thursday: true,
-    friday: true,
-    saturday: true,
-    sunday: false,
-  },
-  exceptions: [
+// Helper to create dummy schedules for a route
+const createDummySchedulesForRoute = (
+  routeId: string,
+  routeName: string,
+  routeGroupId: string,
+  routeGroupName: string,
+  routeStops: RouteStopReference[]
+): Schedule[] => {
+  return [
     {
-      id: 'exc-001',
-      exceptionDate: '2024-04-14',
-      exceptionType: ExceptionTypeEnum.REMOVED,
-      description: 'Sinhala & Tamil New Year - No service',
+      name: 'Morning Express',
+      routeId,
+      routeName,
+      routeGroupId,
+      routeGroupName,
+      scheduleType: ScheduleTypeEnum.REGULAR,
+      effectiveStartDate: '2024-01-01',
+      effectiveEndDate: '2024-12-31',
+      status: ScheduleStatusEnum.ACTIVE,
+      description: 'Early morning express service',
+      generateTrips: true,
+      scheduleStops: routeStops.map((stop, index) => ({
+        stopId: stop.id,
+        stopName: stop.name,
+        stopOrder: stop.stopOrder,
+        arrivalTime: calculateTimeOffset('06:00', index * 10),
+        departureTime: calculateTimeOffset('06:00', index * 10 + 2),
+      })),
+      calendar: { monday: true, tuesday: true, wednesday: true, thursday: true, friday: true, saturday: true, sunday: false },
+      exceptions: [
+        { id: 'exc-001', exceptionDate: '2024-04-14', exceptionType: ExceptionTypeEnum.REMOVED, description: 'New Year Holiday' },
+      ],
     },
     {
-      id: 'exc-002',
-      exceptionDate: '2024-05-23',
-      exceptionType: ExceptionTypeEnum.REMOVED,
-      description: 'Vesak Poya Day - No service',
+      name: 'Mid-Morning Service',
+      routeId,
+      routeName,
+      routeGroupId,
+      routeGroupName,
+      scheduleType: ScheduleTypeEnum.REGULAR,
+      effectiveStartDate: '2024-01-01',
+      effectiveEndDate: '2024-12-31',
+      status: ScheduleStatusEnum.ACTIVE,
+      description: 'Regular mid-morning service',
+      generateTrips: true,
+      scheduleStops: routeStops.map((stop, index) => ({
+        stopId: stop.id,
+        stopName: stop.name,
+        stopOrder: stop.stopOrder,
+        arrivalTime: calculateTimeOffset('08:30', index * 12),
+        departureTime: calculateTimeOffset('08:30', index * 12 + 2),
+      })),
+      calendar: { monday: true, tuesday: true, wednesday: true, thursday: true, friday: true, saturday: false, sunday: false },
+      exceptions: [],
     },
     {
-      id: 'exc-003',
-      exceptionDate: '2024-12-25',
-      exceptionType: ExceptionTypeEnum.ADDED,
-      description: 'Christmas - Special service added',
+      name: 'Afternoon Service',
+      routeId,
+      routeName,
+      routeGroupId,
+      routeGroupName,
+      scheduleType: ScheduleTypeEnum.REGULAR,
+      effectiveStartDate: '2024-01-01',
+      effectiveEndDate: '2024-12-31',
+      status: ScheduleStatusEnum.ACTIVE,
+      description: 'Afternoon regular service',
+      generateTrips: true,
+      scheduleStops: routeStops.map((stop, index) => ({
+        stopId: stop.id,
+        stopName: stop.name,
+        stopOrder: stop.stopOrder,
+        arrivalTime: calculateTimeOffset('14:00', index * 10),
+        departureTime: calculateTimeOffset('14:00', index * 10 + 2),
+      })),
+      calendar: { monday: true, tuesday: true, wednesday: true, thursday: true, friday: true, saturday: true, sunday: true },
+      exceptions: [],
     },
-  ],
-});
+    {
+      name: 'Evening Express',
+      routeId,
+      routeName,
+      routeGroupId,
+      routeGroupName,
+      scheduleType: ScheduleTypeEnum.REGULAR,
+      effectiveStartDate: '2024-01-01',
+      effectiveEndDate: '2024-12-31',
+      status: ScheduleStatusEnum.ACTIVE,
+      description: 'Evening rush hour express',
+      generateTrips: true,
+      scheduleStops: routeStops.map((stop, index) => ({
+        stopId: stop.id,
+        stopName: stop.name,
+        stopOrder: stop.stopOrder,
+        arrivalTime: calculateTimeOffset('17:30', index * 8),
+        departureTime: calculateTimeOffset('17:30', index * 8 + 1),
+      })),
+      calendar: { monday: true, tuesday: true, wednesday: true, thursday: true, friday: true, saturday: false, sunday: false },
+      exceptions: [
+        { id: 'exc-002', exceptionDate: '2024-12-25', exceptionType: ExceptionTypeEnum.REMOVED, description: 'Christmas' },
+      ],
+    },
+  ];
+};
 
 export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProviderProps) {
   // Mode and loading state
   const [mode, setMode] = useState<ScheduleWorkspaceMode>('create');
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [scheduleId, setScheduleId] = useState<string | null>(null);
 
-  // Initialize with dummy data for development
+  // Initialize with dummy data for development (route-001 selected with schedules)
+  const initialRoute = DUMMY_ROUTES[0];
+  const initialRouteStops = DUMMY_ROUTE_STOPS['route-001'];
+  
   const [data, setData] = useState<ScheduleWorkspaceData>(() => ({
-    schedule: createDummySchedule(),
+    selectedRouteId: initialRoute.id,
+    selectedRouteName: initialRoute.name,
+    selectedRouteGroupId: initialRoute.routeGroupId || null,
+    selectedRouteGroupName: initialRoute.routeGroupName || null,
+    schedules: createDummySchedulesForRoute(
+      initialRoute.id,
+      initialRoute.name,
+      initialRoute.routeGroupId || '',
+      initialRoute.routeGroupName || '',
+      initialRouteStops
+    ),
+    activeScheduleIndex: 0,
+    highlightedScheduleIndex: null,
     availableRoutes: DUMMY_ROUTES,
-    routeStops: DUMMY_ROUTE_STOPS['route-001'],
+    routeStops: initialRouteStops,
     selectedStopIndex: null,
     selectedExceptionIndex: null,
   }));
@@ -168,28 +237,31 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
   const [selectedStopIndex, setSelectedStopIndex] = useState<number | null>(null);
   const [selectedExceptionIndex, setSelectedExceptionIndex] = useState<number | null>(null);
 
-  // Load existing schedule for editing (placeholder - will use real API later)
-  const loadSchedule = useCallback(async (id: string): Promise<boolean> => {
+  // Clear highlight after a delay
+  useEffect(() => {
+    if (data.highlightedScheduleIndex !== null) {
+      const timer = setTimeout(() => {
+        setData(prev => ({ ...prev, highlightedScheduleIndex: null }));
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [data.highlightedScheduleIndex]);
+
+  // Load existing schedules for a route (placeholder - will use real API later)
+  const loadSchedulesForRoute = useCallback(async (routeId: string): Promise<boolean> => {
     setIsLoading(true);
     setLoadError(null);
 
     try {
       // TODO: Replace with actual API call
-      // const response = await ScheduleManagementService.getScheduleById(id);
-      
-      // For now, just set dummy data
-      console.log('Loading schedule:', id);
-      setScheduleId(id);
+      console.log('Loading schedules for route:', routeId);
       setMode('edit');
-      
-      // Simulate loading delay
       await new Promise(resolve => setTimeout(resolve, 500));
-      
       setIsLoading(false);
       return true;
     } catch (error) {
-      console.error('Failed to load schedule:', error);
-      setLoadError(error instanceof Error ? error.message : 'Failed to load schedule');
+      console.error('Failed to load schedules:', error);
+      setLoadError(error instanceof Error ? error.message : 'Failed to load schedules');
       setIsLoading(false);
       return false;
     }
@@ -198,70 +270,49 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
   // Reset to create mode
   const resetToCreateMode = useCallback(() => {
     setMode('create');
-    setScheduleId(null);
     setLoadError(null);
     setData({
-      schedule: createEmptySchedule(),
+      ...createEmptyScheduleWorkspaceData(),
       availableRoutes: DUMMY_ROUTES,
-      routeStops: [],
-      selectedStopIndex: null,
-      selectedExceptionIndex: null,
     });
     setSelectedStopIndex(null);
     setSelectedExceptionIndex(null);
   }, []);
 
-  // Update schedule metadata
-  const updateSchedule = useCallback((scheduleUpdate: Partial<Schedule>) => {
-    setData(prev => ({
-      ...prev,
-      schedule: {
-        ...prev.schedule,
-        ...scheduleUpdate,
-      },
-    }));
-  }, []);
-
-  // Set selected route and populate schedule stops
+  // Set selected route and load its schedules
   const setSelectedRoute = useCallback((routeId: string) => {
     const selectedRoute = DUMMY_ROUTES.find(r => r.id === routeId);
     const routeStops = DUMMY_ROUTE_STOPS[routeId] || [];
     
-    // Create schedule stops from route stops
-    const scheduleStops: ScheduleStop[] = routeStops.map(stop => ({
-      stopId: stop.id,
-      stopName: stop.name,
-      stopOrder: stop.stopOrder,
-      arrivalTime: '',
-      departureTime: '',
-    }));
+    if (!selectedRoute) return;
+
+    // Create dummy schedules for this route
+    const schedules = createDummySchedulesForRoute(
+      routeId,
+      selectedRoute.name,
+      selectedRoute.routeGroupId || '',
+      selectedRoute.routeGroupName || '',
+      routeStops
+    );
 
     setData(prev => ({
       ...prev,
-      schedule: {
-        ...prev.schedule,
-        routeId,
-        routeName: selectedRoute?.name || '',
-        routeGroupId: selectedRoute?.routeGroupId || '',
-        routeGroupName: selectedRoute?.routeGroupName || '',
-        scheduleStops,
-      },
+      selectedRouteId: routeId,
+      selectedRouteName: selectedRoute.name,
+      selectedRouteGroupId: selectedRoute.routeGroupId || null,
+      selectedRouteGroupName: selectedRoute.routeGroupName || null,
+      schedules,
+      activeScheduleIndex: schedules.length > 0 ? 0 : null,
+      highlightedScheduleIndex: null,
       routeStops,
     }));
   }, []);
 
-  // Load available routes (placeholder - will use real API later)
+  // Load available routes
   const loadAvailableRoutes = useCallback(async () => {
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call
-      // const routes = await RouteManagementService.getAllRoutesAsList();
-      
-      // For now, use dummy data
-      setData(prev => ({
-        ...prev,
-        availableRoutes: DUMMY_ROUTES,
-      }));
+      setData(prev => ({ ...prev, availableRoutes: DUMMY_ROUTES }));
     } catch (error) {
       console.error('Failed to load routes:', error);
     } finally {
@@ -269,235 +320,328 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
     }
   }, []);
 
-  // Update a specific schedule stop
+  // Active schedule index management
+  const setActiveScheduleIndex = useCallback((index: number | null) => {
+    setData(prev => ({ ...prev, activeScheduleIndex: index }));
+  }, []);
+
+  // Highlighted schedule index (for grid highlighting)
+  const setHighlightedScheduleIndex = useCallback((index: number | null) => {
+    setData(prev => ({ ...prev, highlightedScheduleIndex: index }));
+  }, []);
+
+  // Add new schedule
+  const addNewSchedule = useCallback(() => {
+    setData(prev => {
+      if (!prev.selectedRouteId) return prev;
+      
+      const newSchedule = createScheduleForRoute(
+        prev.selectedRouteId,
+        prev.selectedRouteName || '',
+        prev.selectedRouteGroupId || '',
+        prev.selectedRouteGroupName || '',
+        prev.routeStops,
+        `Schedule ${prev.schedules.length + 1}`
+      );
+      
+      const newSchedules = [...prev.schedules, newSchedule];
+      return {
+        ...prev,
+        schedules: newSchedules,
+        activeScheduleIndex: newSchedules.length - 1,
+      };
+    });
+  }, []);
+
+  // Remove schedule
+  const removeSchedule = useCallback((scheduleIndex: number) => {
+    setData(prev => {
+      const newSchedules = prev.schedules.filter((_, i) => i !== scheduleIndex);
+      let newActiveIndex = prev.activeScheduleIndex;
+      
+      if (newActiveIndex !== null) {
+        if (newActiveIndex === scheduleIndex) {
+          newActiveIndex = newSchedules.length > 0 ? Math.min(scheduleIndex, newSchedules.length - 1) : null;
+        } else if (newActiveIndex > scheduleIndex) {
+          newActiveIndex = newActiveIndex - 1;
+        }
+      }
+      
+      return {
+        ...prev,
+        schedules: newSchedules,
+        activeScheduleIndex: newActiveIndex,
+      };
+    });
+  }, []);
+
+  // Duplicate schedule
+  const duplicateSchedule = useCallback((scheduleIndex: number) => {
+    setData(prev => {
+      if (scheduleIndex < 0 || scheduleIndex >= prev.schedules.length) return prev;
+      
+      const original = prev.schedules[scheduleIndex];
+      const duplicate: Schedule = {
+        ...original,
+        id: undefined, // Remove ID so it's treated as new
+        name: `${original.name} (Copy)`,
+        scheduleStops: original.scheduleStops.map(stop => ({ ...stop, id: undefined })),
+        exceptions: original.exceptions.map(exc => ({ ...exc, id: `exc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` })),
+      };
+      
+      const newSchedules = [...prev.schedules, duplicate];
+      return {
+        ...prev,
+        schedules: newSchedules,
+        activeScheduleIndex: newSchedules.length - 1,
+      };
+    });
+  }, []);
+
+  // Get active schedule
+  const getActiveSchedule = useCallback((): Schedule | null => {
+    if (data.activeScheduleIndex === null || data.activeScheduleIndex >= data.schedules.length) {
+      return null;
+    }
+    return data.schedules[data.activeScheduleIndex];
+  }, [data.activeScheduleIndex, data.schedules]);
+
+  // Update active schedule metadata
+  const updateActiveSchedule = useCallback((scheduleUpdate: Partial<Schedule>) => {
+    setData(prev => {
+      if (prev.activeScheduleIndex === null) return prev;
+      
+      const newSchedules = [...prev.schedules];
+      newSchedules[prev.activeScheduleIndex] = {
+        ...newSchedules[prev.activeScheduleIndex],
+        ...scheduleUpdate,
+      };
+      return { ...prev, schedules: newSchedules };
+    });
+  }, []);
+
+  // Update schedule stop for active schedule
   const updateScheduleStop = useCallback((stopIndex: number, scheduleStopUpdate: Partial<ScheduleStop>) => {
     setData(prev => {
-      const newStops = [...prev.schedule.scheduleStops];
+      if (prev.activeScheduleIndex === null) return prev;
+      
+      const newSchedules = [...prev.schedules];
+      const schedule = newSchedules[prev.activeScheduleIndex];
+      const newStops = [...schedule.scheduleStops];
+      
       if (stopIndex >= 0 && stopIndex < newStops.length) {
-        newStops[stopIndex] = {
-          ...newStops[stopIndex],
-          ...scheduleStopUpdate,
-        };
+        newStops[stopIndex] = { ...newStops[stopIndex], ...scheduleStopUpdate };
+        newSchedules[prev.activeScheduleIndex] = { ...schedule, scheduleStops: newStops };
       }
-      return {
-        ...prev,
-        schedule: {
-          ...prev.schedule,
-          scheduleStops: newStops,
-        },
-      };
+      
+      return { ...prev, schedules: newSchedules };
     });
   }, []);
 
-  // Set all stop times with base time and interval
+  // Update schedule stop by schedule index (for grid editing)
+  const updateScheduleStopByScheduleIndex = useCallback((
+    scheduleIndex: number,
+    stopIndex: number,
+    scheduleStopUpdate: Partial<ScheduleStop>
+  ) => {
+    setData(prev => {
+      if (scheduleIndex < 0 || scheduleIndex >= prev.schedules.length) return prev;
+      
+      const newSchedules = [...prev.schedules];
+      const schedule = newSchedules[scheduleIndex];
+      const newStops = [...schedule.scheduleStops];
+      
+      if (stopIndex >= 0 && stopIndex < newStops.length) {
+        newStops[stopIndex] = { ...newStops[stopIndex], ...scheduleStopUpdate };
+        newSchedules[scheduleIndex] = { ...schedule, scheduleStops: newStops };
+      }
+      
+      return { ...prev, schedules: newSchedules };
+    });
+  }, []);
+
+  // Set all stop times for active schedule
   const setAllStopTimes = useCallback((baseTime: string, intervalMinutes: number) => {
     setData(prev => {
-      const newStops = prev.schedule.scheduleStops.map((stop, index) => ({
+      if (prev.activeScheduleIndex === null) return prev;
+      
+      const newSchedules = [...prev.schedules];
+      const schedule = newSchedules[prev.activeScheduleIndex];
+      const newStops = schedule.scheduleStops.map((stop, index) => ({
         ...stop,
         arrivalTime: calculateTimeOffset(baseTime, index * intervalMinutes),
-        departureTime: calculateTimeOffset(baseTime, index * intervalMinutes + 2), // 2 min stop time
+        departureTime: calculateTimeOffset(baseTime, index * intervalMinutes + 2),
       }));
-      return {
-        ...prev,
-        schedule: {
-          ...prev.schedule,
-          scheduleStops: newStops,
-        },
-      };
+      newSchedules[prev.activeScheduleIndex] = { ...schedule, scheduleStops: newStops };
+      
+      return { ...prev, schedules: newSchedules };
     });
   }, []);
 
-  // Clear all stop times
+  // Clear all stop times for active schedule
   const clearAllStopTimes = useCallback(() => {
     setData(prev => {
-      const newStops = prev.schedule.scheduleStops.map(stop => ({
+      if (prev.activeScheduleIndex === null) return prev;
+      
+      const newSchedules = [...prev.schedules];
+      const schedule = newSchedules[prev.activeScheduleIndex];
+      const newStops = schedule.scheduleStops.map(stop => ({
         ...stop,
         arrivalTime: '',
         departureTime: '',
       }));
-      return {
-        ...prev,
-        schedule: {
-          ...prev.schedule,
-          scheduleStops: newStops,
-        },
-      };
+      newSchedules[prev.activeScheduleIndex] = { ...schedule, scheduleStops: newStops };
+      
+      return { ...prev, schedules: newSchedules };
     });
   }, []);
 
-  // Update calendar
+  // Calendar operations for active schedule
   const updateCalendar = useCallback((calendarUpdate: Partial<ScheduleCalendar>) => {
-    setData(prev => ({
-      ...prev,
-      schedule: {
-        ...prev.schedule,
-        calendar: {
-          ...prev.schedule.calendar,
-          ...calendarUpdate,
-        },
-      },
-    }));
+    setData(prev => {
+      if (prev.activeScheduleIndex === null) return prev;
+      
+      const newSchedules = [...prev.schedules];
+      const schedule = newSchedules[prev.activeScheduleIndex];
+      newSchedules[prev.activeScheduleIndex] = {
+        ...schedule,
+        calendar: { ...schedule.calendar, ...calendarUpdate },
+      };
+      
+      return { ...prev, schedules: newSchedules };
+    });
   }, []);
 
-  // Set all days enabled/disabled
   const setAllDays = useCallback((enabled: boolean) => {
-    setData(prev => ({
-      ...prev,
-      schedule: {
-        ...prev.schedule,
-        calendar: {
-          monday: enabled,
-          tuesday: enabled,
-          wednesday: enabled,
-          thursday: enabled,
-          friday: enabled,
-          saturday: enabled,
-          sunday: enabled,
-        },
-      },
-    }));
-  }, []);
+    updateCalendar({
+      monday: enabled, tuesday: enabled, wednesday: enabled, thursday: enabled,
+      friday: enabled, saturday: enabled, sunday: enabled,
+    });
+  }, [updateCalendar]);
 
-  // Set weekdays only
   const setWeekdaysOnly = useCallback(() => {
-    setData(prev => ({
-      ...prev,
-      schedule: {
-        ...prev.schedule,
-        calendar: {
-          monday: true,
-          tuesday: true,
-          wednesday: true,
-          thursday: true,
-          friday: true,
-          saturday: false,
-          sunday: false,
-        },
-      },
-    }));
-  }, []);
+    updateCalendar({
+      monday: true, tuesday: true, wednesday: true, thursday: true, friday: true,
+      saturday: false, sunday: false,
+    });
+  }, [updateCalendar]);
 
-  // Set weekends only
   const setWeekendsOnly = useCallback(() => {
-    setData(prev => ({
-      ...prev,
-      schedule: {
-        ...prev.schedule,
-        calendar: {
-          monday: false,
-          tuesday: false,
-          wednesday: false,
-          thursday: false,
-          friday: false,
-          saturday: true,
-          sunday: true,
-        },
-      },
-    }));
-  }, []);
+    updateCalendar({
+      monday: false, tuesday: false, wednesday: false, thursday: false, friday: false,
+      saturday: true, sunday: true,
+    });
+  }, [updateCalendar]);
 
-  // Add exception
+  // Exception operations for active schedule
   const addException = useCallback((exception: ScheduleException) => {
-    setData(prev => ({
-      ...prev,
-      schedule: {
-        ...prev.schedule,
-        exceptions: [...prev.schedule.exceptions, exception],
-      },
-    }));
+    setData(prev => {
+      if (prev.activeScheduleIndex === null) return prev;
+      
+      const newSchedules = [...prev.schedules];
+      const schedule = newSchedules[prev.activeScheduleIndex];
+      newSchedules[prev.activeScheduleIndex] = {
+        ...schedule,
+        exceptions: [...schedule.exceptions, exception],
+      };
+      
+      return { ...prev, schedules: newSchedules };
+    });
   }, []);
 
-  // Update exception
   const updateException = useCallback((exceptionIndex: number, exceptionUpdate: Partial<ScheduleException>) => {
     setData(prev => {
-      const newExceptions = [...prev.schedule.exceptions];
+      if (prev.activeScheduleIndex === null) return prev;
+      
+      const newSchedules = [...prev.schedules];
+      const schedule = newSchedules[prev.activeScheduleIndex];
+      const newExceptions = [...schedule.exceptions];
+      
       if (exceptionIndex >= 0 && exceptionIndex < newExceptions.length) {
-        newExceptions[exceptionIndex] = {
-          ...newExceptions[exceptionIndex],
-          ...exceptionUpdate,
-        };
+        newExceptions[exceptionIndex] = { ...newExceptions[exceptionIndex], ...exceptionUpdate };
+        newSchedules[prev.activeScheduleIndex] = { ...schedule, exceptions: newExceptions };
       }
-      return {
-        ...prev,
-        schedule: {
-          ...prev.schedule,
-          exceptions: newExceptions,
-        },
-      };
+      
+      return { ...prev, schedules: newSchedules };
     });
   }, []);
 
-  // Remove exception
   const removeException = useCallback((exceptionIndex: number) => {
-    setData(prev => ({
-      ...prev,
-      schedule: {
-        ...prev.schedule,
-        exceptions: prev.schedule.exceptions.filter((_, index) => index !== exceptionIndex),
-      },
-    }));
-    // Clear selection if removed exception was selected
+    setData(prev => {
+      if (prev.activeScheduleIndex === null) return prev;
+      
+      const newSchedules = [...prev.schedules];
+      const schedule = newSchedules[prev.activeScheduleIndex];
+      newSchedules[prev.activeScheduleIndex] = {
+        ...schedule,
+        exceptions: schedule.exceptions.filter((_, i) => i !== exceptionIndex),
+      };
+      
+      return { ...prev, schedules: newSchedules };
+    });
+    
     if (selectedExceptionIndex === exceptionIndex) {
       setSelectedExceptionIndex(null);
     }
   }, [selectedExceptionIndex]);
 
-  // Get schedule data
-  const getScheduleData = useCallback(() => {
-    return data.schedule;
-  }, [data.schedule]);
+  // Get all schedules
+  const getAllSchedules = useCallback(() => data.schedules, [data.schedules]);
 
-  // Validate schedule
-  const validateSchedule = useCallback(() => {
-    return isScheduleValid(data.schedule);
-  }, [data.schedule]);
+  // Validate all schedules
+  const validateAllSchedules = useCallback(() => {
+    return validateAllSchedulesHelper(data.schedules);
+  }, [data.schedules]);
 
-  // Submit schedule (currently logs to console)
-  const submitSchedule = useCallback(async () => {
-    const validation = isScheduleValid(data.schedule);
+  // Submit all schedules
+  const submitAllSchedules = useCallback(async () => {
+    const validation = validateAllSchedulesHelper(data.schedules);
     
     if (!validation.valid) {
-      console.error('Schedule validation failed:', validation.errors);
+      console.error('Schedule validation failed:', validation.scheduleErrors);
       return;
     }
 
-    const apiRequest = scheduleToApiRequest(data.schedule);
+    const apiRequests = data.schedules.map(schedule => scheduleToApiRequest(schedule));
     
     console.log('='.repeat(60));
-    console.log('SCHEDULE SUBMISSION DATA');
+    console.log('ALL SCHEDULES SUBMISSION DATA');
     console.log('='.repeat(60));
     console.log('Mode:', mode);
-    console.log('Schedule ID:', scheduleId);
+    console.log('Route ID:', data.selectedRouteId);
+    console.log('Route Name:', data.selectedRouteName);
+    console.log('Total Schedules:', data.schedules.length);
     console.log('-'.repeat(60));
-    console.log('Workspace Schedule Data:');
-    console.log(JSON.stringify(data.schedule, null, 2));
+    console.log('Workspace Schedules Data:');
+    console.log(JSON.stringify(data.schedules, null, 2));
     console.log('-'.repeat(60));
     console.log('API Request Format (ready to send to backend):');
-    console.log(JSON.stringify(apiRequest, null, 2));
+    console.log(JSON.stringify(apiRequests, null, 2));
     console.log('='.repeat(60));
-    
-    // TODO: Replace with actual API call
-    // if (mode === 'create') {
-    //   await ScheduleManagementService.createSchedule(apiRequest);
-    // } else {
-    //   await ScheduleManagementService.updateSchedule(scheduleId!, apiRequest);
-    // }
-  }, [data.schedule, mode, scheduleId]);
+  }, [data.schedules, data.selectedRouteId, data.selectedRouteName, mode]);
 
   const contextValue = useMemo(() => ({
     mode,
     isLoading,
     loadError,
-    scheduleId,
-    loadSchedule,
+    loadSchedulesForRoute,
     resetToCreateMode,
     data,
-    updateSchedule,
     setSelectedRoute,
     loadAvailableRoutes,
+    activeScheduleIndex: data.activeScheduleIndex,
+    setActiveScheduleIndex,
+    highlightedScheduleIndex: data.highlightedScheduleIndex,
+    setHighlightedScheduleIndex,
+    addNewSchedule,
+    removeSchedule,
+    duplicateSchedule,
+    updateActiveSchedule,
+    getActiveSchedule,
     updateScheduleStop,
     setAllStopTimes,
     clearAllStopTimes,
+    updateScheduleStopByScheduleIndex,
     updateCalendar,
     setAllDays,
     setWeekdaysOnly,
@@ -509,37 +653,17 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
     setSelectedStopIndex,
     selectedExceptionIndex,
     setSelectedExceptionIndex,
-    getScheduleData,
-    validateSchedule,
-    submitSchedule,
+    getAllSchedules,
+    validateAllSchedules,
+    submitAllSchedules,
   }), [
-    mode,
-    isLoading,
-    loadError,
-    scheduleId,
-    loadSchedule,
-    resetToCreateMode,
-    data,
-    updateSchedule,
-    setSelectedRoute,
-    loadAvailableRoutes,
-    updateScheduleStop,
-    setAllStopTimes,
-    clearAllStopTimes,
-    updateCalendar,
-    setAllDays,
-    setWeekdaysOnly,
-    setWeekendsOnly,
-    addException,
-    updateException,
-    removeException,
-    selectedStopIndex,
-    setSelectedStopIndex,
-    selectedExceptionIndex,
-    setSelectedExceptionIndex,
-    getScheduleData,
-    validateSchedule,
-    submitSchedule,
+    mode, isLoading, loadError, loadSchedulesForRoute, resetToCreateMode, data,
+    setSelectedRoute, loadAvailableRoutes, setActiveScheduleIndex, setHighlightedScheduleIndex,
+    addNewSchedule, removeSchedule, duplicateSchedule, updateActiveSchedule, getActiveSchedule,
+    updateScheduleStop, setAllStopTimes, clearAllStopTimes, updateScheduleStopByScheduleIndex,
+    updateCalendar, setAllDays, setWeekdaysOnly, setWeekendsOnly,
+    addException, updateException, removeException,
+    selectedStopIndex, selectedExceptionIndex, getAllSchedules, validateAllSchedules, submitAllSchedules,
   ]);
 
   return (

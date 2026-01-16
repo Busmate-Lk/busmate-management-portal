@@ -1,12 +1,31 @@
 'use client';
 
 import { useScheduleWorkspace } from '@/context/ScheduleWorkspace';
-import { ScheduleTypeEnum, ScheduleStatusEnum } from '@/types/ScheduleWorkspaceData';
+import { ScheduleTypeEnum, ScheduleStatusEnum, ScheduleCalendar } from '@/types/ScheduleWorkspaceData';
 
 export default function ScheduleMetadata() {
-    const { data, updateSchedule, updateCalendar, setWeekdaysOnly, setWeekendsOnly, setAllDays } = useScheduleWorkspace();
-    const { schedule } = data;
-    const { calendar } = schedule;
+    const { 
+        getActiveSchedule, 
+        updateActiveSchedule, 
+        updateCalendar, 
+        setWeekdaysOnly, 
+        setWeekendsOnly, 
+        setAllDays,
+        activeScheduleIndex,
+    } = useScheduleWorkspace();
+    
+    const activeSchedule = getActiveSchedule();
+    
+    // Don't render if no active schedule
+    if (!activeSchedule || activeScheduleIndex === null) {
+        return (
+            <div className="flex flex-col rounded-md px-6 py-4 bg-gray-200 w-3/5">
+                <span className="mb-2 text-gray-500">No schedule selected</span>
+            </div>
+        );
+    }
+    
+    const { calendar } = activeSchedule;
 
     const daysOfWeek = [
         { key: 'monday', label: 'Monday', short: 'Mon' },
@@ -18,13 +37,18 @@ export default function ScheduleMetadata() {
         { key: 'sunday', label: 'Sunday', short: 'Sun' },
     ] as const;
 
-    const handleDayToggle = (day: keyof typeof calendar) => {
+    const handleDayToggle = (day: keyof ScheduleCalendar) => {
         updateCalendar({ [day]: !calendar[day] });
     };
 
     return (
         <div className="flex flex-col rounded-md px-6 py-4 bg-gray-200 w-3/5">
-            <span className="mb-2 underline font-medium">Schedule Metadata</span>
+            <span className="mb-2 underline font-medium">
+                Schedule Metadata
+                <span className="text-sm font-normal text-gray-600 ml-2">
+                    (Editing: {activeSchedule.name || `Schedule ${activeScheduleIndex + 1}`})
+                </span>
+            </span>
             <form className="flex flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
                 {/* First row: Name, Schedule Type, Status */}
                 <div className="flex flex-row gap-4">
@@ -34,8 +58,8 @@ export default function ScheduleMetadata() {
                         <input
                             type="text"
                             className="border border-gray-400 rounded px-2 py-1 bg-white"
-                            value={schedule.name}
-                            onChange={(e) => updateSchedule({ name: e.target.value })}
+                            value={activeSchedule.name}
+                            onChange={(e) => updateActiveSchedule({ name: e.target.value })}
                             placeholder="Enter schedule name"
                         />
                     </div>
@@ -44,8 +68,8 @@ export default function ScheduleMetadata() {
                         <label className="block text-sm font-medium mb-1">Schedule Type</label>
                         <select
                             className="border border-gray-400 rounded px-2 py-1 bg-white"
-                            value={schedule.scheduleType}
-                            onChange={(e) => updateSchedule({ scheduleType: e.target.value as ScheduleTypeEnum })}
+                            value={activeSchedule.scheduleType}
+                            onChange={(e) => updateActiveSchedule({ scheduleType: e.target.value as ScheduleTypeEnum })}
                         >
                             <option value={ScheduleTypeEnum.REGULAR}>Regular</option>
                             <option value={ScheduleTypeEnum.SPECIAL}>Special</option>
@@ -56,8 +80,8 @@ export default function ScheduleMetadata() {
                         <label className="block text-sm font-medium mb-1">Status</label>
                         <select
                             className="border border-gray-400 rounded px-2 py-1 bg-white"
-                            value={schedule.status}
-                            onChange={(e) => updateSchedule({ status: e.target.value as ScheduleStatusEnum })}
+                            value={activeSchedule.status}
+                            onChange={(e) => updateActiveSchedule({ status: e.target.value as ScheduleStatusEnum })}
                         >
                             <option value={ScheduleStatusEnum.PENDING}>Pending</option>
                             <option value={ScheduleStatusEnum.ACTIVE}>Active</option>
@@ -74,8 +98,8 @@ export default function ScheduleMetadata() {
                         <input
                             type="date"
                             className="border border-gray-400 rounded px-2 py-1 bg-white"
-                            value={schedule.effectiveStartDate}
-                            onChange={(e) => updateSchedule({ effectiveStartDate: e.target.value })}
+                            value={activeSchedule.effectiveStartDate}
+                            onChange={(e) => updateActiveSchedule({ effectiveStartDate: e.target.value })}
                         />
                     </div>
                     {/* End Date */}
@@ -84,8 +108,8 @@ export default function ScheduleMetadata() {
                         <input
                             type="date"
                             className="border border-gray-400 rounded px-2 py-1 bg-white"
-                            value={schedule.effectiveEndDate || ''}
-                            onChange={(e) => updateSchedule({ effectiveEndDate: e.target.value })}
+                            value={activeSchedule.effectiveEndDate || ''}
+                            onChange={(e) => updateActiveSchedule({ effectiveEndDate: e.target.value })}
                         />
                     </div>
                     {/* Description */}
@@ -93,8 +117,8 @@ export default function ScheduleMetadata() {
                         <label className="block text-sm font-medium mb-1">Description</label>
                         <textarea
                             className="border border-gray-400 rounded px-2 py-1 bg-white"
-                            value={schedule.description || ''}
-                            onChange={(e) => updateSchedule({ description: e.target.value })}
+                            value={activeSchedule.description || ''}
+                            onChange={(e) => updateActiveSchedule({ description: e.target.value })}
                             rows={1}
                             placeholder="Optional description"
                         />
@@ -154,8 +178,8 @@ export default function ScheduleMetadata() {
                     <input
                         type="checkbox"
                         id="generateTrips"
-                        checked={schedule.generateTrips ?? true}
-                        onChange={(e) => updateSchedule({ generateTrips: e.target.checked })}
+                        checked={activeSchedule.generateTrips ?? true}
+                        onChange={(e) => updateActiveSchedule({ generateTrips: e.target.checked })}
                         className="cursor-pointer"
                     />
                     <label htmlFor="generateTrips" className="text-sm cursor-pointer">

@@ -6,13 +6,23 @@ import { useScheduleWorkspace } from '@/context/ScheduleWorkspace';
 import { createEmptyException, ExceptionTypeEnum, ScheduleException } from '@/types/ScheduleWorkspaceData';
 
 export default function ScheduleExceptions() {
-    const { data, addException, updateException, removeException } = useScheduleWorkspace();
-    const { schedule } = data;
-    const { exceptions } = schedule;
+    const { getActiveSchedule, addException, updateException, removeException, activeScheduleIndex } = useScheduleWorkspace();
+    
+    const activeSchedule = getActiveSchedule();
+    const exceptions = activeSchedule?.exceptions || [];
 
     const [isAddingNew, setIsAddingNew] = useState(false);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<ScheduleException>(createEmptyException());
+
+    // Don't render if no active schedule
+    if (!activeSchedule || activeScheduleIndex === null) {
+        return (
+            <div className="flex flex-col rounded-md px-4 py-2 bg-gray-200 w-2/5">
+                <span className="text-sm text-gray-500">No schedule selected</span>
+            </div>
+        );
+    }
 
     const handleAddNew = () => {
         setIsAddingNew(true);

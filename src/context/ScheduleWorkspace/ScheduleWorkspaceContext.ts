@@ -2,6 +2,7 @@ import { createContext } from 'react';
 import {
   ScheduleWorkspaceData,
   createEmptyScheduleWorkspaceData,
+  createEmptySchedule,
   Schedule,
   ScheduleStop,
   ScheduleCalendar,
@@ -18,35 +19,51 @@ export interface ScheduleWorkspaceContextType {
   mode: ScheduleWorkspaceMode;
   isLoading: boolean;
   loadError: string | null;
-  scheduleId: string | null;
 
-  // Load existing schedule for editing
-  loadSchedule: (scheduleId: string) => Promise<boolean>;
+  // Load existing schedules for a route for editing
+  loadSchedulesForRoute: (routeId: string) => Promise<boolean>;
   // Reset to create mode
   resetToCreateMode: () => void;
 
   // Data
   data: ScheduleWorkspaceData;
 
-  // Schedule metadata operations
-  updateSchedule: (schedule: Partial<Schedule>) => void;
-  
   // Route selection
   setSelectedRoute: (routeId: string) => void;
   loadAvailableRoutes: () => Promise<void>;
 
-  // Schedule stops operations
+  // Multi-schedule management
+  activeScheduleIndex: number | null;
+  setActiveScheduleIndex: (index: number | null) => void;
+  highlightedScheduleIndex: number | null;
+  setHighlightedScheduleIndex: (index: number | null) => void;
+  addNewSchedule: () => void;
+  removeSchedule: (scheduleIndex: number) => void;
+  duplicateSchedule: (scheduleIndex: number) => void;
+
+  // Active schedule metadata operations (operates on activeScheduleIndex)
+  updateActiveSchedule: (schedule: Partial<Schedule>) => void;
+  getActiveSchedule: () => Schedule | null;
+
+  // Schedule stops operations for active schedule
   updateScheduleStop: (stopIndex: number, scheduleStop: Partial<ScheduleStop>) => void;
   setAllStopTimes: (baseTime: string, intervalMinutes: number) => void;
   clearAllStopTimes: () => void;
 
-  // Calendar operations
+  // Schedule stops operations for specific schedule (used by grid)
+  updateScheduleStopByScheduleIndex: (
+    scheduleIndex: number, 
+    stopIndex: number, 
+    scheduleStop: Partial<ScheduleStop>
+  ) => void;
+
+  // Calendar operations for active schedule
   updateCalendar: (calendar: Partial<ScheduleCalendar>) => void;
   setAllDays: (enabled: boolean) => void;
   setWeekdaysOnly: () => void;
   setWeekendsOnly: () => void;
 
-  // Exception operations
+  // Exception operations for active schedule
   addException: (exception: ScheduleException) => void;
   updateException: (exceptionIndex: number, exception: Partial<ScheduleException>) => void;
   removeException: (exceptionIndex: number) => void;
@@ -58,9 +75,9 @@ export interface ScheduleWorkspaceContextType {
   setSelectedExceptionIndex: (index: number | null) => void;
 
   // Submission
-  getScheduleData: () => Schedule;
-  validateSchedule: () => { valid: boolean; errors: string[] };
-  submitSchedule: () => Promise<void>;
+  getAllSchedules: () => Schedule[];
+  validateAllSchedules: () => { valid: boolean; invalidCount: number; scheduleErrors: { index: number; name: string; errors: string[] }[] };
+  submitAllSchedules: () => Promise<void>;
 }
 
 export const ScheduleWorkspaceContext = createContext<ScheduleWorkspaceContextType>({
@@ -68,26 +85,36 @@ export const ScheduleWorkspaceContext = createContext<ScheduleWorkspaceContextTy
   mode: 'create',
   isLoading: false,
   loadError: null,
-  scheduleId: null,
 
   // Load/reset defaults
-  loadSchedule: async () => false,
+  loadSchedulesForRoute: async () => false,
   resetToCreateMode: () => {},
 
   // Data defaults
   data: createEmptyScheduleWorkspaceData(),
 
-  // Schedule operations defaults
-  updateSchedule: () => {},
-  
   // Route selection defaults
   setSelectedRoute: () => {},
   loadAvailableRoutes: async () => {},
+
+  // Multi-schedule management defaults
+  activeScheduleIndex: null,
+  setActiveScheduleIndex: () => {},
+  highlightedScheduleIndex: null,
+  setHighlightedScheduleIndex: () => {},
+  addNewSchedule: () => {},
+  removeSchedule: () => {},
+  duplicateSchedule: () => {},
+
+  // Active schedule operations defaults
+  updateActiveSchedule: () => {},
+  getActiveSchedule: () => null,
 
   // Schedule stops defaults
   updateScheduleStop: () => {},
   setAllStopTimes: () => {},
   clearAllStopTimes: () => {},
+  updateScheduleStopByScheduleIndex: () => {},
 
   // Calendar defaults
   updateCalendar: () => {},
@@ -107,7 +134,7 @@ export const ScheduleWorkspaceContext = createContext<ScheduleWorkspaceContextTy
   setSelectedExceptionIndex: () => {},
 
   // Submission defaults
-  getScheduleData: () => createEmptyScheduleWorkspaceData().schedule,
-  validateSchedule: () => ({ valid: false, errors: [] }),
-  submitSchedule: async () => {},
+  getAllSchedules: () => [],
+  validateAllSchedules: () => ({ valid: false, invalidCount: 0, scheduleErrors: [] }),
+  submitAllSchedules: async () => {},
 });

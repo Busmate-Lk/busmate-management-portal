@@ -9,20 +9,29 @@ import { ScheduleWorkspaceProvider, useScheduleWorkspace } from '@/context/Sched
 
 function ScheduleWorkspaceContent() {
     const [activeTab, setActiveTab] = useState<'form' | 'textual'>('form');
-    const { mode, validateSchedule, submitSchedule, getScheduleData, resetToCreateMode } = useScheduleWorkspace();
+    const { mode, validateAllSchedules, submitAllSchedules, resetToCreateMode, data } = useScheduleWorkspace();
     const { toast } = useToast();
+    const { schedules } = data;
 
     const handleSubmit = async () => {
-        const validation = validateSchedule();
+        const validation = validateAllSchedules();
         
         if (!validation.valid) {
+            // Show validation errors with schedule information
+            const errorMessages = validation.scheduleErrors.flatMap((scheduleError, idx) => 
+                scheduleError.errors.map(error => `Schedule ${idx + 1} (${schedules[idx]?.name || 'Unnamed'}): ${error}`)
+            );
+            
             toast({
-                title: 'Validation Failed',
+                title: `Validation Failed (${validation.invalidCount} of ${schedules.length} schedules have errors)`,
                 description: (
-                    <ul className="list-disc pl-4 mt-2">
-                        {validation.errors.map((error, index) => (
-                            <li key={index}>{error}</li>
+                    <ul className="list-disc pl-4 mt-2 max-h-48 overflow-y-auto">
+                        {errorMessages.slice(0, 10).map((error, index) => (
+                            <li key={index} className="text-sm">{error}</li>
                         ))}
+                        {errorMessages.length > 10 && (
+                            <li className="text-sm text-muted-foreground">...and {errorMessages.length - 10} more errors</li>
+                        )}
                     </ul>
                 ),
                 variant: 'destructive',
@@ -31,10 +40,10 @@ function ScheduleWorkspaceContent() {
         }
 
         try {
-            await submitSchedule();
+            await submitAllSchedules();
             toast({
-                title: 'Schedule Data Ready',
-                description: 'Check the browser console to see the final schedule data object that would be sent to the API.',
+                title: 'All Schedules Data Ready',
+                description: `${schedules.length} schedule(s) validated. Check the browser console to see the final data that would be sent to the API.`,
             });
         } catch (error) {
             toast({
@@ -89,6 +98,9 @@ function ScheduleWorkspaceContent() {
                             Mode: <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                                 mode === 'create' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
                             }`}>{mode.toUpperCase()}</span>
+                            <span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-700">
+                                {schedules.length} Schedule{schedules.length !== 1 ? 's' : ''}
+                            </span>
                         </span>
                     </div>
                     <div className="flex items-center gap-2">
