@@ -23,13 +23,13 @@ export interface ScheduleWorkspaceContextType {
   // Load existing schedules for a route for editing
   loadSchedulesForRoute: (routeId: string) => Promise<boolean>;
   // Reset to create mode
-  resetToCreateMode: () => void;
+  resetToCreateMode: () => Promise<void>;
 
   // Data
   data: ScheduleWorkspaceData;
 
-  // Route selection
-  setSelectedRoute: (routeId: string) => void;
+  // Route selection (async - loads from API)
+  setSelectedRoute: (routeId: string) => Promise<void>;
   loadAvailableRoutes: () => Promise<void>;
 
   // Multi-schedule management
@@ -88,13 +88,13 @@ export const ScheduleWorkspaceContext = createContext<ScheduleWorkspaceContextTy
 
   // Load/reset defaults
   loadSchedulesForRoute: async () => false,
-  resetToCreateMode: () => {},
+  resetToCreateMode: async () => {},
 
   // Data defaults
   data: createEmptyScheduleWorkspaceData(),
 
-  // Route selection defaults
-  setSelectedRoute: () => {},
+  // Route selection defaults (async)
+  setSelectedRoute: async () => {},
   loadAvailableRoutes: async () => {},
 
   // Multi-schedule management defaults

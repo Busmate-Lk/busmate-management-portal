@@ -54,9 +54,9 @@ function ScheduleWorkspaceContent() {
         }
     };
 
-    const handleReset = () => {
+    const handleReset = async () => {
         if (confirm('Are you sure you want to reset all changes and start fresh?')) {
-            resetToCreateMode();
+            await resetToCreateMode();
             toast({
                 title: 'Workspace Reset',
                 description: 'The schedule workspace has been reset.',

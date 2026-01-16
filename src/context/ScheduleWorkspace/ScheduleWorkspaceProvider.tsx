@@ -21,188 +21,21 @@ import {
   ScheduleTypeEnum,
   ScheduleStatusEnum,
   ExceptionTypeEnum,
+  scheduleResponseToWorkspace,
+  routeResponseToReference,
+  routeStopsToReferences,
 } from '@/types/ScheduleWorkspaceData';
+import {
+  RouteManagementService,
+  ScheduleManagementService,
+  ScheduleRequest,
+  ScheduleResponse,
+  RouteResponse,
+} from '@/lib/api-client/route-management';
 
 interface ScheduleWorkspaceProviderProps {
   children: ReactNode;
 }
-
-// Dummy data for initial development - will be replaced with API calls
-const DUMMY_ROUTES: RouteReference[] = [
-  {
-    id: 'route-001',
-    name: 'Colombo - Kandy (Via Kegalle)',
-    routeGroupId: 'rg-001',
-    routeGroupName: '1 - Colombo - Kandy',
-    direction: 'OUTBOUND',
-    startStopName: 'Colombo Central',
-    endStopName: 'Kandy',
-  },
-  {
-    id: 'route-002',
-    name: 'Kandy - Colombo (Via Kegalle)',
-    routeGroupId: 'rg-001',
-    routeGroupName: '1 - Colombo - Kandy',
-    direction: 'INBOUND',
-    startStopName: 'Kandy',
-    endStopName: 'Colombo Central',
-  },
-  {
-    id: 'route-003',
-    name: 'Colombo - Galle (Expressway)',
-    routeGroupId: 'rg-002',
-    routeGroupName: '2 - Colombo - Galle',
-    direction: 'OUTBOUND',
-    startStopName: 'Colombo Central',
-    endStopName: 'Galle',
-  },
-];
-
-const DUMMY_ROUTE_STOPS: Record<string, RouteStopReference[]> = {
-  'route-001': [
-    { id: 'stop-001', name: 'Colombo Central', stopOrder: 0, distanceFromStartKm: 0 },
-    { id: 'stop-002', name: 'Pettah', stopOrder: 1, distanceFromStartKm: 2 },
-    { id: 'stop-003', name: 'Maradana', stopOrder: 2, distanceFromStartKm: 4 },
-    { id: 'stop-004', name: 'Kelaniya', stopOrder: 3, distanceFromStartKm: 10 },
-    { id: 'stop-005', name: 'Kadawatha', stopOrder: 4, distanceFromStartKm: 18 },
-    { id: 'stop-006', name: 'Nittambuwa', stopOrder: 5, distanceFromStartKm: 35 },
-    { id: 'stop-007', name: 'Warakapola', stopOrder: 6, distanceFromStartKm: 55 },
-    { id: 'stop-008', name: 'Kegalle', stopOrder: 7, distanceFromStartKm: 75 },
-    { id: 'stop-009', name: 'Mawanella', stopOrder: 8, distanceFromStartKm: 90 },
-    { id: 'stop-010', name: 'Kadugannawa', stopOrder: 9, distanceFromStartKm: 100 },
-    { id: 'stop-011', name: 'Peradeniya', stopOrder: 10, distanceFromStartKm: 110 },
-    { id: 'stop-012', name: 'Kandy', stopOrder: 11, distanceFromStartKm: 115 },
-  ],
-  'route-002': [
-    { id: 'stop-012', name: 'Kandy', stopOrder: 0, distanceFromStartKm: 0 },
-    { id: 'stop-011', name: 'Peradeniya', stopOrder: 1, distanceFromStartKm: 5 },
-    { id: 'stop-010', name: 'Kadugannawa', stopOrder: 2, distanceFromStartKm: 15 },
-    { id: 'stop-009', name: 'Mawanella', stopOrder: 3, distanceFromStartKm: 25 },
-    { id: 'stop-008', name: 'Kegalle', stopOrder: 4, distanceFromStartKm: 40 },
-    { id: 'stop-007', name: 'Warakapola', stopOrder: 5, distanceFromStartKm: 60 },
-    { id: 'stop-006', name: 'Nittambuwa', stopOrder: 6, distanceFromStartKm: 80 },
-    { id: 'stop-005', name: 'Kadawatha', stopOrder: 7, distanceFromStartKm: 97 },
-    { id: 'stop-004', name: 'Kelaniya', stopOrder: 8, distanceFromStartKm: 105 },
-    { id: 'stop-003', name: 'Maradana', stopOrder: 9, distanceFromStartKm: 111 },
-    { id: 'stop-002', name: 'Pettah', stopOrder: 10, distanceFromStartKm: 113 },
-    { id: 'stop-001', name: 'Colombo Central', stopOrder: 11, distanceFromStartKm: 115 },
-  ],
-  'route-003': [
-    { id: 'stop-020', name: 'Colombo Central', stopOrder: 0, distanceFromStartKm: 0 },
-    { id: 'stop-021', name: 'Kottawa', stopOrder: 1, distanceFromStartKm: 25 },
-    { id: 'stop-022', name: 'Kahathuduwa', stopOrder: 2, distanceFromStartKm: 35 },
-    { id: 'stop-023', name: 'Dodangoda', stopOrder: 3, distanceFromStartKm: 55 },
-    { id: 'stop-024', name: 'Welipenna', stopOrder: 4, distanceFromStartKm: 70 },
-    { id: 'stop-025', name: 'Kurundugaha', stopOrder: 5, distanceFromStartKm: 85 },
-    { id: 'stop-026', name: 'Baddegama', stopOrder: 6, distanceFromStartKm: 100 },
-    { id: 'stop-027', name: 'Pinnaduwa', stopOrder: 7, distanceFromStartKm: 110 },
-    { id: 'stop-028', name: 'Galle', stopOrder: 8, distanceFromStartKm: 120 },
-  ],
-};
-
-// Helper to create dummy schedules for a route
-const createDummySchedulesForRoute = (
-  routeId: string,
-  routeName: string,
-  routeGroupId: string,
-  routeGroupName: string,
-  routeStops: RouteStopReference[]
-): Schedule[] => {
-  return [
-    {
-      name: 'Morning Express',
-      routeId,
-      routeName,
-      routeGroupId,
-      routeGroupName,
-      scheduleType: ScheduleTypeEnum.REGULAR,
-      effectiveStartDate: '2024-01-01',
-      effectiveEndDate: '2024-12-31',
-      status: ScheduleStatusEnum.ACTIVE,
-      description: 'Early morning express service',
-      generateTrips: true,
-      scheduleStops: routeStops.map((stop, index) => ({
-        stopId: stop.id,
-        stopName: stop.name,
-        stopOrder: stop.stopOrder,
-        arrivalTime: calculateTimeOffset('06:00', index * 10),
-        departureTime: calculateTimeOffset('06:00', index * 10 + 2),
-      })),
-      calendar: { monday: true, tuesday: true, wednesday: true, thursday: true, friday: true, saturday: true, sunday: false },
-      exceptions: [
-        { id: 'exc-001', exceptionDate: '2024-04-14', exceptionType: ExceptionTypeEnum.REMOVED, description: 'New Year Holiday' },
-      ],
-    },
-    {
-      name: 'Mid-Morning Service',
-      routeId,
-      routeName,
-      routeGroupId,
-      routeGroupName,
-      scheduleType: ScheduleTypeEnum.REGULAR,
-      effectiveStartDate: '2024-01-01',
-      effectiveEndDate: '2024-12-31',
-      status: ScheduleStatusEnum.ACTIVE,
-      description: 'Regular mid-morning service',
-      generateTrips: true,
-      scheduleStops: routeStops.map((stop, index) => ({
-        stopId: stop.id,
-        stopName: stop.name,
-        stopOrder: stop.stopOrder,
-        arrivalTime: calculateTimeOffset('08:30', index * 12),
-        departureTime: calculateTimeOffset('08:30', index * 12 + 2),
-      })),
-      calendar: { monday: true, tuesday: true, wednesday: true, thursday: true, friday: true, saturday: false, sunday: false },
-      exceptions: [],
-    },
-    {
-      name: 'Afternoon Service',
-      routeId,
-      routeName,
-      routeGroupId,
-      routeGroupName,
-      scheduleType: ScheduleTypeEnum.REGULAR,
-      effectiveStartDate: '2024-01-01',
-      effectiveEndDate: '2024-12-31',
-      status: ScheduleStatusEnum.ACTIVE,
-      description: 'Afternoon regular service',
-      generateTrips: true,
-      scheduleStops: routeStops.map((stop, index) => ({
-        stopId: stop.id,
-        stopName: stop.name,
-        stopOrder: stop.stopOrder,
-        arrivalTime: calculateTimeOffset('14:00', index * 10),
-        departureTime: calculateTimeOffset('14:00', index * 10 + 2),
-      })),
-      calendar: { monday: true, tuesday: true, wednesday: true, thursday: true, friday: true, saturday: true, sunday: true },
-      exceptions: [],
-    },
-    {
-      name: 'Evening Express',
-      routeId,
-      routeName,
-      routeGroupId,
-      routeGroupName,
-      scheduleType: ScheduleTypeEnum.REGULAR,
-      effectiveStartDate: '2024-01-01',
-      effectiveEndDate: '2024-12-31',
-      status: ScheduleStatusEnum.ACTIVE,
-      description: 'Evening rush hour express',
-      generateTrips: true,
-      scheduleStops: routeStops.map((stop, index) => ({
-        stopId: stop.id,
-        stopName: stop.name,
-        stopOrder: stop.stopOrder,
-        arrivalTime: calculateTimeOffset('17:30', index * 8),
-        departureTime: calculateTimeOffset('17:30', index * 8 + 1),
-      })),
-      calendar: { monday: true, tuesday: true, wednesday: true, thursday: true, friday: true, saturday: false, sunday: false },
-      exceptions: [
-        { id: 'exc-002', exceptionDate: '2024-12-25', exceptionType: ExceptionTypeEnum.REMOVED, description: 'Christmas' },
-      ],
-    },
-  ];
-};
 
 export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProviderProps) {
   // Mode and loading state
@@ -210,32 +43,17 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Initialize with dummy data for development (route-001 selected with schedules)
-  const initialRoute = DUMMY_ROUTES[0];
-  const initialRouteStops = DUMMY_ROUTE_STOPS['route-001'];
-  
-  const [data, setData] = useState<ScheduleWorkspaceData>(() => ({
-    selectedRouteId: initialRoute.id,
-    selectedRouteName: initialRoute.name,
-    selectedRouteGroupId: initialRoute.routeGroupId || null,
-    selectedRouteGroupName: initialRoute.routeGroupName || null,
-    schedules: createDummySchedulesForRoute(
-      initialRoute.id,
-      initialRoute.name,
-      initialRoute.routeGroupId || '',
-      initialRoute.routeGroupName || '',
-      initialRouteStops
-    ),
-    activeScheduleIndex: 0,
-    highlightedScheduleIndex: null,
-    availableRoutes: DUMMY_ROUTES,
-    routeStops: initialRouteStops,
-    selectedStopIndex: null,
-    selectedExceptionIndex: null,
-  }));
+  // Initialize with empty data - routes will be loaded via API
+  const [data, setData] = useState<ScheduleWorkspaceData>(() => createEmptyScheduleWorkspaceData());
 
   const [selectedStopIndex, setSelectedStopIndex] = useState<number | null>(null);
   const [selectedExceptionIndex, setSelectedExceptionIndex] = useState<number | null>(null);
+
+  // Load available routes on mount
+  useEffect(() => {
+    loadAvailableRoutes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Clear highlight after a delay
   useEffect(() => {
@@ -247,16 +65,25 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
     }
   }, [data.highlightedScheduleIndex]);
 
-  // Load existing schedules for a route (placeholder - will use real API later)
+  // Load existing schedules for a route from API
   const loadSchedulesForRoute = useCallback(async (routeId: string): Promise<boolean> => {
     setIsLoading(true);
     setLoadError(null);
 
     try {
-      // TODO: Replace with actual API call
-      console.log('Loading schedules for route:', routeId);
-      setMode('edit');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Fetch schedules for the route from API
+      const schedulesResponse = await ScheduleManagementService.getSchedulesByRoute(routeId);
+      const schedules = (schedulesResponse.content || []).map(scheduleResponseToWorkspace);
+      
+      if (schedules.length > 0) {
+        setMode('edit');
+        setData(prev => ({
+          ...prev,
+          schedules,
+          activeScheduleIndex: 0,
+        }));
+      }
+      
       setIsLoading(false);
       return true;
     } catch (error) {
@@ -268,53 +95,94 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
   }, []);
 
   // Reset to create mode
-  const resetToCreateMode = useCallback(() => {
+  const resetToCreateMode = useCallback(async () => {
     setMode('create');
     setLoadError(null);
-    setData({
-      ...createEmptyScheduleWorkspaceData(),
-      availableRoutes: DUMMY_ROUTES,
-    });
+    
+    // Reload available routes
+    try {
+      const routes = await RouteManagementService.getAllRoutesAsList();
+      const routeReferences = routes.map(routeResponseToReference);
+      
+      setData({
+        ...createEmptyScheduleWorkspaceData(),
+        availableRoutes: routeReferences,
+      });
+    } catch (error) {
+      console.error('Failed to reload routes:', error);
+      setData(createEmptyScheduleWorkspaceData());
+    }
+    
     setSelectedStopIndex(null);
     setSelectedExceptionIndex(null);
   }, []);
 
-  // Set selected route and load its schedules
-  const setSelectedRoute = useCallback((routeId: string) => {
-    const selectedRoute = DUMMY_ROUTES.find(r => r.id === routeId);
-    const routeStops = DUMMY_ROUTE_STOPS[routeId] || [];
+  // Set selected route and load its data from API
+  const setSelectedRoute = useCallback(async (routeId: string) => {
+    setIsLoading(true);
+    setLoadError(null);
     
-    if (!selectedRoute) return;
+    try {
+      // Find the route in available routes
+      const selectedRoute = data.availableRoutes.find(r => r.id === routeId);
+      if (!selectedRoute) {
+        throw new Error('Route not found');
+      }
 
-    // Create dummy schedules for this route
-    const schedules = createDummySchedulesForRoute(
-      routeId,
-      selectedRoute.name,
-      selectedRoute.routeGroupId || '',
-      selectedRoute.routeGroupName || '',
-      routeStops
-    );
+      // Fetch the full route details to get route stops
+      const routeDetails = await RouteManagementService.getRouteById(routeId);
+      const routeStops = routeStopsToReferences(routeDetails.routeStops);
 
-    setData(prev => ({
-      ...prev,
-      selectedRouteId: routeId,
-      selectedRouteName: selectedRoute.name,
-      selectedRouteGroupId: selectedRoute.routeGroupId || null,
-      selectedRouteGroupName: selectedRoute.routeGroupName || null,
-      schedules,
-      activeScheduleIndex: schedules.length > 0 ? 0 : null,
-      highlightedScheduleIndex: null,
-      routeStops,
-    }));
-  }, []);
+      // Fetch existing schedules for this route
+      const schedulesResponse = await ScheduleManagementService.getSchedulesByRoute(routeId);
+      let schedules = (schedulesResponse.content || []).map(scheduleResponseToWorkspace);
+      
+      // If no existing schedules, create one empty schedule for the route
+      if (schedules.length === 0) {
+        setMode('create');
+        schedules = [
+          createScheduleForRoute(
+            routeId,
+            selectedRoute.name,
+            selectedRoute.routeGroupId || '',
+            selectedRoute.routeGroupName || '',
+            routeStops,
+            'Schedule 1'
+          ),
+        ];
+      } else {
+        setMode('edit');
+      }
 
-  // Load available routes
+      setData(prev => ({
+        ...prev,
+        selectedRouteId: routeId,
+        selectedRouteName: selectedRoute.name,
+        selectedRouteGroupId: selectedRoute.routeGroupId || null,
+        selectedRouteGroupName: selectedRoute.routeGroupName || null,
+        schedules,
+        activeScheduleIndex: schedules.length > 0 ? 0 : null,
+        highlightedScheduleIndex: null,
+        routeStops,
+      }));
+    } catch (error) {
+      console.error('Failed to load route data:', error);
+      setLoadError(error instanceof Error ? error.message : 'Failed to load route data');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [data.availableRoutes]);
+
+  // Load available routes from API
   const loadAvailableRoutes = useCallback(async () => {
     setIsLoading(true);
     try {
-      setData(prev => ({ ...prev, availableRoutes: DUMMY_ROUTES }));
+      const routes = await RouteManagementService.getAllRoutesAsList();
+      const routeReferences = routes.map(routeResponseToReference);
+      setData(prev => ({ ...prev, availableRoutes: routeReferences }));
     } catch (error) {
       console.error('Failed to load routes:', error);
+      setLoadError(error instanceof Error ? error.message : 'Failed to load routes');
     } finally {
       setIsLoading(false);
     }
@@ -599,26 +467,58 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
     
     if (!validation.valid) {
       console.error('Schedule validation failed:', validation.scheduleErrors);
-      return;
+      throw new Error(`Validation failed for ${validation.invalidCount} schedule(s)`);
     }
 
-    const apiRequests = data.schedules.map(schedule => scheduleToApiRequest(schedule));
-    
-    console.log('='.repeat(60));
-    console.log('ALL SCHEDULES SUBMISSION DATA');
-    console.log('='.repeat(60));
-    console.log('Mode:', mode);
-    console.log('Route ID:', data.selectedRouteId);
-    console.log('Route Name:', data.selectedRouteName);
-    console.log('Total Schedules:', data.schedules.length);
-    console.log('-'.repeat(60));
-    console.log('Workspace Schedules Data:');
-    console.log(JSON.stringify(data.schedules, null, 2));
-    console.log('-'.repeat(60));
-    console.log('API Request Format (ready to send to backend):');
-    console.log(JSON.stringify(apiRequests, null, 2));
-    console.log('='.repeat(60));
-  }, [data.schedules, data.selectedRouteId, data.selectedRouteName, mode]);
+    setIsLoading(true);
+    setLoadError(null);
+
+    try {
+      const results: { schedule: Schedule; success: boolean; error?: string; id?: string }[] = [];
+
+      for (const schedule of data.schedules) {
+        try {
+          const apiRequest = scheduleToApiRequest(schedule) as ScheduleRequest;
+
+          if (schedule.id) {
+            // Update existing schedule
+            await ScheduleManagementService.updateSchedule(schedule.id, apiRequest);
+            results.push({ schedule, success: true, id: schedule.id });
+          } else {
+            // Create new schedule with full details
+            const response = await ScheduleManagementService.createScheduleFull(apiRequest);
+            results.push({ schedule, success: true, id: response.id });
+          }
+        } catch (error) {
+          console.error(`Failed to save schedule "${schedule.name}":`, error);
+          results.push({
+            schedule,
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
+      }
+
+      // Check if all succeeded
+      const failedCount = results.filter(r => !r.success).length;
+      if (failedCount > 0) {
+        throw new Error(`${failedCount} schedule(s) failed to save`);
+      }
+
+      // Reload schedules from server to get updated data
+      if (data.selectedRouteId) {
+        await setSelectedRoute(data.selectedRouteId);
+      }
+
+      console.log('All schedules saved successfully:', results);
+    } catch (error) {
+      console.error('Failed to submit schedules:', error);
+      setLoadError(error instanceof Error ? error.message : 'Failed to submit schedules');
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [data.schedules, data.selectedRouteId, setSelectedRoute]);
 
   const contextValue = useMemo(() => ({
     mode,

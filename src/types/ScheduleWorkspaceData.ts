@@ -459,3 +459,148 @@ export function createScheduleForRoute(
     exceptions: [],
   };
 }
+
+// ============================================================================
+// API RESPONSE TO WORKSPACE CONVERSION HELPERS
+// ============================================================================
+
+// Import types from API client (for type reference only - actual imports should be in the provider)
+type ScheduleResponseType = {
+  id?: string;
+  name?: string;
+  description?: string;
+  routeId?: string;
+  routeName?: string;
+  routeGroupId?: string;
+  routeGroupName?: string;
+  scheduleType?: 'REGULAR' | 'SPECIAL';
+  effectiveStartDate?: string;
+  effectiveEndDate?: string;
+  status?: 'PENDING' | 'ACTIVE' | 'INACTIVE' | 'CANCELLED';
+  scheduleStops?: Array<{
+    id?: string;
+    stopId?: string;
+    stopName?: string;
+    stopOrder?: number;
+    arrivalTime?: string;
+    departureTime?: string;
+  }>;
+  scheduleCalendars?: Array<{
+    id?: string;
+    monday?: boolean;
+    tuesday?: boolean;
+    wednesday?: boolean;
+    thursday?: boolean;
+    friday?: boolean;
+    saturday?: boolean;
+    sunday?: boolean;
+  }>;
+  scheduleExceptions?: Array<{
+    id?: string;
+    exceptionDate?: string;
+    exceptionType?: 'ADDED' | 'REMOVED';
+  }>;
+};
+
+type RouteResponseType = {
+  id?: string;
+  name?: string;
+  routeGroupId?: string;
+  routeGroupName?: string;
+  direction?: string;
+  startStopName?: string;
+  endStopName?: string;
+  routeStops?: Array<{
+    id?: string;
+    stopId?: string;
+    stopName?: string;
+    stopOrder?: number;
+    distanceFromStartKm?: number;
+  }>;
+};
+
+/**
+ * Converts an API ScheduleResponse to workspace Schedule format
+ */
+export function scheduleResponseToWorkspace(response: ScheduleResponseType): Schedule {
+  // Get calendar from first calendar entry (there should only be one)
+  const apiCalendar = response.scheduleCalendars?.[0];
+  const calendar: ScheduleCalendar = apiCalendar ? {
+    monday: apiCalendar.monday ?? false,
+    tuesday: apiCalendar.tuesday ?? false,
+    wednesday: apiCalendar.wednesday ?? false,
+    thursday: apiCalendar.thursday ?? false,
+    friday: apiCalendar.friday ?? false,
+    saturday: apiCalendar.saturday ?? false,
+    sunday: apiCalendar.sunday ?? false,
+  } : createEmptyCalendar();
+
+  // Convert schedule stops
+  const scheduleStops: ScheduleStop[] = (response.scheduleStops || [])
+    .sort((a, b) => (a.stopOrder ?? 0) - (b.stopOrder ?? 0))
+    .map(stop => ({
+      id: stop.id,
+      stopId: stop.stopId || '',
+      stopName: stop.stopName || '',
+      stopOrder: stop.stopOrder ?? 0,
+      arrivalTime: stop.arrivalTime || '',
+      departureTime: stop.departureTime || '',
+    }));
+
+  // Convert exceptions
+  const exceptions: ScheduleException[] = (response.scheduleExceptions || []).map(exc => ({
+    id: exc.id,
+    exceptionDate: exc.exceptionDate || '',
+    exceptionType: exc.exceptionType === 'ADDED' ? ExceptionTypeEnum.ADDED : ExceptionTypeEnum.REMOVED,
+    description: '',
+  }));
+
+  return {
+    id: response.id,
+    name: response.name || '',
+    routeId: response.routeId || '',
+    routeName: response.routeName || '',
+    routeGroupId: response.routeGroupId || '',
+    routeGroupName: response.routeGroupName || '',
+    scheduleType: response.scheduleType === 'SPECIAL' ? ScheduleTypeEnum.SPECIAL : ScheduleTypeEnum.REGULAR,
+    effectiveStartDate: response.effectiveStartDate || '',
+    effectiveEndDate: response.effectiveEndDate || '',
+    status: (response.status as ScheduleStatusEnum) || ScheduleStatusEnum.PENDING,
+    description: response.description || '',
+    generateTrips: true,
+    scheduleStops,
+    calendar,
+    exceptions,
+  };
+}
+
+/**
+ * Converts an API RouteResponse to RouteReference format
+ */
+export function routeResponseToReference(response: RouteResponseType): RouteReference {
+  return {
+    id: response.id || '',
+    name: response.name || '',
+    routeGroupId: response.routeGroupId || '',
+    routeGroupName: response.routeGroupName || '',
+    direction: response.direction || '',
+    startStopName: response.startStopName || '',
+    endStopName: response.endStopName || '',
+  };
+}
+
+/**
+ * Converts an API RouteResponse's routeStops to RouteStopReference array
+ */
+export function routeStopsToReferences(routeStops: RouteResponseType['routeStops']): RouteStopReference[] {
+  if (!routeStops) return [];
+  
+  return routeStops
+    .sort((a, b) => (a.stopOrder ?? 0) - (b.stopOrder ?? 0))
+    .map(stop => ({
+      id: stop.stopId || stop.id || '',
+      name: stop.stopName || '',
+      stopOrder: stop.stopOrder ?? 0,
+      distanceFromStartKm: stop.distanceFromStartKm,
+    }));
+}
