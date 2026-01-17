@@ -20,6 +20,8 @@ export interface RouteWorkspaceContextType {
   updateRouteGroup: (routeGroup: Partial<RouteGroup>) => void;
   updateFromYaml: (yaml: string) => void;
   getYaml: () => string;
+  updateFromJson: (json: string) => void;
+  getJson: () => string;
   getRouteGroupData: () => RouteGroup;
   updateRoute: (routeIndex: number, route: Partial<Route>) => void;
   updateRouteStop: (routeIndex: number, stopIndex: number, routeStop: Partial<RouteStop>) => void;
@@ -61,6 +63,8 @@ export const RouteWorkspaceContext = createContext<RouteWorkspaceContextType>({
   updateRouteGroup: () => {},
   updateFromYaml: () => {},
   getYaml: () => '',
+  updateFromJson: () => {},
+  getJson: () => '',
   getRouteGroupData: () => createEmptyRouteWorkspaceData().routeGroup,
   updateRoute: () => {},
   updateRouteStop: () => {},

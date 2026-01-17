@@ -23,6 +23,12 @@ import {
   Clock,
   Settings,
   Pen,
+  Briefcase,
+  AlertCircle,
+  TicketIcon,
+  Users2,
+  TrendingUp,
+  Shield,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -89,13 +95,13 @@ export function Sidebar({
       href: '/mot/trips',
     },
     {
-      icon: Bus,
+      icon: Truck,
       label: 'Trip Assignment',
       active: activeItem === 'trip-assignment',
       href: '/mot/trip-assignment',
     },
     {
-      icon: FileText,
+      icon: Users,
       label: 'Operator Management',
       active: activeItem === 'operators',
       href: '/mot/users/operators',
@@ -107,7 +113,7 @@ export function Sidebar({
       href: '/mot/buses',
     },
     {
-      icon: FileText,
+      icon: TicketIcon,
       label: 'Permit Management',
       active: activeItem === 'passenger-service-permits',
       href: '/mot/passenger-service-permits',
@@ -125,7 +131,7 @@ export function Sidebar({
       href: '/mot/bus-fare',
     },
     {
-      icon: FileText,
+      icon: Users2,
       label: 'Staff Management',
       active: activeItem === 'staff',
       href: '/mot/staff-management',
@@ -137,13 +143,13 @@ export function Sidebar({
       href: '/mot/notifications',
     },
     {
-      icon: BarChart3,
+      icon: TrendingUp,
       label: 'Insights & Analytics',
       active: activeItem === 'dataInsights',
       href: '/mot/insights-analytics',
     },
     {
-      icon: FileText,
+      icon: Shield,
       label: 'Policy Update',
       active: activeItem === 'policy',
       href: '/mot/policy-update',
@@ -190,41 +196,40 @@ export function Sidebar({
       } bg-blue-800 text-white transition-all duration-300 ease-in-out flex flex-col h-screen fixed left-0 top-0 z-40`}
     >
       {/* Header Section */}
-      <div className="p-4 border-b border-blue-500 h-20 flex items-center">
-        <div className="flex items-center justify-between w-full">
+      <div className="p-4 border-b border-blue-500 h-20 flex items-center justify-center">
+        <div className="flex items-center justify-center w-full">
           <div
             className={`flex items-center gap-3 ${
               isCollapsed ? 'justify-center' : ''
             }`}
           >
-            {!isCollapsed && (
-              <div className="bg-blue-800  rounded-lg flex-shrink-0">
+            {!isCollapsed ? (
+              <div className="bg-blue-800 rounded-lg flex-shrink-0 flex items-center justify-center">
                 <Image
-                  src="/Busmate Lk.svg"
+                  src="/busmate-logo-icon.png"
                   alt="Busmate LK Logo"
-                  width={24}
-                  height={24}
-                  className="w-16 h-16"
+                  width={1408}
+                  height={768}
+                  className="w-20 h-12 object-cover"
+                />
+                <Image
+                  src="/busmate-logo-text.png"
+                  alt="Busmate LK Logo"
+                  width={1408}
+                  height={768}
+                  className="w-36 h-12 object-cover ml-[-5px] mt-[3px]"
                 />
               </div>
-            )}
-            {!isCollapsed && (
-              <div className="w-full justify-center ">
-                <h1 className="text-xl font-bold text-white">BUSMATE LK</h1>
-                <p className="text-blue-200 text-sm">MoT Portal</p>
-              </div>
+            ) : (
+              <Image
+                src="/busmate-logo-icon.png"
+                alt="Busmate LK Logo"
+                width={1408}
+                height={768}
+                className="w-12 h-8 object-cover"
+              />
             )}
           </div>
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1 hover:bg-blue-500 rounded transition-colors"
-          >
-            {isCollapsed ? (
-              <ChevronRight className="w-5 h-5" />
-            ) : (
-              <ChevronLeft className="w-5 h-5" />
-            )}
-          </button>
         </div>
       </div>
 
@@ -243,29 +248,67 @@ export function Sidebar({
               href={item.href}
               className={`w-full flex items-center ${
                 isCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3 py-3'
-              } rounded-lg text-sm font-medium transition-all duration-200 group ${
+              } rounded-lg text-sm font-medium transition-all duration-200 group relative ${
                 item.active
                   ? 'bg-white text-blue-600 shadow-sm'
                   : 'text-blue-100 hover:bg-blue-500 hover:text-white'
               }`}
               title={isCollapsed ? item.label : undefined}
             >
-              <item.icon
-                className={`w-5 h-5 flex-shrink-0 ${
-                  item.active ? 'text-blue-600' : ''
-                }`}
-              />
-              {!isCollapsed && (
-                <span className="truncate ml-3">{item.label}</span>
+              {/* Active indicator line */}
+              {item.active && !isCollapsed && (
+                <div className="absolute left-0 top-0 bottom-0 w-1 rounded-r-lg" />
               )}
+              
+              {/* Icon with enhanced styling */}
+              <div
+                className={`flex-shrink-0 transition-all duration-200 ${
+                  item.active
+                    ? 'text-blue-600 scale-110'
+                    : 'text-blue-100 group-hover:text-white group-hover:scale-105'
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+              </div>
+
+              {/* Label */}
+              {!isCollapsed && (
+                <span className="truncate ml-2 transition-all duration-200">
+                  {item.label}
+                </span>
+              )}
+
+              {/* Tooltip for collapsed state */}
               {isCollapsed && (
-                <div className="absolute left-16 bg-gray-900 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                <div className="absolute left-16 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg border border-gray-700">
                   {item.label}
                 </div>
               )}
             </Link>
           ))}
         </nav>
+      </div>
+
+      {/* Footer Section with Collapse Button */}
+      <div className="p-2 pr-4 border-t border-blue-500 flex items-center justify-end">
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className={`p-2.5 rounded-lg transition-all duration-200 ${
+            isCollapsed
+              ? 'bg-blue-600 hover:bg-blue-500 text-white'
+              : 'text-blue-100 hover:bg-blue-500 hover:text-white'
+          }`}
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="w-5 h-5" />
+          ) : (
+            <div className='flex'>
+              <ChevronLeft className="w-5 h-5 mr-[-12px]" />
+              <ChevronLeft className="w-5 h-5" />            
+            </div>
+          )}
+        </button>
       </div>
     </div>
   );

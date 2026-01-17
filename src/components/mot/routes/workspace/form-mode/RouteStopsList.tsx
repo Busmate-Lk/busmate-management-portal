@@ -130,9 +130,9 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
 
     if (!route) {
         return (
-            <div className="flex flex-col rounded-md px-4 py-2 bg-gray-100">
-                <span className="underline mb-2">RouteStopsList</span>
-                <p className="text-gray-600">No route data available</p>
+            <div className="flex flex-col rounded-lg bg-slate-50 p-4">
+                <span className="text-sm font-medium text-slate-700 mb-2">Route Stops List</span>
+                <p className="text-sm text-slate-500">No route data available</p>
             </div>
         );
     }
@@ -518,48 +518,48 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                 ref={setNodeRef}
                 style={style}
                 onClick={() => setSelectedStop(routeIndex, actualIndex)}
-                className={`cursor-pointer transition-colors ${isSelected
-                        ? 'bg-blue-100 hover:bg-blue-150'
-                        : 'hover:bg-gray-50'
+                className={`cursor-pointer transition-colors text-sm ${isSelected
+                    ? 'bg-blue-50 hover:bg-blue-100'
+                    : 'hover:bg-slate-50'
                     } ${isDragging ? 'relative z-50' : ''}`}
             >
-                <td className="border border-gray-300 w-6">
+                <td className="border-b border-slate-100 w-8">
                     <button
                         {...attributes}
                         {...listeners}
-                        className="cursor-grab active:cursor-grabbing p-1 hover:bg-gray-200 rounded"
+                        className="cursor-grab active:cursor-grabbing p-1.5 hover:bg-slate-100 rounded transition-colors"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <GripVertical className="text-gray-400" />
+                        <GripVertical className="text-slate-400" size={16} />
                     </button>
                 </td>
-                <td className={`border border-gray-300 px-2 py-2 ${getOrderBadgeColor(actualIndex)} text-white text-center font-bold`}>
+                <td className={`border-b border-slate-100 px-2 py-2 ${getOrderBadgeColor(actualIndex)} text-white text-center font-bold text-xs`}>
                     {routeStop.orderNumber}
                 </td>
-                <td className="border border-gray-300 px-2 py-2 text-sm">
+                <td className="border-b border-slate-100 px-3 py-2">
                     <div className='flex items-center gap-2'>
-                        <span className='font-mono text-xs text-gray-700'>
+                        <span className='font-mono text-xs text-slate-600'>
                             {routeStop.id ? routeStop.id.substring(0, 8) + '...' : '(new)'}
                         </span>
                         <button
                             onClick={(e) => handleCopyRouteStopId(routeStop.id, e)}
                             disabled={!routeStop.id}
-                            className="px-1.5 py-1.5 border border-gray-400 text-gray-600 text-sm rounded hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                            className="p-1 border border-slate-300 text-slate-500 rounded hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
                             title='Copy full Route Stop ID'
                         >
-                            <Copy size={14}/>
+                            <Copy size={12} />
                         </button>
                     </div>
                 </td>
-                <td className="border border-gray-300 px-2 py-2 text-sm">
+                <td className="border-b border-slate-100 px-3 py-2">
                     <div className='flex items-center gap-2'>
                         <div className='flex flex-col gap-1 flex-grow'>
-                            <div className='flex items-center gap-0'>
-                                <span className='font-mono text-xs text-gray-700'>
+                            <div className='flex items-center gap-1'>
+                                <span className='font-mono text-xs text-slate-600'>
                                     {routeStop.stop.id ? routeStop.stop.id.substring(0, 8) + '...' : ''}
                                 </span>
                                 {!routeStop.stop.id && (
-                                    <span className="inline-block px-2 py-0.5 rounded-full text-white text-xs font-medium bg-orange-500">
+                                    <span className="inline-block px-1.5 py-0.5 rounded-full text-white text-xs font-medium bg-amber-500">
                                         New
                                     </span>
                                 )}
@@ -572,68 +572,68 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                                     handleSearchSingleStopExistence(actualIndex);
                                 }}
                                 disabled={isSearchingThis || isSearchingAllStops}
-                                className="px-1.5 py-1.5 border border-blue-500 text-blue-500 text-sm rounded hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                                className="p-1 border border-blue-400 text-blue-500 rounded hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
                                 title="Search for existing stop"
                             >
                                 {isSearchingThis ? (
-                                    <Loader2 className="animate-spin" size={14} />
+                                    <Loader2 className="animate-spin" size={12} />
                                 ) : (
-                                    <Search size={14} />
+                                    <Search size={12} />
                                 )}
                             </button>
                             <button
                                 onClick={(e) => handleCopyStopId(routeStop.stop.id, e)}
                                 disabled={!routeStop.stop.id}
-                                className="px-1.5 py-1.5 border border-gray-400 text-gray-600 text-sm rounded hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center"
+                                className="p-1 border border-slate-300 text-slate-500 rounded hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
                                 title='Copy full Stop ID'
                             >
-                                <Copy size={14}/>
+                                <Copy size={12} />
                             </button>
                         </div>
                     </div>
                 </td>
-                <td className="border border-gray-300">
+                <td className="border-b border-slate-100">
                     <input
                         type="text"
                         defaultValue={routeStop.stop.name || ''}
                         onClick={(e) => e.stopPropagation()}
                         onBlur={(e) => handleFieldChange(actualIndex, 'stopName', e.target.value)}
-                        className="w-full px-4 py-2 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-1.5 border-none bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset text-sm"
                     />
                 </td>
-                <td className="border border-gray-300">
+                <td className="border-b border-slate-100">
                     <input
                         type="number"
                         step="0.1"
                         defaultValue={routeStop.distanceFromStart || 0}
                         onClick={(e) => e.stopPropagation()}
                         onBlur={(e) => handleFieldChange(actualIndex, 'distanceFromStart', parseFloat(e.target.value) || 0)}
-                        className="w-full px-4 py-2 border-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-1.5 border-none bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset text-sm"
                     />
                 </td>
-                <td className="border border-gray-300 w-8">
+                <td className="border-b border-slate-100 w-8">
                     <button
                         onClick={(e) => handleToggleCoordinateEditingMode(actualIndex, e)}
-                        className={`p-1 rounded transition-colors ${isInCoordinateEditingMode
-                                ? 'text-blue-600 bg-blue-100 hover:bg-blue-200'
-                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                        className={`p-1.5 rounded transition-colors ${isInCoordinateEditingMode
+                            ? 'text-blue-600 bg-blue-100 hover:bg-blue-200'
+                            : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
                             }`}
                         title={isInCoordinateEditingMode ? "Deactivate coordinates editing mode" : "Activate coordinates editing mode on map"}
                     >
-                        <LocationEditIcon size={16} />
+                        <LocationEditIcon size={14} />
                     </button>
                 </td>
-                <td className="border border-gray-300 w-8">
+                <td className="border-b border-slate-100 w-8">
                     {actualIndex !== 0 && actualIndex !== stops.length - 1 && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 handleDeleteStop(actualIndex);
                             }}
-                            className="text-red-500 hover:text-red-700 p-1"
+                            className="text-rose-400 hover:text-rose-600 p-1.5 hover:bg-rose-50 rounded transition-colors"
                             title="Delete stop"
                         >
-                            <Trash size={16} />
+                            <Trash size={14} />
                         </button>
                     )}
                 </td>
@@ -646,22 +646,22 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
 
         return (
             <div>
-                <h3 className="font-semibold mb-3">{title}</h3>
-                <div className="overflow-x-auto">
+                <h3 className="text-sm font-medium text-slate-700 mb-2">{title}</h3>
+                <div className="overflow-x-auto rounded-lg border border-slate-200">
                     <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
-                        <table className="w-full border-collapse border border-gray-300 bg-white">
+                        <table className="w-full border-collapse bg-white">
                             <thead>
-                                <tr className="bg-gray-100">
-                                    <th className="w-6"></th>
-                                    <th className="border border-gray-300 px-2 py-2 text-left" title='Stop Order Number'>#</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left" title='Route Stop ID'>Route Stop Id</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left" title='Stop ID with existence status'>Stop Id</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left">Name</th>
-                                    <th className="border border-gray-300 px-4 py-2 text-left" title='Distance from start(km)'>
+                                <tr className="bg-slate-50 text-xs font-medium text-slate-600">
+                                    <th className="w-8 py-2"></th>
+                                    <th className="border-b border-slate-200 px-2 py-2 text-left" title='Stop Order Number'>#</th>
+                                    <th className="border-b border-slate-200 px-3 py-2 text-left" title='Route Stop ID'>Route Stop Id</th>
+                                    <th className="border-b border-slate-200 px-3 py-2 text-left" title='Stop ID with existence status'>Stop Id</th>
+                                    <th className="border-b border-slate-200 px-3 py-2 text-left">Name</th>
+                                    <th className="border-b border-slate-200 px-3 py-2 text-left" title='Distance from start(km)'>
                                         Distance (km)
                                     </th>
-                                    <th className="border border-gray-300 w-6"></th>
-                                    <th className="border border-gray-300 w-6"></th>
+                                    <th className="border-b border-slate-200 w-8 py-2"></th>
+                                    <th className="border-b border-slate-200 w-8 py-2"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -690,17 +690,17 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
     };
 
     return (
-        <div className="flex flex-col rounded-md px-4 py-2 bg-gray-100">
-            <div className="flex justify-between items-center mb-2">
-                <span className="underline">RouteStopsList</span>
+        <div className="flex flex-col border-r-3 border-gray-300 bg-gray-50 px-4 py-4">
+            <div className="flex justify-between items-center mb-3">
+                <span className="text-sm font-medium text-slate-700">Route Stops List</span>
                 <div className='flex gap-2'>
                     <button
                         onClick={() => mapActions.fitBoundsToRoute?.()}
                         disabled={!mapActions.fitBoundsToRoute}
-                        className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
+                        className="px-3 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center gap-1.5 transition-all duration-200 shadow-sm"
                         title="View full route on map"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1V5h-1z" clipRule="evenodd" />
                             <path d="M11 4a1 1 0 10-2 0v1a1 1 0 002 0V4zM10 7a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1H8a1 1 0 110-2h1V8a1 1 0 011-1zM16 9a1 1 0 100 2 1 1 0 000-2zM9 13a1 1 0 011-1h1a1 1 0 110 2v1a1 1 0 11-2 0v-1a1 1 0 01-1-1zM7 16a1 1 0 100-2H4a1 1 0 100 2h3zM15 14a1 1 0 011-1h1a1 1 0 110 2h-1a1 1 0 01-1-1z" />
                         </svg>
@@ -713,7 +713,7 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                                 setIsActionsMenuOpen(!isActionsMenuOpen);
                             }}
                             disabled={isFetchingAllCoordinates || isFetchingMissingCoordinates || isSearchingAllStops}
-                            className="px-1 py-1 text-sm text-black rounded hover:bg-gray-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-1"
+                            className="px-2 py-1.5 text-sm text-slate-600 rounded-lg hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 transition-all duration-200"
                             title="Actions"
                         >
                             {(isFetchingAllCoordinates || isFetchingMissingCoordinates) ? (
@@ -731,9 +731,9 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                             )}
                         </button>
                         {isActionsMenuOpen && (
-                            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-300 rounded shadow-lg z-10 min-w-[250px]" ref={actionsMenuRef}>
+                            <div className="absolute right-0 top-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-10 min-w-[250px] overflow-hidden" ref={actionsMenuRef}>
                                 {/* Coordinates Section */}
-                                <div className="px-3 py-1 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase">
+                                <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase">
                                     Coordinates
                                 </div>
                                 <button
