@@ -1,17 +1,26 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useScheduleWorkspace } from '@/context/ScheduleWorkspace';
 import { ScheduleTabs } from './ScheduleTabs';
 import ScheduleMetadata from './ScheduleMetadata';
 import ScheduleExceptions from './ScheduleExceptions';
 import ScheduleGrid from './ScheduleGrid';
+import TimeStopGraph from './TimeStopGraph';
+import { Grid3X3, LineChart } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+type ViewMode = 'grid' | 'graph';
 
 export default function ScheduleFormMode() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { data, setSelectedRoute, isLoading, activeScheduleIndex } = useScheduleWorkspace();
     const { availableRoutes, selectedRouteId, selectedRouteName, selectedRouteGroupName, schedules } = data;
+    
+    // View mode state
+    const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
     const handleRouteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const routeId = e.target.value;
@@ -67,8 +76,44 @@ export default function ScheduleFormMode() {
                 </div>
             )}
 
-            {/* Schedule Grid - Shows ALL schedules with stops as rows */}
-            {selectedRouteId && <ScheduleGrid />}
+            {/* View Toggle and Schedule Display */}
+            {selectedRouteId && (
+                <>
+                    {/* View mode toggle */}
+                    <div className="flex items-center justify-end gap-2">
+                        <span className="text-sm text-gray-600 mr-2">View:</span>
+                        <button
+                            onClick={() => setViewMode('grid')}
+                            className={cn(
+                                "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+                                viewMode === 'grid'
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            )}
+                            title="Grid View"
+                        >
+                            <Grid3X3 className="h-4 w-4" />
+                            Grid
+                        </button>
+                        <button
+                            onClick={() => setViewMode('graph')}
+                            className={cn(
+                                "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+                                viewMode === 'graph'
+                                    ? "bg-blue-600 text-white"
+                                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            )}
+                            title="Time-Stop Graph"
+                        >
+                            <LineChart className="h-4 w-4" />
+                            Graph
+                        </button>
+                    </div>
+
+                    {/* Conditional view rendering */}
+                    {viewMode === 'grid' ? <ScheduleGrid /> : <TimeStopGraph />}
+                </>
+            )}
         </div>
     );
 }
