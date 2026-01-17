@@ -28,6 +28,10 @@ export interface ScheduleWorkspaceContextType {
   // Data
   data: ScheduleWorkspaceData;
 
+  // YAML serialization (for textual mode)
+  getYaml: () => string;
+  updateFromYaml: (yamlText: string) => string | null; // Returns error message or null on success
+
   // Route selection (async - loads from API)
   setSelectedRoute: (routeId: string) => Promise<void>;
   loadAvailableRoutes: () => Promise<void>;
@@ -92,6 +96,10 @@ export const ScheduleWorkspaceContext = createContext<ScheduleWorkspaceContextTy
 
   // Data defaults
   data: createEmptyScheduleWorkspaceData(),
+
+  // YAML serialization defaults
+  getYaml: () => '',
+  updateFromYaml: () => null,
 
   // Route selection defaults (async)
   setSelectedRoute: async () => {},

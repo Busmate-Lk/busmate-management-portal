@@ -6,6 +6,7 @@ import { Layout } from '@/components/shared/layout';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
 import ScheduleFormMode from '@/components/mot/schedules/workspace/form-mode/ScheduleFormMode';
+import ScheduleTextualMode from '@/components/mot/schedules/workspace/textual-mode/ScheduleTextualMode';
 import { ScheduleWorkspaceProvider, useScheduleWorkspace } from '@/context/ScheduleWorkspace';
 
 function ScheduleWorkspaceContent() {
@@ -134,12 +135,7 @@ function ScheduleWorkspaceContent() {
                 </div>
                 <div className="p-4">
                     {activeTab === 'form' && <ScheduleFormMode />}
-                    {activeTab === 'textual' && (
-                        <div className="bg-gray-100 rounded-lg p-8 text-center">
-                            <p className="text-gray-500">Schedule Textual Mode - Coming Soon</p>
-                            <p className="text-sm text-gray-400 mt-2">This mode will allow you to view and edit schedule data in YAML/JSON format.</p>
-                        </div>
-                    )}
+                    {activeTab === 'textual' && <ScheduleTextualMode />}
                 </div>
             </div>
         </Layout>

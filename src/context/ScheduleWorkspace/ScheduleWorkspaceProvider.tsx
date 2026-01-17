@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useState, useCallback, useMemo, useEffect } from 'react';
+import { ReactNode, useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { ScheduleWorkspaceContext, ScheduleWorkspaceMode } from './ScheduleWorkspaceContext';
 import {
   ScheduleWorkspaceData,
@@ -32,6 +32,11 @@ import {
   ScheduleResponse,
   RouteResponse,
 } from '@/lib/api-client/route-management';
+import {
+  serializeSchedulesToYaml,
+  parseSchedulesFromYaml,
+  mergeSchedulesWithRouteContext,
+} from '@/services/scheduleWorkspaceSerializer';
 
 interface ScheduleWorkspaceProviderProps {
   children: ReactNode;
@@ -196,6 +201,49 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
       setIsLoading(false);
     }
   }, []);
+
+  // ============================================================================
+  // YAML SERIALIZATION (for textual mode)
+  // ============================================================================
+
+  // Get current data as YAML string
+  const getYaml = useCallback((): string => {
+    return serializeSchedulesToYaml(data);
+  }, [data]);
+
+  // Update data from YAML string - returns error message or null on success
+  const updateFromYaml = useCallback((yamlText: string): string | null => {
+    try {
+      const { schedules: parsedSchedules, error } = parseSchedulesFromYaml(yamlText);
+      
+      if (error) {
+        return error;
+      }
+
+      if (parsedSchedules.length === 0 && yamlText.trim()) {
+        // If YAML is not empty but no schedules parsed, don't update
+        return null;
+      }
+
+      // Merge parsed schedules with current route context
+      const mergedSchedules = mergeSchedulesWithRouteContext(parsedSchedules, data);
+
+      // Update data with merged schedules
+      setData(prev => ({
+        ...prev,
+        schedules: mergedSchedules,
+        // Adjust active index if needed
+        activeScheduleIndex: mergedSchedules.length > 0 
+          ? Math.min(prev.activeScheduleIndex ?? 0, mergedSchedules.length - 1)
+          : null,
+      }));
+
+      return null;
+    } catch (error) {
+      console.error('Failed to parse YAML:', error);
+      return error instanceof Error ? error.message : 'Failed to parse YAML';
+    }
+  }, [data]);
 
   // Active schedule index management
   const setActiveScheduleIndex = useCallback((index: number | null) => {
@@ -579,6 +627,8 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
     loadSchedulesForRoute,
     resetToCreateMode,
     data,
+    getYaml,
+    updateFromYaml,
     setSelectedRoute,
     loadAvailableRoutes,
     activeScheduleIndex: data.activeScheduleIndex,
@@ -610,6 +660,7 @@ export function ScheduleWorkspaceProvider({ children }: ScheduleWorkspaceProvide
     submitAllSchedules,
   }), [
     mode, isLoading, loadError, loadSchedulesForRoute, resetToCreateMode, data,
+    getYaml, updateFromYaml,
     setSelectedRoute, loadAvailableRoutes, setActiveScheduleIndex, setHighlightedScheduleIndex,
     addNewSchedule, removeSchedule, duplicateSchedule, updateActiveSchedule, getActiveSchedule,
     updateScheduleStop, setAllStopTimes, clearAllStopTimes, updateScheduleStopByScheduleIndex,
