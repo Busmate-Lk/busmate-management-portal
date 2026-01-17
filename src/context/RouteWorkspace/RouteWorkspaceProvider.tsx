@@ -3,7 +3,7 @@
 import { ReactNode, useState, useCallback } from 'react';
 import { RouteWorkspaceContext, WorkspaceMode } from './RouteWorkspaceContext';
 import { RouteWorkspaceData, createEmptyRouteWorkspaceData, RouteGroup, Route, RouteStop, createEmptyRoute, moveRouteStop, DirectionEnum, StopExistenceType, createEmptyLocation } from '@/types/RouteWorkspaceData';
-import { serializeToYaml, parseFromYaml } from '@/services/routeWorkspaceSerializer';
+import { serializeToYaml, parseFromYaml, serializeToJson, parseFromJson } from '@/services/routeWorkspaceSerializer';
 import { 
   generateRouteFromCorresponding as generateRouteFromCorrespondingService,
   findRouteByDirection,
@@ -232,6 +232,31 @@ export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps
 
   const getYaml = useCallback(() => {
     return serializeToYaml(data);
+  }, [data]);
+
+  const updateFromJson = useCallback((jsonText: string) => {
+    try {
+      const parsedData = parseFromJson(jsonText);
+      
+      if (parsedData.routeGroup) {
+        setData(prevData => ({
+          ...prevData,
+          routeGroup: {
+            name: parsedData.routeGroup?.name || prevData.routeGroup.name,
+            nameSinhala: parsedData.routeGroup?.nameSinhala || prevData.routeGroup.nameSinhala,
+            nameTamil: parsedData.routeGroup?.nameTamil || prevData.routeGroup.nameTamil,
+            description: parsedData.routeGroup?.description || prevData.routeGroup.description,
+            routes: parsedData.routeGroup?.routes || prevData.routeGroup.routes,
+          },
+        }));
+      }
+    } catch (error) {
+      console.error('Failed to update from JSON:', error);
+    }
+  }, []);
+
+  const getJson = useCallback(() => {
+    return serializeToJson(data);
   }, [data]);
 
   const getRouteGroupData = useCallback(() => {
@@ -469,6 +494,8 @@ export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps
         updateRouteGroup,
         updateFromYaml,
         getYaml,
+        updateFromJson,
+        getJson,
         getRouteGroupData,
         updateRoute,
         updateRouteStop,
