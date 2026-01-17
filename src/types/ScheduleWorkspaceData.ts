@@ -233,8 +233,23 @@ export function createEmptyScheduleWorkspaceData(): ScheduleWorkspaceData {
 
 /**
  * Validates if a schedule has all required fields filled
+ * 
+ * @deprecated Use validateSchedule from @/validation-rules instead
+ * This function is kept for backward compatibility and delegates to the new validation module
  */
 export function isScheduleValid(schedule: Schedule): { valid: boolean; errors: string[] } {
+  // Import dynamically to avoid circular dependencies
+  // The actual validation logic is now in /src/validation-rules/scheduleValidation.ts
+  const { validateSchedule } = require('@/validation-rules/scheduleValidation');
+  return validateSchedule(schedule);
+}
+
+/**
+ * @deprecated Old validation logic - now moved to validation-rules directory
+ * Kept here for reference only. Use validateSchedule from @/validation-rules instead.
+ */
+/*
+export function isScheduleValid_OLD(schedule: Schedule): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
   if (!schedule.name.trim()) {
@@ -278,6 +293,7 @@ export function isScheduleValid(schedule: Schedule): { valid: boolean; errors: s
     errors,
   };
 }
+*/
 
 // ============================================================================
 // API CONVERSION HELPERS
