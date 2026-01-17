@@ -41,10 +41,10 @@ export default function ScheduleFormMode() {
     const hasActiveSchedule = activeScheduleIndex !== null && schedules.length > 0;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-5">
             {/* Route selector */}
-            <div className='flex items-center gap-4 bg-white rounded-lg border border-slate-200 p-4 shadow-sm'>
-                <label htmlFor="route" className="text-sm font-medium text-slate-700 whitespace-nowrap">
+            <div className='flex items-center gap-4  '>
+                <label htmlFor="route" className="pl-2 text-sm font-medium text-slate-700 whitespace-nowrap">
                     Select Route:
                 </label>
                 <select

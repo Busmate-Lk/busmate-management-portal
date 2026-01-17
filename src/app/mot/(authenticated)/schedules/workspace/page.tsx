@@ -138,7 +138,7 @@ function ScheduleWorkspaceContent() {
                         </button>
                     </div>
                 </div>
-                <div className="p-6">
+                <div className="p-4">
                     {activeTab === 'form' && <ScheduleFormMode />}
                     {activeTab === 'textual' && <ScheduleTextualMode />}
                     {activeTab === 'ai-studio' && <ScheduleAIStudio />}
