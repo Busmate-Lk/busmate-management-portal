@@ -205,11 +205,11 @@ export default function RouteAIStudio() {
   return (
     <div className="flex flex-col h-full bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-slate-200">
+      <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-slate-200">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-blue-600" />
+          <Sparkles className="w-5 h-5 text-violet-600" />
           <h2 className="text-sm font-semibold text-slate-700">AI Route Studio</h2>
-          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium border border-blue-200">
+          <span className="text-xs bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full font-medium border border-violet-200">
             Beta
           </span>
         </div>
@@ -302,19 +302,6 @@ export default function RouteAIStudio() {
           </div>
         )}
 
-        {/* Mode Warning */}
-        {mode === 'edit' && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-amber-800">Edit Mode Active</p>
-              <p className="text-sm text-amber-700">
-                You&apos;re editing an existing route group. Applying AI-generated data will replace current data.
-              </p>
-            </div>
-          </div>
-        )}
-
         {/* Prompt Input */}
         <div className="mb-4">
           <label className="block text-xs font-medium text-slate-700 mb-2">
@@ -351,7 +338,7 @@ export default function RouteAIStudio() {
         <button
           onClick={handleGenerate}
           disabled={generation.isLoading || !prompt.trim()}
-          className="w-full mb-4 px-4 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-medium rounded-lg flex items-center justify-center gap-2 transition-colors"
+          className="w-full mb-4 px-4 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-300 text-white font-medium rounded-lg flex items-center justify-center gap-2 transition-colors"
         >
           {generation.isLoading ? (
             <>

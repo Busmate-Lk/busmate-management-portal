@@ -129,20 +129,13 @@ function RouteWorkspaceContent() {
                         <button
                             onClick={() => setActiveTab('ai-studio')}
                             className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 flex items-center gap-1.5 ${activeTab === 'ai-studio'
-                                ? 'bg-blue-700 text-white shadow-sm'
-                                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                                ? 'bg-violet-600 text-white shadow-sm'
+                                : 'text-violet-600 hover:text-violet-800 hover:bg-violet-50'
                                 }`}
                         >
                             <Sparkles className="w-4 h-4" />
                             AI Studio
                         </button>
-                        {/* Mode indicator badge */}
-                        <span className={`px-3 py-1.5 text-xs font-medium rounded-full ml-2 ${mode === 'edit'
-                            ? 'bg-amber-100 text-amber-700'
-                            : 'bg-emerald-100 text-emerald-700'
-                            }`}>
-                            {mode === 'edit' ? 'Edit Mode' : 'Create Mode'}
-                        </span>
                     </div>
                     <button
                         onClick={handleSubmit}
