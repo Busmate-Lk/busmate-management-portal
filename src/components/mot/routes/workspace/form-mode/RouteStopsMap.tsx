@@ -3,21 +3,21 @@
 import { GoogleMap, useLoadScript, Marker, DirectionsRenderer } from '@react-google-maps/api';
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { useRouteWorkspace } from '@/context/RouteWorkspace/useRouteWorkspace';
-import { 
-  fetchRouteDirections, 
-  extractValidStops, 
-  calculateCenter, 
-  getMarkerIconUrl, 
+import {
+  fetchRouteDirections,
+  extractValidStops,
+  calculateCenter,
+  getMarkerIconUrl,
   getStopType,
   applyDistancesToRouteStops,
   DirectionsChunk,
-  RouteDirectionsResult 
+  RouteDirectionsResult
 } from '@/services/routeWorkspaceMap';
 
 interface RouteStopsMapProps {
-    onToggle: () => void;
-    collapsed: boolean;
-    routeIndex: number;
+  onToggle: () => void;
+  collapsed: boolean;
+  routeIndex: number;
 }
 
 const mapContainerStyle = {
@@ -68,14 +68,14 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
   // Filter intermediate stops based on zoom level
   const getVisibleStops = useCallback(() => {
     if (validStops.length <= 2) return validStops; // Always show start and end
-    
+
     // Start and end stops always visible
     const startStop = validStops[0];
     const endStop = validStops[validStops.length - 1];
     const intermediateStops = validStops.slice(1, -1);
-    
+
     if (intermediateStops.length === 0) return validStops;
-    
+
     // Determine how many intermediate stops to show based on zoom
     let showEveryNth = 1;
     if (currentZoom < 10) {
@@ -87,22 +87,22 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
     } else {
       showEveryNth = 1; // Show all intermediate stops
     }
-    
+
     // Filter intermediate stops
     const visibleIntermediateStops = intermediateStops.filter((_, idx) => idx % showEveryNth === 0);
-    
+
     return [startStop, ...visibleIntermediateStops, endStop];
   }, [validStops, currentZoom]);
 
   // Expose function to fit bounds to all stops
   const fitBoundsToRoute = useCallback(() => {
     if (!mapRef.current || validStops.length === 0) return;
-    
+
     const bounds = new google.maps.LatLngBounds();
     validStops.forEach(stop => {
       bounds.extend({ lat: stop.lat, lng: stop.lng });
     });
-    
+
     mapRef.current.fitBounds(bounds);
   }, [validStops]);
 
@@ -122,7 +122,7 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
     }
 
     setIsLoading(true);
-    
+
     try {
       const result = await fetchRouteDirections(routeStops);
       setDirectionsChunks(result.directionsChunks);
@@ -151,11 +151,11 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
     if (coordinateEditingMode && coordinateEditingMode.routeIndex === routeIndex) {
       const lat = e.latLng?.lat();
       const lng = e.latLng?.lng();
-      
+
       if (lat && lng) {
         const { stopIndex } = coordinateEditingMode;
         const currentStop = routeStops[stopIndex];
-        
+
         if (currentStop) {
           // Update the stop's coordinates
           updateRouteStop(routeIndex, stopIndex, {
@@ -176,7 +176,7 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
   // Store map reference and focus on selected stop when coordinate editing mode is activated
   const handleMapLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
-    
+
     // Track zoom changes
     map.addListener('zoom_changed', () => {
       const zoom = map.getZoom();
@@ -184,7 +184,7 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
         setCurrentZoom(zoom);
       }
     });
-    
+
     fetchDirections();
   }, [fetchDirections]);
 
@@ -193,11 +193,11 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
     if (coordinateEditingMode && coordinateEditingMode.routeIndex === routeIndex && mapRef.current) {
       const stopIndex = coordinateEditingMode.stopIndex;
       const stop = routeStops[stopIndex];
-      
+
       if (stop?.stop?.location?.latitude && stop?.stop?.location?.longitude) {
         const lat = stop.stop.location.latitude;
         const lng = stop.stop.location.longitude;
-        
+
         // Pan and zoom to the stop
         mapRef.current.panTo({ lat, lng });
         mapRef.current.setZoom(15);
@@ -209,11 +209,11 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
   useEffect(() => {
     if (selectedRouteIndex === routeIndex && selectedStopIndex !== null && mapRef.current) {
       const stop = routeStops[selectedStopIndex];
-      
+
       if (stop?.stop?.location?.latitude && stop?.stop?.location?.longitude) {
         const lat = stop.stop.location.latitude;
         const lng = stop.stop.location.longitude;
-        
+
         // Pan and zoom to the stop
         mapRef.current.panTo({ lat, lng });
         mapRef.current.setZoom(14);
@@ -231,49 +231,47 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
   };
 
   return (
-    <div className={`flex flex-col rounded-md px-0 pt-2 bg-gray-100 ${collapsed ? 'w-12 overflow-hidden' : ''}`}>
-      <div className={`flex ${collapsed ? 'flex-col items-center' : 'justify-between items-center'} mb-2 px-2`}>
+    <div className={`flex flex-col rounded-lg bg-slate-50 ${collapsed ? 'w-12 overflow-hidden' : ''}`}>
+      <div className={`flex ${collapsed ? 'flex-col items-center py-3' : 'justify-between items-center px-3 py-2'}`}>
         {collapsed ? (
           <div className="flex flex-col gap-12">
-            <button onClick={onToggle} className="text-white text-sm rounded flex items-center justify-center mb-2">
-              <img src="/icons/Sidebar-Collapse--Streamline-Iconoir.svg" className="w-5 h-5" alt="Expand" />
+            <button onClick={onToggle} className="p-1.5 hover:bg-slate-200 rounded transition-colors flex items-center justify-center">
+              <img src="/icons/Sidebar-Collapse--Streamline-Iconoir.svg" className="w-4 h-4 opacity-60" alt="Expand" />
             </button>
-            <span className="transform -rotate-90 origin-center whitespace-nowrap text-sm">RouteStopsMap</span>
+            <span className="transform -rotate-90 origin-center whitespace-nowrap text-xs font-medium text-slate-600">Route Map</span>
           </div>
         ) : (
           <>
-            <span className="underline">RouteStopsMap</span>
-            <span>
-              <button onClick={onToggle} className="ml-2 text-white text-sm rounded flex items-center justify-center">
-                <img src="/icons/Sidebar-Collapse--Streamline-Iconoir.svg" className="w-5 h-5 rotate-180" alt="Collapse" />
-              </button>
-            </span>
+            <span className="text-sm font-medium text-slate-700">Route Stops Map</span>
+            <button onClick={onToggle} className="p-1.5 hover:bg-slate-200 rounded transition-colors flex items-center justify-center">
+              <img src="/icons/Sidebar-Collapse--Streamline-Iconoir.svg" className="w-4 h-4 rotate-180 opacity-60" alt="Collapse" />
+            </button>
           </>
         )}
       </div>
       {!collapsed && (
         <>
           {coordinateEditingMode?.routeIndex === routeIndex && (
-            <div className="mx-2 mb-2 px-3 py-2 bg-blue-100 border border-blue-400 rounded text-sm text-blue-800">
+            <div className="mx-3 mb-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700">
               <strong>Coordinate Editing Mode Active:</strong> Click anywhere on the map to update the stop location.
             </div>
           )}
           {loadError && (
-            <div className="text-sm text-red-600 mb-2 px-2">Error loading Google Maps</div>
+            <div className="text-xs text-rose-600 mb-2 px-3">Error loading Google Maps</div>
           )}
           {!isLoaded && (
-            <div className="text-sm text-gray-600 mb-2 px-2">Loading Google Maps...</div>
+            <div className="text-xs text-slate-500 mb-2 px-3">Loading Google Maps...</div>
           )}
           {isLoaded && (
             <>
               {validStops.length === 0 && (
-                <div className="text-sm text-gray-600 mb-2 px-2">No stops with valid coordinates to display.</div>
+                <div className="text-xs text-slate-500 mb-2 px-3">No stops with valid coordinates to display.</div>
               )}
               {validStops.length === 1 && (
-                <div className="text-sm text-gray-600 mb-2 px-2">Add at least one more stop with coordinates to show route.</div>
+                <div className="text-xs text-slate-500 mb-2 px-3">Add at least one more stop with coordinates to show route.</div>
               )}
               {validStops.length >= 2 && isLoading && (
-                <div className="text-sm text-gray-600 mb-2 px-2">Loading route...</div>
+                <div className="text-xs text-slate-500 mb-2 px-3">Loading route...</div>
               )}
               <GoogleMap
                 mapContainerStyle={mapContainerStyle}
@@ -302,7 +300,7 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
                   const stopType = getStopType(index, validStops.length);
                   // Use scaledSize only for start/end markers, not for custom bullet markers
                   const useScaledSize = stopType !== 'intermediate' && (isEditingThisStop || isSelectedStop);
-                  
+
                   return (
                     <Marker
                       key={stop.id}

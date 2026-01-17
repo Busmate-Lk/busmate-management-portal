@@ -29,9 +29,12 @@ export default function RouteStopsEditor({ routeIndex }: RouteStopsEditorProps) 
 
     return (
         <>
-            <div className="flex flex-col rounded-md px-4 py-4 bg-gray-200">
-                <span className="underline">RouteStopsEditor</span>
-                <div className="grid gap-2 mt-4" style={{ gridTemplateColumns }}>
+            <div className="flex flex-col rounded-lg bg-white border border-slate-200 shadow-sm overflow-hidden">
+                {/* Section Header */}
+                <div className="px-5 py-3 bg-slate-50 border-b border-slate-200">
+                    <h3 className="text-sm font-semibold text-slate-700">Route Stops Editor</h3>
+                </div>
+                <div className="grid gap-3 p-4" style={{ gridTemplateColumns }}>
                     <StopEditor collapsed={stopEditorCollapsed} onToggle={() => setStopEditorCollapsed(!stopEditorCollapsed)} />
                     <RouteStopsList routeIndex={routeIndex} />
                     <RouteStopsMap collapsed={routeStopsMapCollapsed} onToggle={() => setRouteStopsMapCollapsed(!routeStopsMapCollapsed)} routeIndex={routeIndex} />

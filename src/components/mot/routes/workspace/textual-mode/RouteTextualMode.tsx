@@ -16,7 +16,7 @@ export default function RouteTextualMode() {
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value;
     setYamlText(newText);
-    
+
     // Parse and update context
     try {
       updateFromYaml(newText);
@@ -26,17 +26,18 @@ export default function RouteTextualMode() {
   };
 
   return (
-    <>
-      <div className="mb-2">
-        <span className="font-semibold">RouteTextualMode</span>
-        <p className="text-sm text-gray-600 mt-1">
-          Enter or paste route group data in YAML format. Changes will sync with Form Mode in real-time.
+    <div className="flex flex-col rounded-lg bg-white border border-slate-200 shadow-sm overflow-hidden">
+      {/* Section Header */}
+      <div className="px-5 py-3 bg-slate-50 border-b border-slate-200">
+        <h3 className="text-sm font-semibold text-slate-700">YAML Editor</h3>
+        <p className="text-xs text-slate-500 mt-0.5">
+          Enter or paste route group data in YAML format. Changes sync with Form Mode in real-time.
         </p>
       </div>
       {/* Full available screen sized text editor area to type or paste full route group data with route data and routestop data in textual format */}
-      <div>
-        <textarea 
-          className="w-full h-[750px] border-2 border-gray-400 rounded px-2 py-1 outline-none font-mono text-sm"
+      <div className="p-4">
+        <textarea
+          className="w-full h-[700px] border border-slate-300 rounded-lg px-3 py-2.5 bg-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none"
           value={yamlText}
           onChange={handleTextChange}
           placeholder="# Example:
@@ -47,6 +48,6 @@ route_group:
   description: Main express routes between Colombo and Kandy"
         />
       </div>
-    </>
+    </div>
   )
 }

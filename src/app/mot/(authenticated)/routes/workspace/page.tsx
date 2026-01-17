@@ -103,40 +103,41 @@ function RouteWorkspaceContent() {
             initialSidebarCollapsed={true}
             padding={0}
         >
-            <div>
-                <div className="flex bg-gray-100 border-b pl-1 sticky top-20 justify-between">
-                    <div className="flex items-center">
+            <div className="min-h-screen bg-slate-50">
+                {/* Tab Bar */}
+                <div className="flex bg-white border-b border-slate-200 px-4 py-2 sticky top-20 z-10 justify-between items-center shadow-sm">
+                    <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
                         <button
                             onClick={() => setActiveTab('form')}
-                            className={`px-4 py-2 font-medium transition-colors ${activeTab === 'form'
-                                ? 'text-white bg-blue-800'
-                                : 'text-gray-600 hover:text-gray-900'
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${activeTab === 'form'
+                                ? 'bg-blue-700 text-white shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                                 }`}
                         >
                             Form Mode
                         </button>
                         <button
                             onClick={() => setActiveTab('textual')}
-                            className={`px-4 py-2 font-medium transition-colors ${activeTab === 'textual'
-                                ? 'text-white bg-blue-800'
-                                : 'text-gray-600 hover:text-gray-900'
+                            className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 ${activeTab === 'textual'
+                                ? 'bg-blue-700 text-white shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                                 }`}
                         >
                             Textual Mode
                         </button>
                         {/* Mode indicator badge */}
-                        <span className={`px-3 py-1 text-xs font-medium rounded-full ml-2 ${mode === 'edit'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-green-100 text-green-800'
+                        <span className={`px-3 py-1.5 text-xs font-medium rounded-full ml-2 ${mode === 'edit'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-emerald-100 text-emerald-700'
                             }`}>
                             {mode === 'edit' ? 'Edit Mode' : 'Create Mode'}
                         </span>
                     </div>
                     <button
                         onClick={handleSubmit}
-                        className={`px-4 py-2 font-medium text-white transition-colors ${mode === 'edit'
-                                ? 'bg-yellow-600 hover:bg-yellow-700'
-                                : 'bg-green-600 hover:bg-green-700'
+                        className={`px-5 py-2 text-sm font-medium text-white rounded-lg transition-all duration-200 shadow-sm ${mode === 'edit'
+                            ? 'bg-amber-600 hover:bg-amber-700'
+                            : 'bg-emerald-600 hover:bg-emerald-700'
                             }`}
                     >
                         {mode === 'edit' ? 'Update' : 'Submit'}
