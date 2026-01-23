@@ -45,70 +45,77 @@ export function RouteWorkspaceProvider({ children }: RouteWorkspaceProviderProps
         throw new Error('Route group not found');
       }
 
-      // Fetch full stop details for each route stop
+      // Fetch all stop details for the route group in one API call
+      const allStopDetails = await BusStopManagementService.getStopsByRouteGroup(id);
+      
+      // Create a map of routeStopId -> stop details for quick lookup
+      const stopDetailsMap = new Map(
+        allStopDetails.map(detail => [detail.routeStopId || '', detail])
+      );
+
+      // Build routes with stop details
       const routes: Route[] = [];
       
       for (const routeResponse of routeGroupResponse.routes || []) {
         const routeStops: RouteStop[] = [];
         
         for (const routeStopResponse of routeResponse.routeStops || []) {
-          // Fetch full stop details if we have a stopId
+          // Get full stop details from the map
+          const stopDetail = stopDetailsMap.get(routeStopResponse.id || '');
+          
           let stopData;
-          if (routeStopResponse.stopId) {
-            try {
-              const stopResponse = await BusStopManagementService.getStopById(routeStopResponse.stopId);
-              stopData = {
-                id: stopResponse.id || '',
-                name: stopResponse.name || '',
-                nameSinhala: stopResponse.nameSinhala,
-                nameTamil: stopResponse.nameTamil,
-                description: stopResponse.description,
-                location: stopResponse.location ? {
-                  latitude: stopResponse.location.latitude || 0,
-                  longitude: stopResponse.location.longitude || 0,
-                  address: stopResponse.location.address,
-                  city: stopResponse.location.city,
-                  state: stopResponse.location.state,
-                  zipCode: stopResponse.location.zipCode,
-                  country: stopResponse.location.country,
-                  addressSinhala: stopResponse.location.addressSinhala,
-                  citySinhala: stopResponse.location.citySinhala,
-                  stateSinhala: stopResponse.location.stateSinhala,
-                  countrySinhala: stopResponse.location.countrySinhala,
-                  addressTamil: stopResponse.location.addressTamil,
-                  cityTamil: stopResponse.location.cityTamil,
-                  stateTamil: stopResponse.location.stateTamil,
-                  countryTamil: stopResponse.location.countryTamil,
-                } : createEmptyLocation(),
-                isAccessible: stopResponse.isAccessible,
-                type: StopExistenceType.EXISTING,
-              };
-            } catch (error) {
-              console.error(`Failed to fetch stop ${routeStopResponse.stopId}:`, error);
-              // Use basic info from routeStopResponse if full fetch fails
-              stopData = {
-                id: routeStopResponse.stopId || '',
-                name: routeStopResponse.stopName || '',
-                location: routeStopResponse.location ? {
-                  latitude: routeStopResponse.location.latitude || 0,
-                  longitude: routeStopResponse.location.longitude || 0,
-                  address: routeStopResponse.location.address,
-                  city: routeStopResponse.location.city,
-                  state: routeStopResponse.location.state,
-                  zipCode: routeStopResponse.location.zipCode,
-                  country: routeStopResponse.location.country,
-                  addressSinhala: routeStopResponse.location.addressSinhala,
-                  citySinhala: routeStopResponse.location.citySinhala,
-                  stateSinhala: routeStopResponse.location.stateSinhala,
-                  countrySinhala: routeStopResponse.location.countrySinhala,
-                  addressTamil: routeStopResponse.location.addressTamil,
-                  cityTamil: routeStopResponse.location.cityTamil,
-                  stateTamil: routeStopResponse.location.stateTamil,
-                  countryTamil: routeStopResponse.location.countryTamil,
-                } : createEmptyLocation(),
-                type: StopExistenceType.EXISTING,
-              };
-            }
+          if (stopDetail && stopDetail.stopId) {
+            // Use the detailed stop information from the API
+            stopData = {
+              id: stopDetail.stopId || '',
+              name: stopDetail.stopName || '',
+              nameSinhala: stopDetail.stopNameSinhala,
+              nameTamil: stopDetail.stopNameTamil,
+              description: stopDetail.stopDescription,
+              location: stopDetail.location ? {
+                latitude: stopDetail.location.latitude || 0,
+                longitude: stopDetail.location.longitude || 0,
+                address: stopDetail.location.address,
+                city: stopDetail.location.city,
+                state: stopDetail.location.state,
+                zipCode: stopDetail.location.zipCode,
+                country: stopDetail.location.country,
+                addressSinhala: stopDetail.location.addressSinhala,
+                citySinhala: stopDetail.location.citySinhala,
+                stateSinhala: stopDetail.location.stateSinhala,
+                countrySinhala: stopDetail.location.countrySinhala,
+                addressTamil: stopDetail.location.addressTamil,
+                cityTamil: stopDetail.location.cityTamil,
+                stateTamil: stopDetail.location.stateTamil,
+                countryTamil: stopDetail.location.countryTamil,
+              } : createEmptyLocation(),
+              isAccessible: stopDetail.isAccessible,
+              type: StopExistenceType.EXISTING,
+            };
+          } else if (routeStopResponse.stopId) {
+            // Fallback: use basic info from routeStopResponse if detail not found
+            stopData = {
+              id: routeStopResponse.stopId || '',
+              name: routeStopResponse.stopName || '',
+              location: routeStopResponse.location ? {
+                latitude: routeStopResponse.location.latitude || 0,
+                longitude: routeStopResponse.location.longitude || 0,
+                address: routeStopResponse.location.address,
+                city: routeStopResponse.location.city,
+                state: routeStopResponse.location.state,
+                zipCode: routeStopResponse.location.zipCode,
+                country: routeStopResponse.location.country,
+                addressSinhala: routeStopResponse.location.addressSinhala,
+                citySinhala: routeStopResponse.location.citySinhala,
+                stateSinhala: routeStopResponse.location.stateSinhala,
+                countrySinhala: routeStopResponse.location.countrySinhala,
+                addressTamil: routeStopResponse.location.addressTamil,
+                cityTamil: routeStopResponse.location.cityTamil,
+                stateTamil: routeStopResponse.location.stateTamil,
+                countryTamil: routeStopResponse.location.countryTamil,
+              } : createEmptyLocation(),
+              type: StopExistenceType.EXISTING,
+            };
           } else {
             // No stopId, create from basic info
             stopData = {
