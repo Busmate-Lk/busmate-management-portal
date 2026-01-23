@@ -98,7 +98,7 @@ export default function BusesPage() {
         operators: (response.operators || []).map(op => ({
           id: op.id || '',
           name: op.name || '',
-          type: op.type || ''
+          type: op.operatorType || ''
         })).filter(op => op.id),
         models: response.models || [],
         capacityRanges: response.capacityRanges || []
