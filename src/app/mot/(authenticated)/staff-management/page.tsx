@@ -8,7 +8,7 @@ import { TimekeeperActionButtons } from '@/components/mot/timekeepers/Timekeeper
 import { TimekeeperStatsCards } from '@/components/mot/timekeepers/TimekeeperStatsCards/page';
 import { TimekeepersTable } from '@/components/mot/timekeepers/TimekeepersTable/page';
 import Pagination from '@/components/shared/Pagination';
-import { TimekeeperControllerService } from '@/lib/api-client/user-management/services/TimekeeperControllerService';
+import { TimekeeperControllerService } from '../../../../../generated/api-clients/user-management/services/TimekeeperControllerService';
 import { BusStopManagementService } from '../../../../../generated/api-clients/route-management/services/BusStopManagementService'; // added import
 
 interface TimekeeperResponse {

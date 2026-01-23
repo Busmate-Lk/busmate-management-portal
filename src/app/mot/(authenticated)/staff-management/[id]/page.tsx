@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Layout } from '@/components/shared/layout';
-import { TimekeeperControllerService } from '@/lib/api-client/user-management/services/TimekeeperControllerService';
+import { TimekeeperControllerService } from '../../../../../../generated/api-clients/user-management/services/TimekeeperControllerService';
 import { BusStopManagementService } from '../../../../../../generated/api-clients/route-management/services/BusStopManagementService';
 import {
   Loader2,

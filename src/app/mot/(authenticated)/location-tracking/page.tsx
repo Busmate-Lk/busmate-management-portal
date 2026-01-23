@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useJsApiLoader } from '@react-google-maps/api';
 
 // Import API services
-import { QueryService, TripService, DeviceService, OpenAPI } from '@/lib/api-client/location-tracking';
+import { QueryService, TripService, DeviceService, OpenAPI } from '../../../../../generated/api-clients/location-tracking';
 import { TripManagementService, RouteManagementService } from '../../../../../generated/api-clients/route-management';
 import { TripResponse } from '../../../../../generated/api-clients/route-management';
 

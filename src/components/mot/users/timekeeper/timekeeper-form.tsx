@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, Loader2, AlertCircle, User } from 'lucide-react';
-import { TimekeeperControllerService } from '@/lib/api-client/user-management/services/TimekeeperControllerService';
+import { TimekeeperControllerService } from '../../../../../generated/api-clients/user-management/services/TimekeeperControllerService';
 import { BusStopManagementService } from '../../../../../generated/api-clients/route-management/services/BusStopManagementService';
 
 interface TimekeeperRequest {
