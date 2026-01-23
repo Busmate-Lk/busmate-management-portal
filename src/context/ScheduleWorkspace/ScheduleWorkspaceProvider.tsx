@@ -31,7 +31,7 @@ import {
   ScheduleRequest,
   ScheduleResponse,
   RouteResponse,
-} from '@/lib/api-client/route-management';
+} from '../../../generated/api-clients/route-management';
 import {
   serializeSchedulesToYaml,
   parseSchedulesFromYaml,

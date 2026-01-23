@@ -10,7 +10,7 @@ import {
   FileText,
   Clock
 } from 'lucide-react';
-import type { OperatorResponse, BusResponse } from '@/lib/api-client/route-management';
+import type { OperatorResponse, BusResponse } from '../../../../generated/api-clients/route-management';
 
 interface OperatorSummaryProps {
   operator: OperatorResponse;

@@ -9,7 +9,7 @@ import { TimekeeperStatsCards } from '@/components/mot/timekeepers/TimekeeperSta
 import { TimekeepersTable } from '@/components/mot/timekeepers/TimekeepersTable/page';
 import Pagination from '@/components/shared/Pagination';
 import { TimekeeperControllerService } from '@/lib/api-client/user-management/services/TimekeeperControllerService';
-import { BusStopManagementService } from '@/lib/api-client/route-management/services/BusStopManagementService'; // added import
+import { BusStopManagementService } from '../../../../../generated/api-clients/route-management/services/BusStopManagementService'; // added import
 
 interface TimekeeperResponse {
   id: string;

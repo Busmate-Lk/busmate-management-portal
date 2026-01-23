@@ -10,8 +10,8 @@ import {
   AlertCircle,
   Bus,
 } from 'lucide-react';
-import type { BulkPspAssignmentRequest } from '@/lib/api-client/route-management/models/BulkPspAssignmentRequest';
-import type { PspTripAssignment } from '@/lib/api-client/route-management/models/PspTripAssignment';
+import type { BulkPspAssignmentRequest } from '../../../../../generated/api-clients/route-management/models/BulkPspAssignmentRequest';
+import type { PspTripAssignment } from '../../../../../generated/api-clients/route-management/models/PspTripAssignment';
 import { TimeKeeperWorkspaceState } from '../TimeKeeperTripAssignmentWorkspace';
 
 interface TimeKeeperAssignmentPanelProps {

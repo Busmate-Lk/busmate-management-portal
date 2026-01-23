@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, AlertTriangle, Trash2, ArrowLeft, Building, Bus, Users } from 'lucide-react';
-import { OperatorResponse } from '@/lib/api-client/route-management';
+import { OperatorResponse } from '../../../../../generated/api-clients/route-management';
 
 interface DeleteOperatorModalProps {
   isOpen: boolean;

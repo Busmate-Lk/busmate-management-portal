@@ -22,7 +22,7 @@ import {
   OperatorResponse,
   RouteGroupResponse,
   BusResponse
-} from '@/lib/api-client/route-management';
+} from '../../../../../../generated/api-clients/route-management';
 import { DeletePermitModal } from '@/components/mot/passenger-service-permits/DeletePermitModal';
 
 export default function PermitDetailsPage() {

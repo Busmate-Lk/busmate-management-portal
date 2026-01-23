@@ -18,7 +18,7 @@ import type {
   PassengerServicePermitResponse, 
   OperatorResponse,
   RouteGroupResponse
-} from '@/lib/api-client/route-management';
+} from '../../../../generated/api-clients/route-management';
 
 interface PermitFormProps {
   permit?: PassengerServicePermitResponse;

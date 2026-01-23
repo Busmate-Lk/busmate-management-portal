@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Layout } from '@/components/shared/layout';
 import { TimekeeperControllerService } from '@/lib/api-client/user-management/services/TimekeeperControllerService';
-import { BusStopManagementService } from '@/lib/api-client/route-management/services/BusStopManagementService';
+import { BusStopManagementService } from '../../../../../../generated/api-clients/route-management/services/BusStopManagementService';
 import {
   Loader2,
   ArrowLeft,

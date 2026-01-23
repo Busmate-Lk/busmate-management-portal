@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertTriangle, Plus, Edit, Trash2, Calendar, Info } from 'lucide-react';
-import { ScheduleResponse } from '@/lib/api-client/route-management';
+import { ScheduleResponse } from '../../../../../generated/api-clients/route-management';
 
 interface ScheduleExceptionsTabProps {
   schedule: ScheduleResponse;

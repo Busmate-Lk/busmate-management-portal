@@ -13,7 +13,7 @@ import {
   Info
 } from 'lucide-react';
 import { useState } from 'react';
-import { ScheduleResponse } from '@/lib/api-client/route-management';
+import { ScheduleResponse } from '../../../generated/api-clients/route-management';
 
 interface SchedulesTableProps {
   schedules: ScheduleResponse[];

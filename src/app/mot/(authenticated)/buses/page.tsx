@@ -13,7 +13,7 @@ import {
   BusManagementService,
   BusResponse,
   PageBusResponse 
-} from '@/lib/api-client/route-management';
+} from '../../../../../generated/api-clients/route-management';
 
 interface QueryParams {
   page: number;

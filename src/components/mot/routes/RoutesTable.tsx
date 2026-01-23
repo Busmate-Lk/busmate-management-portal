@@ -13,7 +13,7 @@ import {
   Route as RouteIcon,
   Ruler
 } from 'lucide-react';
-import type { RouteResponse } from '@/lib/api-client/route-management';
+import type { RouteResponse } from '../../../../generated/api-clients/route-management';
 
 interface RoutesTableProps {
   routes: RouteResponse[];

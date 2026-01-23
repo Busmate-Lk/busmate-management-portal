@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { ChevronRight } from 'lucide-react';
 import { Layout } from '@/components/shared/layout';
 import { RouteForm, type RouteGroupFormData } from '@/components/mot/routes/route-form/RouteForm';
-import { RouteManagementService } from '@/lib/api-client/route-management';
-import type { RouteGroupRequest } from '@/lib/api-client/route-management';
+import { RouteManagementService } from '../../../../../../../generated/api-clients/route-management';
+import type { RouteGroupRequest } from '../../../../../../../generated/api-clients/route-management';
 
 export default function AddNewRouteGroupPage() {
   const router = useRouter();

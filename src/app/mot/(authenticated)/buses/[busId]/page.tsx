@@ -14,7 +14,7 @@ import {
   OperatorResponse,
   TripManagementService,
   TripResponse
-} from '@/lib/api-client/route-management';
+} from '../../../../../../generated/api-clients/route-management';
 
 export default function BusDetailsPage() {
   const router = useRouter();

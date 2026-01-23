@@ -7,9 +7,9 @@ import { ScheduleStatsCards } from '@/components/timeKeeper/dashboard/schedule-s
 import { RealTimeClock } from '@/components/timeKeeper/dashboard/real-time-clock';
 import { CalendarNavigator } from '@/components/timeKeeper/dashboard/calendar-navigator';
 import { TodaysBusesTable } from '@/components/timeKeeper/dashboard/todays-buses-table';
-import { TripManagementService } from '@/lib/api-client/route-management/services/TripManagementService';
-import { BusStopManagementService } from '@/lib/api-client/route-management/services/BusStopManagementService';
-import { TripResponse } from '@/lib/api-client/route-management';
+import { TripManagementService } from '../../../../../generated/api-clients/route-management/services/TripManagementService';
+import { BusStopManagementService } from '../../../../../generated/api-clients/route-management/services/BusStopManagementService';
+import { TripResponse } from '../../../../../generated/api-clients/route-management';
 import { getUserFromToken } from '@/lib/utils/jwtHandler';
 import { getCookie } from '@/lib/utils/cookieUtils';
 import { userManagementClient } from '@/lib/api/client';

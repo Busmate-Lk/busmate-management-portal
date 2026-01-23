@@ -7,7 +7,7 @@ import {
     TripManagementService,
     TripResponse,
     PageTripResponse,
-} from '@/lib/api-client/route-management';
+} from '../../../../generated/api-clients/route-management';
 
 // Import operator-specific components
 import { OperatorTripStatsCards } from '@/components/operator/trips/OperatorTripStatsCards';

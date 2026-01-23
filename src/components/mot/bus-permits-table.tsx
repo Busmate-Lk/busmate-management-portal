@@ -1,7 +1,7 @@
 'use client';
 
 import { Eye, Edit2, Trash2, Filter, FileText, Calendar, Building2, MapPin } from 'lucide-react';
-import type { PassengerServicePermitResponse } from '@/lib/api-client/route-management';
+import type { PassengerServicePermitResponse } from '../../../generated/api-clients/route-management';
 
 interface BusPermitsTableProps {
   permits: PassengerServicePermitResponse[];

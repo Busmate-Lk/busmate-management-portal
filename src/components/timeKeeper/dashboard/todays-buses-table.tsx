@@ -10,7 +10,7 @@ import {
   Calendar,
   Users,
 } from 'lucide-react';
-import { TripResponse } from '@/lib/api-client/route-management';
+import { TripResponse } from '../../../../generated/api-clients/route-management';
 import { useRouter } from 'next/navigation';
 
 interface TodaysBusesTableProps {

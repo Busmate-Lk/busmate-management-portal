@@ -21,7 +21,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { Layout } from '@/components/shared/layout';
-import { StopResponse, BusStopManagementService } from '@/lib/api-client/route-management';
+import { StopResponse, BusStopManagementService } from '../../../../../../generated/api-clients/route-management';
 import { useToast } from '@/hooks/use-toast';
 import DeleteBusStopModal from '@/components/mot/bus-stops/DeleteBusStopModal';
 

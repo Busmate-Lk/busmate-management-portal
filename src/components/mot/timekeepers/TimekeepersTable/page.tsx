@@ -11,7 +11,7 @@ import {
   MapPin,
   Users,
 } from 'lucide-react';
-import { BusStopManagementService } from '@/lib/api-client/route-management/services/BusStopManagementService';
+import { BusStopManagementService } from '../../../../../generated/api-clients/route-management/services/BusStopManagementService';
 
 
 // Types

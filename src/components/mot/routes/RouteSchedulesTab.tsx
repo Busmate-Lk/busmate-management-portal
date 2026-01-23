@@ -11,8 +11,8 @@ import {
   XCircle,
   AlertCircle
 } from 'lucide-react';
-import { ScheduleManagementService } from '@/lib/api-client/route-management';
-import type { ScheduleResponse } from '@/lib/api-client/route-management';
+import { ScheduleManagementService } from '../../../../generated/api-clients/route-management';
+import type { ScheduleResponse } from '../../../../generated/api-clients/route-management';
 
 interface RouteSchedulesTabProps {
   routeId: string;

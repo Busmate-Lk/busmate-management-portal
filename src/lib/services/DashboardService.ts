@@ -1,12 +1,12 @@
 // Dashboard service helper to fetch and aggregate data from various API services
-import { AdminDashboardService } from '@/lib/api-client/route-management/services/AdminDashboardService';
-import { BusManagementService } from '@/lib/api-client/route-management/services/BusManagementService';
-import { OperatorManagementService } from '@/lib/api-client/route-management/services/OperatorManagementService';
-import { RouteManagementService } from '@/lib/api-client/route-management/services/RouteManagementService';
-import { PermitManagementService } from '@/lib/api-client/route-management/services/PermitManagementService';
-import { ScheduleManagementService } from '@/lib/api-client/route-management/services/ScheduleManagementService';
-import { TripManagementService } from '@/lib/api-client/route-management/services/TripManagementService';
-import { BusStopManagementService } from '@/lib/api-client/route-management/services/BusStopManagementService';
+import { AdminDashboardService } from '../../../generated/api-clients/route-management/services/AdminDashboardService';
+import { BusManagementService } from '../../../generated/api-clients/route-management/services/BusManagementService';
+import { OperatorManagementService } from '../../../generated/api-clients/route-management/services/OperatorManagementService';
+import { RouteManagementService } from '../../../generated/api-clients/route-management/services/RouteManagementService';
+import { PermitManagementService } from '../../../generated/api-clients/route-management/services/PermitManagementService';
+import { ScheduleManagementService } from '../../../generated/api-clients/route-management/services/ScheduleManagementService';
+import { TripManagementService } from '../../../generated/api-clients/route-management/services/TripManagementService';
+import { BusStopManagementService } from '../../../generated/api-clients/route-management/services/BusStopManagementService';
 
 export interface DashboardMetrics {
   totalBuses: number;

@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { MoreVertical, UserPlus, UserMinus, Eye, Edit, Trash2 } from 'lucide-react';
-import type { TripResponse } from '@/lib/api-client/route-management/models/TripResponse';
-import type { PassengerServicePermitResponse } from '@/lib/api-client/route-management/models/PassengerServicePermitResponse';
+import type { TripResponse } from '../../../../../generated/api-clients/route-management/models/TripResponse';
+import type { PassengerServicePermitResponse } from '../../../../../generated/api-clients/route-management/models/PassengerServicePermitResponse';
 
 interface TripContextMenuProps {
   trip: TripResponse;

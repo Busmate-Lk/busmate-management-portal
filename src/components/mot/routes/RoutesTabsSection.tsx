@@ -13,7 +13,7 @@ import {
   Eye,
   Edit
 } from 'lucide-react';
-import type { RouteResponse, RouteStopResponse } from '@/lib/api-client/route-management';
+import type { RouteResponse, RouteStopResponse } from '../../../../generated/api-clients/route-management';
 import { RouteMap } from './RouteMap';
 import { RouteSchedulesTab } from './RouteSchedulesTab';
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, AlertTriangle, Trash2, ArrowLeft, Bus, User, Settings } from 'lucide-react';
-import { BusResponse } from '@/lib/api-client/route-management';
+import { BusResponse } from '../../../../generated/api-clients/route-management';
 
 interface DeleteBusModalProps {
     isOpen: boolean;

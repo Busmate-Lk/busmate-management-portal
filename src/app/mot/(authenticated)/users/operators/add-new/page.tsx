@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { Layout } from '@/components/shared/layout';
 import OperatorForm from '@/components/mot/users/operator/operator-form';
-import { OperatorResponse } from '@/lib/api-client/route-management';
+import { OperatorResponse } from '../../../../../../../generated/api-clients/route-management';
 
 export default function AddNewOperatorPage() {
   const router = useRouter();

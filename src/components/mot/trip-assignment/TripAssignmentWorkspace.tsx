@@ -2,15 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, Route, Users, Settings, ChevronDown, ChevronRight, AlertCircle, CheckCircle, Play, Pause } from 'lucide-react';
-import { RouteManagementService } from '@/lib/api-client/route-management/services/RouteManagementService';
-import { TripManagementService } from '@/lib/api-client/route-management/services/TripManagementService';
-import { PermitManagementService } from '@/lib/api-client/route-management/services/PermitManagementService';
-import { ScheduleManagementService } from '@/lib/api-client/route-management/services/ScheduleManagementService';
-import type { RouteGroupResponse } from '@/lib/api-client/route-management/models/RouteGroupResponse';
-import type { PassengerServicePermitResponse } from '@/lib/api-client/route-management/models/PassengerServicePermitResponse';
-import type { TripResponse } from '@/lib/api-client/route-management/models/TripResponse';
-import type { ScheduleResponse } from '@/lib/api-client/route-management/models/ScheduleResponse';
-import type { BulkPspAssignmentRequest } from '@/lib/api-client/route-management/models/BulkPspAssignmentRequest';
+import { RouteManagementService } from '../../../../generated/api-clients/route-management/services/RouteManagementService';
+import { TripManagementService } from '../../../../generated/api-clients/route-management/services/TripManagementService';
+import { PermitManagementService } from '../../../../generated/api-clients/route-management/services/PermitManagementService';
+import { ScheduleManagementService } from '../../../../generated/api-clients/route-management/services/ScheduleManagementService';
+import type { RouteGroupResponse } from '../../../../generated/api-clients/route-management/models/RouteGroupResponse';
+import type { PassengerServicePermitResponse } from '../../../../generated/api-clients/route-management/models/PassengerServicePermitResponse';
+import type { TripResponse } from '../../../../generated/api-clients/route-management/models/TripResponse';
+import type { ScheduleResponse } from '../../../../generated/api-clients/route-management/models/ScheduleResponse';
+import type { BulkPspAssignmentRequest } from '../../../../generated/api-clients/route-management/models/BulkPspAssignmentRequest';
 
 // Workspace Sections
 import { PlanningPanel } from './components/PlanningPanel';

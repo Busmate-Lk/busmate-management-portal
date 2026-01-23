@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { AlertCircle, RotateCcw, Maximize2, ExternalLink, Maximize } from 'lucide-react';
-import type { RouteResponse, LocationDto } from '@/lib/api-client/route-management';
+import type { RouteResponse, LocationDto } from '../../../../generated/api-clients/route-management';
 import { RouteMapFullscreen } from './RouteMapFullscreen';
 
 interface RouteMapProps {

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { ScheduleForm } from '@/components/mot/schedule-form/ScheduleForm';
-import { ScheduleManagementService } from '@/lib/api-client/route-management';
+import { ScheduleManagementService } from '../../../../../../generated/api-clients/route-management';
 import { Layout } from '@/components/shared/layout';
 
 export default function AddSchedulePage() {

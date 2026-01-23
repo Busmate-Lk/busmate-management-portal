@@ -4,7 +4,7 @@ import {
   PageStopResponse, 
   StopRequest, 
   StopResponse 
-} from '@/lib/api-client/route-management';
+} from '../../generated/api-clients/route-management';
 
 interface BusStopQueryParams {
   page?: number;

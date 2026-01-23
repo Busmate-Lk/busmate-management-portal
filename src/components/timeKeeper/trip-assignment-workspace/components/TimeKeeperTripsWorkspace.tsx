@@ -20,9 +20,9 @@ import {
   LayoutGrid,
 } from 'lucide-react';
 import type { TimeKeeperWorkspaceState } from '../TimeKeeperTripAssignmentWorkspace';
-import type { TripResponse } from '@/lib/api-client/route-management/models/TripResponse';
+import type { TripResponse } from '../../../../../generated/api-clients/route-management/models/TripResponse';
 import { TimeKeeperTripContextMenu } from './TimeKeeperTripContextMenu';
-import { TripManagementService } from '@/lib/api-client/route-management/services/TripManagementService';
+import { TripManagementService } from '../../../../../generated/api-clients/route-management/services/TripManagementService';
 
 interface TimeKeeperTripsWorkspaceProps {
   workspace: TimeKeeperWorkspaceState;

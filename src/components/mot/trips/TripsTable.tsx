@@ -21,7 +21,7 @@ import {
   Square,
   MoreVertical
 } from 'lucide-react';
-import { TripResponse } from '@/lib/api-client/route-management';
+import { TripResponse } from '../../../../generated/api-clients/route-management';
 
 interface TripsTableProps {
   trips: TripResponse[];

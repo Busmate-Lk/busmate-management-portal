@@ -9,8 +9,8 @@ import { RoutesTable } from '@/components/mot/routes/RoutesTable';
 import { RouteActionButtons } from '@/components/mot/routes/RouteActionButtons';
 import Pagination from '@/components/shared/Pagination';
 import DeleteRouteConfirmation from '@/components/mot/routes/DeleteRouteConfirmation';
-import { RouteManagementService } from '@/lib/api-client/route-management';
-import type { RouteResponse, PageRouteResponse, RouteStatisticsResponse, RouteFilterOptionsResponse } from '@/lib/api-client/route-management';
+import { RouteManagementService } from '../../../../../generated/api-clients/route-management';
+import type { RouteResponse, PageRouteResponse, RouteStatisticsResponse, RouteFilterOptionsResponse } from '../../../../../generated/api-clients/route-management';
 
 interface QueryParams {
   page: number;

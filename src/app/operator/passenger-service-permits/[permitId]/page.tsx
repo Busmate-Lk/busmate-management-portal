@@ -20,7 +20,7 @@ import {
     OperatorResponse,
     RouteGroupResponse,
     BusResponse
-} from '@/lib/api-client/route-management';
+} from '../../../../../generated/api-clients/route-management';
 import { Header } from '@/components/operator/header';
 import { useAuth } from '@/context/AuthContext';
 

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Search, Calendar, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { BusOperatorOperationsService, BusPermitAssignmentService } from '@/lib/api-client/route-management';
-import type { PassengerServicePermitResponse, BusPassengerServicePermitAssignmentRequest } from '@/lib/api-client/route-management';
+import { BusOperatorOperationsService, BusPermitAssignmentService } from '../../../../generated/api-clients/route-management';
+import type { PassengerServicePermitResponse, BusPassengerServicePermitAssignmentRequest } from '../../../../generated/api-clients/route-management';
 import { useAuth } from '@/context/AuthContext';
 
 interface BusPermitAssignmentModalProps {

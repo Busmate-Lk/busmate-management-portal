@@ -18,7 +18,7 @@ import { Pagination } from '@/components/mot/pagination';
 import { 
   PermitManagementService,
   PassengerServicePermitResponse 
-} from '@/lib/api-client/route-management';
+} from '../../../../../generated/api-clients/route-management';
 import { DeletePermitModal } from '@/components/mot/passenger-service-permits/DeletePermitModal';
 
 interface PermitFilters {

@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { X, Trash2, FileText, Calendar, PlusCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { BusPermitAssignmentService } from '@/lib/api-client/route-management/services/BusPermitAssignmentService';
-import { BusOperatorOperationsService } from '@/lib/api-client/route-management/services/BusOperatorOperationsService';
-import type { BusPassengerServicePermitAssignmentResponse } from '@/lib/api-client/route-management/models/BusPassengerServicePermitAssignmentResponse';
-import type { PassengerServicePermitResponse } from '@/lib/api-client/route-management/models/PassengerServicePermitResponse';
+import { BusPermitAssignmentService } from '../../../../generated/api-clients/route-management/services/BusPermitAssignmentService';
+import { BusOperatorOperationsService } from '../../../../generated/api-clients/route-management/services/BusOperatorOperationsService';
+import type { BusPassengerServicePermitAssignmentResponse } from '../../../../generated/api-clients/route-management/models/BusPassengerServicePermitAssignmentResponse';
+import type { PassengerServicePermitResponse } from '../../../../generated/api-clients/route-management/models/PassengerServicePermitResponse';
 
 interface PermitManagementModalProps {
     isOpen: boolean;

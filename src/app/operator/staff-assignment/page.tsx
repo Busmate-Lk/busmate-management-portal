@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Header } from '@/components/operator/header';
-import { TripManagementService } from '@/lib/api-client/route-management/services/TripManagementService';
-import { BusOperatorOperationsService } from '@/lib/api-client/route-management/services/BusOperatorOperationsService';
-import type { TripResponse } from '@/lib/api-client/route-management/models/TripResponse';
+import { TripManagementService } from '../../../../generated/api-clients/route-management/services/TripManagementService';
+import { BusOperatorOperationsService } from '../../../../generated/api-clients/route-management/services/BusOperatorOperationsService';
+import type { TripResponse } from '../../../../generated/api-clients/route-management/models/TripResponse';
 import { staffManagementService, type ConductorProfile, type DriverProfile } from '@/lib/services/staff-management-service';
 import { getCookie } from '@/lib/utils/cookieUtils';
 import {

@@ -21,7 +21,7 @@ import type {
   OperatorResponse, 
   RouteGroupResponse,
   BusResponse 
-} from '@/lib/api-client/route-management';
+} from '../../../../generated/api-clients/route-management';
 
 interface OperatorPermitSummaryProps {
   permit: PassengerServicePermitResponse;

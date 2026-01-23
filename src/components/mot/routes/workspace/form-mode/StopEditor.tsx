@@ -9,8 +9,8 @@ import {
     processStopExistenceResult,
     canSearchStop
 } from "@/services/routeWorkspaceValidation";
-import { BusStopManagementService } from "@/lib/api-client/route-management";
-import type { StopRequest } from "@/lib/api-client/route-management";
+import { BusStopManagementService } from "../../../../../../generated/api-clients/route-management";
+import type { StopRequest } from "../../../../../../generated/api-clients/route-management";
 
 interface StopEditorProps {
     onToggle: () => void;

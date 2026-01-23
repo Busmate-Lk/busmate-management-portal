@@ -16,7 +16,7 @@ import {
   Route as RouteIcon,
   AlertCircle
 } from 'lucide-react';
-import { ScheduleResponse } from '@/lib/api-client/route-management/models/ScheduleResponse';
+import { ScheduleResponse } from '../../../../generated/api-clients/route-management/models/ScheduleResponse';
 
 interface SchedulesTableProps {
   schedules: ScheduleResponse[];

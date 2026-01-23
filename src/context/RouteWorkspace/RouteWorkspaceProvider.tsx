@@ -11,7 +11,7 @@ import {
   AutoGenerationOptions,
   RouteAutoGenerationResult
 } from '@/services/routeAutoGeneration';
-import { RouteManagementService, BusStopManagementService } from '@/lib/api-client/route-management';
+import { RouteManagementService, BusStopManagementService } from '../../../generated/api-clients/route-management';
 
 interface RouteWorkspaceProviderProps {
   children: ReactNode;

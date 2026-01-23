@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { X, AlertCircle, RefreshCw } from 'lucide-react';
-import { TripResponse } from '@/lib/api-client/route-management';
+import { TripResponse } from '../../../../generated/api-clients/route-management';
 
 interface TripStatusChangeModalProps {
   isOpen: boolean;

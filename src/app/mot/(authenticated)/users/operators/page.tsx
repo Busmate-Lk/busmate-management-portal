@@ -10,7 +10,7 @@ import {
   OperatorsTable 
 } from '@/components/mot/operators';
 import Pagination from '@/components/shared/Pagination';
-import { OperatorManagementService, OperatorResponse } from '@/lib/api-client/route-management';
+import { OperatorManagementService, OperatorResponse } from '../../../../../../generated/api-clients/route-management';
 import DeleteOperatorModal from '@/components/mot/users/operator/DeleteOperatorModal';
 
 interface QueryParams {

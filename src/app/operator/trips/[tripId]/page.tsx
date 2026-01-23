@@ -4,14 +4,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Header } from '@/components/operator/header';
-import { TripManagementService } from '@/lib/api-client/route-management/services/TripManagementService';
-import { RouteManagementService } from '@/lib/api-client/route-management/services/RouteManagementService';
-import { ScheduleManagementService } from '@/lib/api-client/route-management/services/ScheduleManagementService';
-import { PermitManagementService } from '@/lib/api-client/route-management/services/PermitManagementService';
-import type { TripResponse } from '@/lib/api-client/route-management/models/TripResponse';
-import type { RouteResponse } from '@/lib/api-client/route-management/models/RouteResponse';
-import type { ScheduleResponse } from '@/lib/api-client/route-management/models/ScheduleResponse';
-import type { PassengerServicePermitResponse } from '@/lib/api-client/route-management/models/PassengerServicePermitResponse';
+import { TripManagementService } from '../../../../../generated/api-clients/route-management/services/TripManagementService';
+import { RouteManagementService } from '../../../../../generated/api-clients/route-management/services/RouteManagementService';
+import { ScheduleManagementService } from '../../../../../generated/api-clients/route-management/services/ScheduleManagementService';
+import { PermitManagementService } from '../../../../../generated/api-clients/route-management/services/PermitManagementService';
+import type { TripResponse } from '../../../../../generated/api-clients/route-management/models/TripResponse';
+import type { RouteResponse } from '../../../../../generated/api-clients/route-management/models/RouteResponse';
+import type { ScheduleResponse } from '../../../../../generated/api-clients/route-management/models/ScheduleResponse';
+import type { PassengerServicePermitResponse } from '../../../../../generated/api-clients/route-management/models/PassengerServicePermitResponse';
 import {
     ArrowLeft,
     RefreshCw,

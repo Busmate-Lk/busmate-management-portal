@@ -27,7 +27,7 @@ import {
   ScheduleResponse, 
   RouteResponse,
   TripResponse
-} from '@/lib/api-client/route-management';
+} from '../../../../../../generated/api-clients/route-management';
 import {
   DeleteConfirmationModal,
   DeactivationConfirmationModal,

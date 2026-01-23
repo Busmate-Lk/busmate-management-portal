@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, AlertTriangle, Trash2, ArrowLeft } from 'lucide-react';
-import { StopResponse } from '@/lib/api-client/route-management';
+import { StopResponse } from '../../../../generated/api-clients/route-management';
 
 interface DeleteBusStopModalProps {
   isOpen: boolean;

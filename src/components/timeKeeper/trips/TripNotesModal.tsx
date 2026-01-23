@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { X, AlertCircle, FileText, Save } from 'lucide-react';
-import { TripResponse } from '@/lib/api-client/route-management';
+import { TripResponse } from '../../../../generated/api-clients/route-management';
 
 interface TripNotesModalProps {
   isOpen: boolean;

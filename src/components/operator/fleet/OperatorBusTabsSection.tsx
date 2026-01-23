@@ -20,7 +20,7 @@ import {
   XCircle,
   AlertCircle
 } from 'lucide-react';
-import type { BusResponse, TripResponse } from '@/lib/api-client/route-management';
+import type { BusResponse, TripResponse } from '../../../../generated/api-clients/route-management';
 
 interface TabType {
   id: string;

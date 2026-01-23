@@ -13,7 +13,7 @@ import {
   Calendar,
   Loader2
 } from 'lucide-react';
-import type { StopResponse } from '@/lib/api-client/route-management';
+import type { StopResponse } from '../../../../generated/api-clients/route-management';
 
 interface BusStopsTableProps {
   busStops: StopResponse[];

@@ -14,7 +14,7 @@ import {
   RotateCcw,
   Maximize2,
 } from 'lucide-react';
-import { StopRequest, StopResponse, LocationDto, BusStopManagementService } from '@/lib/api-client/route-management';
+import { StopRequest, StopResponse, LocationDto, BusStopManagementService } from '../../../../generated/api-clients/route-management';
 import { useToast } from '@/hooks/use-toast';
 
 interface BusStopFormProps {

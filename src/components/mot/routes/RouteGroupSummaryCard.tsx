@@ -1,7 +1,7 @@
 'use client';
 
 import { Bus, Route as RouteIcon, MapPin, Timer } from 'lucide-react';
-import type { RouteGroupResponse, RouteResponse } from '@/lib/api-client/route-management';
+import type { RouteGroupResponse, RouteResponse } from '../../../../generated/api-clients/route-management';
 
 interface RouteGroupSummaryCardProps {
   routeGroup: RouteGroupResponse;

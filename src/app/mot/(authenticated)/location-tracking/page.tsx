@@ -5,8 +5,8 @@ import { useJsApiLoader } from '@react-google-maps/api';
 
 // Import API services
 import { QueryService, TripService, DeviceService, OpenAPI } from '@/lib/api-client/location-tracking';
-import { TripManagementService, RouteManagementService } from '@/lib/api-client/route-management';
-import { TripResponse } from '@/lib/api-client/route-management';
+import { TripManagementService, RouteManagementService } from '../../../../../generated/api-clients/route-management';
+import { TripResponse } from '../../../../../generated/api-clients/route-management';
 
 // Import layout
 import { Layout } from '@/components/shared/layout';

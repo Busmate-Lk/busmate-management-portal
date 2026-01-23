@@ -15,7 +15,7 @@ import {
   PermitManagementService,
   PassengerServicePermitResponse,
   TripRequest,
-} from '@/lib/api-client/route-management';
+} from '../../../../../generated/api-clients/route-management';
 import { getUserFromToken } from '@/lib/utils/jwtHandler';
 import { getCookie } from '@/lib/utils/cookieUtils';
 import { userManagementClient } from '@/lib/api/client';

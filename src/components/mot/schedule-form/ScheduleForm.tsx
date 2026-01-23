@@ -19,7 +19,7 @@ import {
   StopResponse,
   RouteManagementService,
   BusStopManagementService 
-} from '@/lib/api-client/route-management';
+} from '../../../../generated/api-clients/route-management';
 import { ScheduleBasicForm } from './ScheduleBasicForm';
 import { ScheduleCalendarForm } from './ScheduleCalendarForm';
 import { ScheduleStopsForm } from './ScheduleStopsForm';

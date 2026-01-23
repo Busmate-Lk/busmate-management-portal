@@ -2,16 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { RouteManagementService } from '@/lib/api-client/route-management/services/RouteManagementService';
-import { TripManagementService } from '@/lib/api-client/route-management/services/TripManagementService';
-import { PermitManagementService } from '@/lib/api-client/route-management/services/PermitManagementService';
-import { BusStopManagementService } from '@/lib/api-client/route-management/services/BusStopManagementService';
-import type { RouteGroupResponse } from '@/lib/api-client/route-management/models/RouteGroupResponse';
-import type { PassengerServicePermitResponse } from '@/lib/api-client/route-management/models/PassengerServicePermitResponse';
-import type { TripResponse } from '@/lib/api-client/route-management/models/TripResponse';
-import type { BulkPspAssignmentRequest } from '@/lib/api-client/route-management/models/BulkPspAssignmentRequest';
-import type { RouteResponse } from '@/lib/api-client/route-management/models/RouteResponse';
-import type { StopResponse } from '@/lib/api-client/route-management/models/StopResponse';
+import { RouteManagementService } from '../../../../generated/api-clients/route-management/services/RouteManagementService';
+import { TripManagementService } from '../../../../generated/api-clients/route-management/services/TripManagementService';
+import { PermitManagementService } from '../../../../generated/api-clients/route-management/services/PermitManagementService';
+import { BusStopManagementService } from '../../../../generated/api-clients/route-management/services/BusStopManagementService';
+import type { RouteGroupResponse } from '../../../../generated/api-clients/route-management/models/RouteGroupResponse';
+import type { PassengerServicePermitResponse } from '../../../../generated/api-clients/route-management/models/PassengerServicePermitResponse';
+import type { TripResponse } from '../../../../generated/api-clients/route-management/models/TripResponse';
+import type { BulkPspAssignmentRequest } from '../../../../generated/api-clients/route-management/models/BulkPspAssignmentRequest';
+import type { RouteResponse } from '../../../../generated/api-clients/route-management/models/RouteResponse';
+import type { StopResponse } from '../../../../generated/api-clients/route-management/models/StopResponse';
 import { getUserFromToken } from '@/lib/utils/jwtHandler';
 import { getCookie } from '@/lib/utils/cookieUtils';
 import { userManagementClient } from '@/lib/api/client';

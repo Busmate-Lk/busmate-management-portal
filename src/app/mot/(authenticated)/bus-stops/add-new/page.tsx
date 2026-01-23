@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { Layout } from '@/components/shared/layout';
 import BusStopForm from '@/components/mot/bus-stops/bus-stop-form';
-import { StopResponse } from '@/lib/api-client/route-management';
+import { StopResponse } from '../../../../../../generated/api-clients/route-management';
 
 export default function AddNewBusStopPage() {
   const router = useRouter();

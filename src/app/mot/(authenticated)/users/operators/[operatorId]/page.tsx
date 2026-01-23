@@ -18,7 +18,7 @@ import {
   BusManagementService,
   OperatorResponse, 
   BusResponse 
-} from '@/lib/api-client/route-management';
+} from '../../../../../../../generated/api-clients/route-management';
 import DeleteOperatorModal from '@/components/mot/users/operator/DeleteOperatorModal';
 
 export default function OperatorDetailsPage() {

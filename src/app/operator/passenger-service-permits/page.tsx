@@ -17,7 +17,7 @@ import { Pagination } from '@/components/mot/pagination';
 import {
   BusOperatorOperationsService,
   PassengerServicePermitResponse
-} from '@/lib/api-client/route-management';
+} from '../../../../generated/api-clients/route-management';
 import { useAuth } from '@/context/AuthContext';
 
 interface PermitFilters {

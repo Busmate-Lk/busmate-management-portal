@@ -13,8 +13,8 @@ import { Layout } from '@/components/shared/layout';
 import { RouteGroupSummaryCard } from '@/components/mot/routes/RouteGroupSummaryCard';
 import { RoutesTabsSection } from '@/components/mot/routes/RoutesTabsSection';
 import DeleteRouteConfirmation from '@/components/mot/routes/DeleteRouteConfirmation';
-import { RouteManagementService } from '@/lib/api-client/route-management';
-import type { RouteGroupResponse, RouteResponse } from '@/lib/api-client/route-management';
+import { RouteManagementService } from '../../../../../../../generated/api-clients/route-management';
+import type { RouteGroupResponse, RouteResponse } from '../../../../../../../generated/api-clients/route-management';
 
 export default function RouteGroupDetailsPage() {
   const router = useRouter();

@@ -22,7 +22,7 @@ import {
   ChevronDown,
   ChevronUp
 } from 'lucide-react';
-import type { BusResponse, OperatorResponse, TripResponse } from '@/lib/api-client/route-management';
+import type { BusResponse, OperatorResponse, TripResponse } from '../../../../generated/api-clients/route-management';
 
 interface TabType {
   id: string;

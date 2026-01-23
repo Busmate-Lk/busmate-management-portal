@@ -11,7 +11,7 @@ import {
   BusResponse,
   OperatorManagementService,
   OperatorResponse
-} from '@/lib/api-client/route-management';
+} from '../../../../../../../generated/api-clients/route-management';
 
 export default function EditBusPage() {
   const router = useRouter();

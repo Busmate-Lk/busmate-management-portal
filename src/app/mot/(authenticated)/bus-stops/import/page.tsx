@@ -7,7 +7,7 @@ import { CSVEditor } from '@/components/tools/csv-editor';
 import { BUS_STOP_VALIDATION_RULES } from '@/components/tools/csv-editor';
 import { CSVData } from '@/components/tools/csv-editor/types';
 import { useToast } from '@/hooks/use-toast';
-import { BusStopManagementService } from '@/lib/api-client/route-management';
+import { BusStopManagementService } from '../../../../../../generated/api-clients/route-management';
 
 function BusStopsImportPage() {
     const router = useRouter();

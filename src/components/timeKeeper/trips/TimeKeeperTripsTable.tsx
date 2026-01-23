@@ -22,7 +22,7 @@ import {
   UserPlus,
   ClipboardList,
 } from 'lucide-react';
-import { TripResponse } from '@/lib/api-client/route-management';
+import { TripResponse } from '../../../../generated/api-clients/route-management';
 
 interface TimeKeeperTripsTableProps {
   trips: TripResponse[];

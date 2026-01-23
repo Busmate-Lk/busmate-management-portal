@@ -8,7 +8,7 @@ import {
   PageTripResponse,
   TripStatisticsResponse,
   TripFilterOptionsResponse,
-} from '@/lib/api-client/route-management';
+} from '../../../../../generated/api-clients/route-management';
 
 // Import our custom components
 import { TripStatsCards } from '@/components/mot/trips/TripStatsCards';

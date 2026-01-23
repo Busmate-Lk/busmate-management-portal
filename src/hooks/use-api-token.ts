@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { OpenAPI } from '@/lib/api-client/route-management';
+import { OpenAPI } from '../../generated/api-clients/route-management';
 import { useAuth } from '@/context/AuthContext';
 import { getCookie } from '@/lib/utils/cookieUtils';
 

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Edit } from 'lucide-react';
 import { Layout } from '@/components/shared/layout';
 import BusStopForm from '@/components/mot/bus-stops/bus-stop-form';
-import { StopResponse } from '@/lib/api-client/route-management';
+import { StopResponse } from '../../../../../../../generated/api-clients/route-management';
 
 interface EditBusStopPageProps {
   params: { busStopId: string };

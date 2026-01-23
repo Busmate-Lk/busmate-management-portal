@@ -13,7 +13,7 @@ import {
   PassengerServicePermitResponse,
   OperatorResponse,
   RouteGroupResponse
-} from '@/lib/api-client/route-management';
+} from '../../../../../../../generated/api-clients/route-management';
 
 export default function EditPermitPage() {
   const router = useRouter();

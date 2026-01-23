@@ -3,7 +3,7 @@
 import { Navigation, Plus, X, Wand2, GripVertical, Edit3, Check, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import type { RouteGroupFormData, RouteFormData, RouteStop } from './RouteForm';
-import type { StopResponse } from '@/lib/api-client/route-management';
+import type { StopResponse } from '../../../../../generated/api-clients/route-management';
 
 interface RouteTabsContainerProps {
   formData: RouteGroupFormData;

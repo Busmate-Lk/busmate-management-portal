@@ -9,9 +9,9 @@ import { FleetActionButtons } from '@/components/operator/fleet/FleetActionButto
 import FleetAdvancedFilters from '@/components/operator/fleet/FleetAdvancedFilters';
 import { FleetTable } from '@/components/operator/fleet/FleetTable';
 import Pagination from '@/components/shared/Pagination';
-import { BusOperatorOperationsService } from '@/lib/api-client/route-management/services/BusOperatorOperationsService';
-import { BusResponse } from '@/lib/api-client/route-management/models/BusResponse';
-import { BusPermitAssignmentService } from '@/lib/api-client/route-management/services/BusPermitAssignmentService';
+import { BusOperatorOperationsService } from '../../../../generated/api-clients/route-management/services/BusOperatorOperationsService';
+import { BusResponse } from '../../../../generated/api-clients/route-management/models/BusResponse';
+import { BusPermitAssignmentService } from '../../../../generated/api-clients/route-management/services/BusPermitAssignmentService';
 import { BusPermitAssignmentModal } from '@/components/operator/fleet/BusPermitAssignmentModal';
 
 interface QueryParams {

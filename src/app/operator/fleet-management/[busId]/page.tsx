@@ -11,7 +11,7 @@ import {
   BusOperatorOperationsService,
   BusResponse,
   TripResponse
-} from '@/lib/api-client/route-management';
+} from '../../../../../generated/api-clients/route-management';
 import { useAuth } from '@/context/AuthContext';
 
 export default function OperatorBusDetailsPage() {

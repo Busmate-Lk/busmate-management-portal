@@ -6,7 +6,7 @@ import { login as apiLogin, logout as apiLogout, getCurrentUser } from '@/lib/ap
 import { LoginRequest } from '@/types/requestdto/auth';
 import { getUserFromToken, isTokenExpired } from '@/lib/utils/jwtHandler';
 import { getCookie, setCookie, clearAuthCookies, setSecureAuthCookie } from '@/lib/utils/cookieUtils';
-import { OpenAPI } from '@/lib/api-client/route-management';
+import { OpenAPI } from '../../generated/api-clients/route-management';
 import { unsubscribeUserFromPush } from '@/lib/push/registerServiceWorker';
 
 interface AuthState {
