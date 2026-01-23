@@ -198,28 +198,7 @@ export default function BusDetailsPage() {
     >
       <div className="space-y-6">
         {/* Header with Navigation and Actions */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          {/* Breadcrumbs */}
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <button 
-              onClick={() => router.push('/mot')}
-              className="hover:text-blue-600 transition-colors"
-            >
-              Home
-            </button>
-            <ChevronRight className="w-4 h-4" />
-            <button 
-              onClick={() => router.push('/mot/buses')}
-              className="hover:text-blue-600 transition-colors"
-            >
-              Bus Management
-            </button>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-gray-900 font-medium">
-              {bus.plateNumber || bus.ntcRegistrationNumber || 'Bus Details'}
-            </span>
-          </div>
-
+        <div className="flex items-center justify-end gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <button
               onClick={handleEdit}

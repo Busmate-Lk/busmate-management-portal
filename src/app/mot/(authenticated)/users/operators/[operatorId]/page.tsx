@@ -216,31 +216,8 @@ export default function OperatorDetailsPage() {
           </div>
         )}
 
-        {/* Header Section - Breadcrumbs + Actions */}
+        {/* Header Section - Actions */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          {/* Breadcrumbs */}
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <button 
-              onClick={() => router.push('/mot')}
-              className="hover:text-blue-600 transition-colors"
-            >
-              Home
-            </button>
-            <ChevronRight className="w-4 h-4" />
-            <button 
-              onClick={() => router.push('/mot/users/operators')}
-              className="hover:text-blue-600 transition-colors"
-            >
-              Operators Management
-            </button>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-gray-900 font-medium">
-              {operator.name || 'Operator Details'}
-            </span>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3 flex-wrap">
             <button
               onClick={handleBack}
               className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
@@ -248,6 +225,8 @@ export default function OperatorDetailsPage() {
               <ArrowLeft className="w-4 h-4" />
               Back
             </button>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-3 flex-wrap">
             <button
               onClick={handleEdit}
               className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
