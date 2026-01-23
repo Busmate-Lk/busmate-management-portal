@@ -448,6 +448,11 @@ export default function BusStopDetailsPage({ params }: BusStopDetailsPageProps) 
       pageTitle={`${busStop.name || 'Bus Stop'} - Details`}
       pageDescription="View detailed information about this bus stop"
       role="mot"
+      breadcrumbs={[
+        { label: 'MOT', href: '/mot/dashboard' },
+        { label: 'Bus Stops', href: '/mot/bus-stops' },
+        { label: busStop.name || 'Bus Stop Details' }
+      ]}
     >
       <div className="mx-auto px-4 space-y-6">
         {/* Header */}
