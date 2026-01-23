@@ -2,16 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { 
-  ArrowLeft, 
-  Edit, 
-  Plus, 
-  Trash2, 
-  ChevronRight
-} from 'lucide-react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Layout } from '@/components/shared/layout';
-import { RouteGroupSummaryCard } from '@/components/mot/routes/RouteGroupSummaryCard';
-import { RoutesTabsSection } from '@/components/mot/routes/RoutesTabsSection';
+import {
+  RouteGroupInfoCard,
+  RouteDetailsPanel
+} from '@/components/mot/routes/route-group-details';
 import DeleteRouteConfirmation from '@/components/mot/routes/DeleteRouteConfirmation';
 import { RouteManagementService } from '../../../../../../../generated/api-clients/route-management';
 import type { RouteGroupResponse, RouteResponse } from '../../../../../../../generated/api-clients/route-management';
@@ -31,7 +27,7 @@ export default function RouteGroupDetailsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // 🔌 API INTEGRATION POINT 1: Fetch Route Group Details
+  // Fetch Route Group Details
   const loadRouteGroupDetails = useCallback(async () => {
     if (!routeGroupId) return;
 
@@ -39,11 +35,8 @@ export default function RouteGroupDetailsPage() {
       setIsLoading(true);
       setError(null);
 
-      // Fetch route group data which includes routes
       const routeGroupData = await RouteManagementService.getRouteGroupById(routeGroupId);
       setRouteGroup(routeGroupData);
-
-      // Set routes from the route group data (routes are included in the response)
       setRoutes(routeGroupData.routes || []);
 
     } catch (err) {
@@ -63,10 +56,6 @@ export default function RouteGroupDetailsPage() {
     router.push(`/mot/routes/${routeGroupId}/edit`);
   };
 
-  // const handleAddRoute = () => {
-  //   router.push(`/mot/route-form?groupId=${routeGroupId}`);
-  // };
-
   const handleDelete = () => {
     setShowDeleteModal(true);
   };
@@ -81,21 +70,13 @@ export default function RouteGroupDetailsPage() {
     try {
       setIsDeleting(true);
       await RouteManagementService.deleteRouteGroup(routeGroup.id);
-      
-      // Navigate back to route groups list after successful deletion
       router.push('/mot/routes');
-      
     } catch (error) {
       console.error('Error deleting route group:', error);
       setError('Failed to delete route group. Please try again.');
-      // Keep the modal open on error so user can see what happened
     } finally {
       setIsDeleting(false);
     }
-  };
-
-  const handleBack = () => {
-    router.back();
   };
 
   // Loading state
@@ -106,12 +87,11 @@ export default function RouteGroupDetailsPage() {
         pageTitle="Loading..."
         pageDescription="Loading route group details"
         role="mot"
+        padding={0}
       >
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading route group details...</p>
-          </div>
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="animate-spin rounded-full h-10 w-10 border-2 border-blue-600 border-t-transparent mb-4" />
+          <p className="text-gray-500 font-medium">Loading route group...</p>
         </div>
       </Layout>
     );
@@ -125,17 +105,33 @@ export default function RouteGroupDetailsPage() {
         pageTitle="Error"
         pageDescription="Failed to load route group"
         role="mot"
+        padding={0}
       >
-        <div className="text-center py-12">
-          <div className="text-red-600 text-lg mb-4">
-            {error || 'Route group not found'}
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
+            <AlertCircle className="w-8 h-8 text-red-500" />
           </div>
-          <button
-            onClick={handleBack}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
-            Go Back
-          </button>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            {error || 'Route group not found'}
+          </h3>
+          <p className="text-gray-500 mb-6 text-center max-w-md text-sm">
+            We couldn't load the route group details. This might be due to a network issue or the route group may have been deleted.
+          </p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={loadRouteGroupDetails}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Try Again
+            </button>
+            <button
+              onClick={() => router.push('/mot/routes')}
+              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+            >
+              Back to Routes
+            </button>
+          </div>
         </div>
       </Layout>
     );
@@ -145,71 +141,41 @@ export default function RouteGroupDetailsPage() {
     <Layout
       activeItem="routes"
       pageTitle={routeGroup.name || 'Route Group Details'}
-      pageDescription="Detailed view of route group and its routes"
+      pageDescription={routeGroup.description || 'View and manage route group details'}
       role="mot"
       breadcrumbs={[
-        { label: 'MOT', href: '/mot' },
         { label: 'Routes', href: '/mot/routes' },
-        { label: routeGroup.name || 'Route Group Details' }
+        { label: routeGroup.name || 'Route Group' }
       ]}
     >
       <div className="space-y-6">
         {/* Error Alert */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex">
-              <div className="text-red-600 text-sm">{error}</div>
-              <button
-                onClick={() => setError(null)}
-                className="ml-auto text-red-600 hover:text-red-800"
-              >
-                ×
-              </button>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+              <p className="text-red-700 text-sm font-medium">{error}</p>
             </div>
+            <button
+              onClick={() => setError(null)}
+              className="text-red-500 hover:text-red-700 font-bold text-lg leading-none"
+            >
+              ×
+            </button>
           </div>
         )}
 
-        {/* 1. Header Section - Breadcrumbs + Actions */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        {/* Route Group Info Card with Statistics */}
+        <RouteGroupInfoCard
+          routeGroup={routeGroup}
+          routes={routes}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          isDeleting={isDeleting}
+        />
 
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </button>
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleEdit}
-              className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
-            >
-              <Edit className="w-4 h-4" />
-              Edit Group
-            </button>
-            {/* <button
-              onClick={handleAddRoute}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Add Route
-            </button> */}
-            <button
-              onClick={handleDelete}
-              className="flex items-center gap-2 px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </button>
-          </div>
-        </div>
-
-        {/* 2. Route Group Summary Card */}
-        <RouteGroupSummaryCard routeGroup={routeGroup} routes={routes} />
-
-        {/* 3. Routes Tabs Section */}
-        <RoutesTabsSection routes={routes} />
+        {/* Routes Details Panel */}
+        <RouteDetailsPanel routes={routes} />
 
         {/* Delete Confirmation Modal */}
         <DeleteRouteConfirmation
