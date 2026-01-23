@@ -190,6 +190,11 @@ export default function OperatorDetailsPage() {
       pageTitle={operator.name || 'Operator Details'}
       pageDescription="Detailed view of operator information and related assets"
       role="mot"
+      breadcrumbs={[
+        { label: 'MOT', href: '/mot' },
+        { label: 'Operators', href: '/mot/users/operators' },
+        { label: operator.name || 'Operator Details' }
+      ]}
     >
       <div className="space-y-6">
         {/* Error Alert */}

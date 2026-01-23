@@ -31,7 +31,7 @@ export function Breadcrumb({ items, showHome = true, className = "" }: Breadcrum
       className={`bg-white border-b border-gray-200 ${className}`}
     >
       <div className="px-6 py-2">
-        <ol className="flex items-center space-x-2 text-sm">
+        <ol className="flex items-center space-x-0 text-sm">
           {/* Home item */}
           {showHome && (
             <li className="flex items-center">
@@ -43,7 +43,7 @@ export function Breadcrumb({ items, showHome = true, className = "" }: Breadcrum
                 <Home className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
               </Link>
               {validItems.length > 0 && (
-                <ChevronRight className="w-4 h-4 text-gray-400 mx-2 flex-shrink-0" />
+                <ChevronRight className="w-4 h-4 text-gray-400 mx-1 flex-shrink-0" />
               )}
             </li>
           )}

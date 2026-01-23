@@ -249,6 +249,11 @@ export default function ScheduleDetailsPage() {
       activeItem="schedules"
       pageTitle={`Schedule: ${schedule.name || 'Unnamed Schedule'}`}
       pageDescription={`Manage schedule details, timetables, and operations`}
+      breadcrumbs={[
+        { label: 'MOT', href: '/mot' },
+        { label: 'Schedules', href: '/mot/schedules' },
+        { label: schedule.name || 'Schedule Details' }
+      ]}
     >
       <div className="space-y-6">
         {/* Header with Navigation and Actions */}

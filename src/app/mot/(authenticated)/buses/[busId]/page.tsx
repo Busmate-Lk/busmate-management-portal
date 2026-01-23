@@ -190,6 +190,11 @@ export default function BusDetailsPage() {
       pageTitle={bus.plateNumber || bus.ntcRegistrationNumber || 'Bus Details'}
       pageDescription="Detailed view of bus information and related data"
       role="mot"
+      breadcrumbs={[
+        { label: 'MOT', href: '/mot' },
+        { label: 'Buses', href: '/mot/buses' },
+        { label: bus.plateNumber || bus.ntcRegistrationNumber || 'Bus Details' }
+      ]}
     >
       <div className="space-y-6">
         {/* Header with Navigation and Actions */}

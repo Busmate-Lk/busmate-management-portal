@@ -147,6 +147,11 @@ export default function RouteGroupDetailsPage() {
       pageTitle={routeGroup.name || 'Route Group Details'}
       pageDescription="Detailed view of route group and its routes"
       role="mot"
+      breadcrumbs={[
+        { label: 'MOT', href: '/mot' },
+        { label: 'Routes', href: '/mot/routes' },
+        { label: routeGroup.name || 'Route Group Details' }
+      ]}
     >
       <div className="space-y-6">
         {/* Error Alert */}

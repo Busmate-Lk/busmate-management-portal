@@ -123,6 +123,11 @@ export default function PolicyDetails() {
       activeItem="policy"
       pageTitle="Policy Details"
       pageDescription="View detailed information about the policy document"
+      breadcrumbs={[
+        { label: 'MOT', href: '/mot' },
+        { label: 'Policy Management', href: '/mot/policy-update' },
+        { label: policy.title }
+      ]}
     >
       <div className="space-y-6">
         {/* Back Button */}
