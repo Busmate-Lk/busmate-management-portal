@@ -10,5 +10,7 @@ export type RouteStopResponse = {
     location?: LocationDto;
     stopOrder?: number;
     distanceFromStartKm?: number;
+    distanceFromStartKmUnverified?: number;
+    distanceFromStartKmCalculated?: number;
 };
 
