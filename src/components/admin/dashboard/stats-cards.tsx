@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/admin/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Users, Activity, AlertTriangle, Bus, TrendingUp } from "lucide-react"
 
 const stats = [

@@ -1,7 +1,7 @@
 import { Button } from "@/components/admin/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/admin/ui/card"
-import { Badge } from "@/components/admin/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/admin/ui/avatar"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ArrowLeft, Download, Edit, RotateCcw, MessageSquare, FileText, Ban } from "lucide-react"
 import Link from "next/link"
 

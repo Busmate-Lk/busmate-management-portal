@@ -1,10 +1,10 @@
 "use client"
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/admin/ui/table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/admin/ui/button"
-import { Checkbox } from "@/components/admin/ui/checkbox"
-import { Badge } from "@/components/admin/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/admin/ui/avatar"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Eye, Edit, Ban } from "lucide-react"
 import { useRouter } from "next/navigation"
 

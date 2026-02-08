@@ -1,7 +1,7 @@
 "use client"
 
 import { Header } from "@/components/admin/shared"
-import { Tabs, TabsList, TabsTrigger } from "@/components/admin/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { usePathname, useRouter } from "next/navigation"
 import { User, Code, Shield } from "lucide-react"
 

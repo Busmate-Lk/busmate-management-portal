@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/admin/ui/button"
-import { Badge } from "@/components/admin/ui/badge"
+import { Badge } from "@/components/ui/badge"
 import { Bell, AlertTriangle, Info, CheckCircle, Clock, ArrowRight, AlertCircle, Wrench } from "lucide-react"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/admin/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { listNotifications, type NotificationListItem } from "@/lib/services/notificationService"

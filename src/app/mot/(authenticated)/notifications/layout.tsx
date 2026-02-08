@@ -1,6 +1,6 @@
 "use client"
 
-import { Tabs } from "@/components/admin/ui/tabs"
+import { Tabs } from "@/components/ui/tabs"
 import { usePathname, useRouter } from "next/navigation"
 import { Send, Bell } from "lucide-react"
 

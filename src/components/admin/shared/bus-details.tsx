@@ -2,10 +2,10 @@
 
 import { useState } from "react"
 import { Button } from "@/components/admin/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/admin/ui/card"
-import { Badge } from "@/components/admin/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/admin/ui/table"
-import { Tabs, TabsContent } from "@/components/admin/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
 import {
   ArrowLeft,
   Bus,

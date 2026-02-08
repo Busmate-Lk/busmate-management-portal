@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Badge } from "@/components/admin/ui/badge"
+import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Clock, AlertTriangle, Info, CheckCircle, Calendar } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"

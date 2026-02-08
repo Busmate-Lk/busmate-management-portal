@@ -2,13 +2,13 @@
 
 import { useState } from "react"
 import { Button } from "@/components/admin/ui/button"
-import { Input } from "@/components/admin/ui/input"
-import { Label } from "@/components/admin/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/admin/ui/card"
-import { RadioGroup, RadioGroupItem } from "@/components/admin/ui/radio-group"
-import { Switch } from "@/components/admin/ui/switch"
-import { Avatar, AvatarFallback } from "@/components/admin/ui/avatar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/admin/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Switch } from "@/components/ui/switch"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   ArrowLeft,
   Upload,

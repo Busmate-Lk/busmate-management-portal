@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { Button } from "@/components/admin/ui/button"
-import { Card, CardContent } from "@/components/admin/ui/card"
-import { Badge } from "@/components/admin/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Clock, AlertTriangle, Info, CheckCircle, Calendar } from "lucide-react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"

@@ -1,6 +1,6 @@
-import { Input } from "@/components/admin/ui/input"
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/admin/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/admin/ui/select"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Download, FileText } from "lucide-react"
 
 export function UserFilters() {

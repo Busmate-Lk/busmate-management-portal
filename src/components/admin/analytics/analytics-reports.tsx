@@ -2,11 +2,11 @@
 
 import { useState } from "react"
 import { Button } from "@/components/admin/ui/button"
-import { Input } from "@/components/admin/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/admin/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/admin/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/admin/ui/table"
-import { Badge } from "@/components/admin/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 import {
   Calendar,
   Download,

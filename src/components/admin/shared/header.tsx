@@ -1,6 +1,6 @@
 "use client"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/admin/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -8,7 +8,7 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/admin/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/admin/ui/button"
 import { NotificationDropdown } from "@/components/admin/notifications/notification-dropdown"
 import { User, LogOut, Settings } from "lucide-react"
