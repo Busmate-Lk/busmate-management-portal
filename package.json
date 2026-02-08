@@ -95,6 +95,7 @@
     "openapi-typescript-codegen": "^0.29.0",
     "postcss": "^8.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "unimported": "^1.31.1"
   }
 }
