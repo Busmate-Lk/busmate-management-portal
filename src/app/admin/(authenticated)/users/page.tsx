@@ -1,6 +1,6 @@
 import { Header } from "@/components/admin/shared"
 import { UserStats, UserFilters, UserTable } from "@/components/admin/users"
-import { Button } from "@/components/admin/ui/button"
+import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 

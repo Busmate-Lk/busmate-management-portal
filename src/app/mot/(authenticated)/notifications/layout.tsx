@@ -4,7 +4,7 @@ import { Tabs } from "@/components/ui/tabs"
 import { usePathname, useRouter } from "next/navigation"
 import { Send, Bell } from "lucide-react"
 
-import { Button } from "@/components/admin/ui/button"
+import { Button } from "@/components/ui/button"
 import { Layout } from "@/components/shared/layout"
 
 export default function NotificationsLayout({

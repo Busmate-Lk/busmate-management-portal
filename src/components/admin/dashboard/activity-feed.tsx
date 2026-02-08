@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/admin/ui/button"
+import { Button } from "@/components/ui/button"
 
 const activities = [
   {

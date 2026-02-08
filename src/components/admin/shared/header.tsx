@@ -9,7 +9,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/admin/ui/button"
+import { Button } from "@/components/ui/button"
 import { NotificationDropdown } from "@/components/admin/notifications/notification-dropdown"
 import { User, LogOut, Settings } from "lucide-react"
 import Link from "next/link"

@@ -1,7 +1,7 @@
 "use client"
 
 import { MessageHistory } from "@/components/admin/broadcast"
-import { Button } from "@/components/admin/ui/button"
+import { Button } from "@/components/ui/button"
 import { Send } from "lucide-react"
 import { useRouter } from "next/navigation"
 

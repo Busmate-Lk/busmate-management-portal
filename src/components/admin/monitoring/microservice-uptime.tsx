@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/admin/ui/button"
+import { Button } from "@/components/ui/button"
 import { Server, CheckCircle, AlertTriangle, XCircle, RefreshCw, Clock, Cpu, HardDrive } from "lucide-react"
 import { useState } from "react"
 

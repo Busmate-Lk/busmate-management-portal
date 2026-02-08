@@ -1,6 +1,6 @@
 import { Header } from "@/components/admin/shared"
 import { AnalyticsReports } from "@/components/admin/analytics"
-import { Button } from "@/components/admin/ui/button"
+import { Button } from "@/components/ui/button"
 import { ArrowLeft, RefreshCw, Plus } from "lucide-react"
 import Link from "next/link"
 
