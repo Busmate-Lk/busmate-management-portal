@@ -74,7 +74,7 @@ export interface Stop {
 export interface RouteStop {
   id?: string; // Unique identifier for the route stop (for updates)
   orderNumber: number;
-  distanceFromStart: number; // in kilometers
+  distanceFromStart: number | null; // in kilometers - null if not provided
   stop: Stop;
   // Computed property - determines if this is Start (S), End (E), or Intermediate (I)
   stopType?: StopTypeEnum;
@@ -161,7 +161,7 @@ export function createEmptyStop(): Stop {
 export function createEmptyRouteStop(orderNumber: number): RouteStop {
   return {
     orderNumber,
-    distanceFromStart: 0,
+    distanceFromStart: null,
     stop: createEmptyStop(),
     stopType: StopTypeEnum.INTERMEDIATE,
   };
@@ -243,7 +243,11 @@ export function updateStopTypes(routeStops: RouteStop[]): RouteStop[] {
  */
 export function calculateTotalDistance(routeStops: RouteStop[]): number {
   if (routeStops.length === 0) return 0;
-  return Math.max(...routeStops.map(stop => stop.distanceFromStart));
+  const distances = routeStops
+    .map(stop => stop.distanceFromStart)
+    .filter((d): d is number => d !== null);
+  if (distances.length === 0) return 0;
+  return Math.max(...distances);
 }
 
 /**

@@ -602,14 +602,42 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                     />
                 </td>
                 <td className="border-b border-slate-100">
-                    <input
-                        type="number"
-                        step="0.1"
-                        defaultValue={routeStop.distanceFromStart || 0}
-                        onClick={(e) => e.stopPropagation()}
-                        onBlur={(e) => handleFieldChange(actualIndex, 'distanceFromStart', parseFloat(e.target.value) || 0)}
-                        className="w-full px-3 py-1.5 border-none bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset text-sm"
-                    />
+                    <div className="flex items-center gap-1">
+                        <input
+                            type="number"
+                            step="0.1"
+                            defaultValue={routeStop.distanceFromStart ?? ''}
+                            placeholder="Auto"
+                            onClick={(e) => e.stopPropagation()}
+                            onBlur={(e) => {
+                                const value = e.target.value.trim();
+                                if (value === '') {
+                                    handleFieldChange(actualIndex, 'distanceFromStart', null);
+                                } else {
+                                    const numValue = parseFloat(value);
+                                    handleFieldChange(actualIndex, 'distanceFromStart', isNaN(numValue) ? null : numValue);
+                                }
+                            }}
+                            className="w-full px-3 py-1.5 border-none bg-transparent focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset text-sm"
+                        />
+                        {routeStop.distanceFromStart !== null && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleFieldChange(actualIndex, 'distanceFromStart', null);
+                                    // Force input to clear by updating the DOM element
+                                    const input = e.currentTarget.previousElementSibling as HTMLInputElement;
+                                    if (input) input.value = '';
+                                }}
+                                className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                title="Clear distance (use calculated value)"
+                            >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        )}
+                    </div>
                 </td>
                 <td className="border-b border-slate-100 w-8">
                     <button
