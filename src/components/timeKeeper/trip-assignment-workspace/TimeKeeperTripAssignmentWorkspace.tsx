@@ -12,8 +12,7 @@ import type { TripResponse } from '../../../../generated/api-clients/route-manag
 import type { BulkPspAssignmentRequest } from '../../../../generated/api-clients/route-management/models/BulkPspAssignmentRequest';
 import type { RouteResponse } from '../../../../generated/api-clients/route-management/models/RouteResponse';
 import type { StopResponse } from '../../../../generated/api-clients/route-management/models/StopResponse';
-import { getUserFromToken } from '@/lib/utils/jwtHandler';
-import { getCookie } from '@/lib/utils/cookieUtils';
+import { useAsgardeo } from '@asgardeo/nextjs';
 import { userManagementClient } from '@/lib/api/client';
 
 // Workspace Sections
@@ -62,6 +61,7 @@ export interface TimeKeeperWorkspaceState {
 export function TimeKeeperTripAssignmentWorkspace() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { user, getAccessToken } = useAsgardeo();
 
   // Workspace state
   const [workspace, setWorkspace] = useState<TimeKeeperWorkspaceState>({
@@ -101,7 +101,7 @@ export function TimeKeeperTripAssignmentWorkspace() {
   // Initialize workspace data
   useEffect(() => {
     loadAssignedBusStop();
-  }, []);
+  }, [user]);
 
   // Load route groups after assigned bus stop is loaded
   useEffect(() => {
@@ -171,27 +171,20 @@ export function TimeKeeperTripAssignmentWorkspace() {
         assignedStopError: null,
       }));
 
-      // Step 1: Get access token from cookies
-      const accessToken = getCookie('access_token');
-
-      if (!accessToken) {
-        throw new Error('No access token found. Please log in again.');
+      // Step 1: Get user ID from Asgardeo session
+      if (!user?.sub) {
+        throw new Error('Not authenticated. Please log in again.');
       }
 
-      // Step 2: Extract user ID from JWT token
-      const userFromToken = getUserFromToken(accessToken);
-
-      if (!userFromToken?.id) {
-        throw new Error('Invalid access token. Please log in again.');
-      }
-
-      const extractedUserId = userFromToken.id;
+      const extractedUserId = user.sub;
 
       console.log('Extracted User ID from token:', extractedUserId);
 
       // Step 3: Fetch timekeeper profile to get assigned_stand
+      const token = await getAccessToken?.();
       const timekeeperResponse = await userManagementClient.get(
-        `/api/timekeeper/profile/${extractedUserId}`
+        `/api/timekeeper/profile/${extractedUserId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const timekeeperData = timekeeperResponse.data;

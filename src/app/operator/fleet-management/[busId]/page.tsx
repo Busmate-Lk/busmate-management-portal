@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Edit, Wrench, AlertCircle, RefreshCw, ChevronRight, MapPin, Calendar } from 'lucide-react';
-import { Header } from '@/components/operator/header';
+import { Header } from '@/components/shared/header';
 import { OperatorBusSummary, OperatorBusTabsSection } from '@/components/operator/fleet';
 import { BusPermitAssignmentModal } from '@/components/operator/fleet/BusPermitAssignmentModal';
 import {
@@ -12,12 +12,12 @@ import {
   BusResponse,
   TripResponse
 } from '../../../../../generated/api-clients/route-management';
-import { useAuth } from '@/context/AuthContext';
+import { useAsgardeo } from '@asgardeo/nextjs';
 
 export default function OperatorBusDetailsPage() {
   const router = useRouter();
   const params = useParams();
-  const { user } = useAuth();
+  const { user } = useAsgardeo();
   const busId = params.busId as string;
   const operatorId = user?.id || '11111111-1111-1111-1111-111111111112';
 

@@ -10,7 +10,7 @@ import { ArrowLeft, Search, Filter, Bell, AlertTriangle, Info, CheckCircle, Cloc
 import { usePathname, useRouter } from "next/navigation"
 import { listNotifications, type NotificationListItem } from "@/lib/services/notificationService"
 import Link from "next/link"
-import { useAuth } from "@/context/AuthContext"
+import { useAsgardeo } from '@asgardeo/nextjs'
 
 function toRelativeTime(dateStr?: string) {
   if (!dateStr) return ''
@@ -29,7 +29,7 @@ function toRelativeTime(dateStr?: string) {
 export function NotificationPanel() {
   const router = useRouter()
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, getAccessToken } = useAsgardeo()
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState("all")
   const [filterAudience, setFilterAudience] = useState("all")
@@ -42,7 +42,8 @@ export function NotificationPanel() {
       ; (async () => {
         try {
           setLoading(true)
-          const data = await listNotifications(50)
+          const token = await getAccessToken?.()
+          const data = await listNotifications(50, token || undefined)
           if (mounted) setItems(data)
         } catch (e: any) {
           if (mounted) setError(e?.message || 'Failed to load notifications')

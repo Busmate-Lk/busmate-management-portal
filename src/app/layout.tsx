@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { AuthProvider } from '@/context/AuthContext';
-import ClientSWBootstrap from '../components/shared/ClientSWBootstrap';
+import { AsgardeoProvider } from "@asgardeo/nextjs/server";
 
 export const metadata: Metadata = {
   title: "BUSMATE LK - Transportation Management",
@@ -10,16 +9,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body className="antialiased font-sans">
-        <AuthProvider>
-          <ClientSWBootstrap />
-          {children}
-        </AuthProvider>
+        <AsgardeoProvider 
+          preferences={{
+            theme: {
+              inheritFromBranding: false,
+              mode: "light"
+            }
+          }}
+        >
+          {children as any}
+        </AsgardeoProvider>
       </body>
     </html>
   );

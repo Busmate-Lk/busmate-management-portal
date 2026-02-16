@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar, Search, Trash2, Send, Filter } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
 import { listNotifications, deleteNotification as apiDeleteNotification, type NotificationListItem } from "@/lib/services/notificationService"
-import { useAuth } from "@/context/AuthContext"
+import { useAsgardeo } from '@asgardeo/nextjs'
 
 function formatDate(dt?: string) {
   if (!dt) return ''
@@ -22,7 +22,7 @@ function formatDate(dt?: string) {
 export function MessageHistory() {
   const router = useRouter()
   const pathname = usePathname()
-  const { user } = useAuth()
+  const { user, getAccessToken } = useAsgardeo()
   const [searchTerm, setSearchTerm] = useState("")
   const [showFilters, setShowFilters] = useState(false)
   const [filterType, setFilterType] = useState("all")
@@ -39,7 +39,8 @@ export function MessageHistory() {
       ; (async () => {
         try {
           setLoading(true)
-          const data = await listNotifications(100)
+          const token = await getAccessToken?.()
+          const data = await listNotifications(100, token || undefined)
           if (mounted) setItems(data)
         } catch (e: any) {
           if (mounted) setError(e?.message || 'Failed to load sent notifications')
@@ -82,7 +83,8 @@ export function MessageHistory() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this notification?')) return
     try {
-      await apiDeleteNotification(id)
+      const token = await getAccessToken?.()
+      await apiDeleteNotification(id, token || '')
       setItems(prev => prev.filter(x => x.notificationId !== id))
     } catch (e: any) {
       alert(e?.message || 'Failed to delete')

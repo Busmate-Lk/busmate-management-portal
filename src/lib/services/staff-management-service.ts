@@ -1,5 +1,4 @@
 import { STAFF_API_BASE } from '@/lib/constants';
-import { getUserFromToken } from '@/lib/utils/jwtHandler';
 
 export interface ConductorProfile {
     userId: string;
@@ -74,15 +73,11 @@ class StaffManagementService {
     /**
      * Get all conductors for the operator
      */
-    async getConductors(token: string): Promise<ConductorProfile[]> {
+    async getConductors(token: string, operatorId?: string): Promise<ConductorProfile[]> {
         try {
             if (!token) {
                 throw new Error('Missing access token');
             }
-
-            // Get operator ID from token
-            const userFromToken = getUserFromToken(token);
-            const operatorId = userFromToken?.id;
 
             const response = await fetch(`${this.baseUrl}/api/conductor/all`, {
                 method: 'GET',
@@ -115,10 +110,7 @@ class StaffManagementService {
     /**
      * Get all drivers for the operator (using mock data until API is ready)
      */
-    async getDrivers(token: string): Promise<DriverProfile[]> {
-        // Get operator ID from token
-        const userFromToken = getUserFromToken(token);
-        const operatorId = userFromToken?.id;
+    async getDrivers(token: string, operatorId?: string): Promise<DriverProfile[]> {
 
         // Mock data for drivers until API is ready
         const allDrivers: DriverProfile[] = [
@@ -212,11 +204,11 @@ class StaffManagementService {
     /**
      * Get all staff (drivers + conductors)
      */
-    async getAllStaff(token: string): Promise<StaffListItem[]> {
+    async getAllStaff(token: string, operatorId?: string): Promise<StaffListItem[]> {
         try {
             const [drivers, conductors] = await Promise.all([
-                this.getDrivers(token),
-                this.getConductors(token),
+                this.getDrivers(token, operatorId),
+                this.getConductors(token, operatorId),
             ]);
 
             const driversList: StaffListItem[] = drivers.map(driver => ({
@@ -255,9 +247,9 @@ class StaffManagementService {
     /**
      * Get staff statistics
      */
-    async getStaffStats(token: string): Promise<StaffStats> {
+    async getStaffStats(token: string, operatorId?: string): Promise<StaffStats> {
         try {
-            const allStaff = await this.getAllStaff(token);
+            const allStaff = await this.getAllStaff(token, operatorId);
 
             const drivers = allStaff.filter(s => s.role === 'Driver');
             const conductors = allStaff.filter(s => s.role === 'Conductor');

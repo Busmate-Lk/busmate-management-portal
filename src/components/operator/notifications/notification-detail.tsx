@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Clock, AlertTriangle, Info, CheckCircle, Calendar } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useAsgardeo } from '@asgardeo/nextjs'
 import { getNotificationDetails, type NotificationDetails } from "@/lib/services/notificationService"
 
 interface NotificationDetailProps {
@@ -13,6 +14,7 @@ interface NotificationDetailProps {
 
 export function NotificationDetail({ notificationId }: NotificationDetailProps) {
     const router = useRouter()
+    const { getAccessToken } = useAsgardeo()
     const [notification, setNotification] = useState<NotificationDetails | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -22,7 +24,8 @@ export function NotificationDetail({ notificationId }: NotificationDetailProps) 
             ; (async () => {
                 try {
                     setLoading(true)
-                    const data = await getNotificationDetails(notificationId)
+                    const token = await getAccessToken?.()
+                    const data = await getNotificationDetails(notificationId, token || '')
                     if (mounted) setNotification(data)
                 } catch (e: any) {
                     if (mounted) setError(e?.message || 'Failed to load notification')

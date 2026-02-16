@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { Header } from '@/components/operator/header';
+import { useAsgardeo } from '@asgardeo/nextjs';
+import { Header } from '@/components/shared/header';
 import { TripManagementService } from '../../../../generated/api-clients/route-management/services/TripManagementService';
 import { BusOperatorOperationsService } from '../../../../generated/api-clients/route-management/services/BusOperatorOperationsService';
 import type { TripResponse } from '../../../../generated/api-clients/route-management/models/TripResponse';
 import { staffManagementService, type ConductorProfile, type DriverProfile } from '@/lib/services/staff-management-service';
-import { getCookie } from '@/lib/utils/cookieUtils';
 import {
     Calendar,
     Search,
@@ -31,8 +30,8 @@ interface StaffAssignmentFilters {
 }
 
 export default function StaffAssignmentPage() {
-    const { user } = useAuth();
-    const operatorId = user?.id;
+    const { user, getAccessToken } = useAsgardeo();
+    const operatorId = user?.sub;
 
     // State
     const [trips, setTrips] = useState<TripResponse[]>([]);
@@ -125,8 +124,8 @@ export default function StaffAssignmentPage() {
     // Load conductors
     const loadConductors = useCallback(async () => {
         try {
-            const token = getCookie('access_token') || '';
-            const conductorList = await staffManagementService.getConductors(token);
+            const token = await getAccessToken?.() || '';
+            const conductorList = await staffManagementService.getConductors(token, user?.sub);
             setConductors(conductorList.filter((c: ConductorProfile) => c.accountStatus?.toLowerCase() === 'active'));
         } catch (err) {
             console.error('Error loading conductors:', err);
@@ -136,8 +135,8 @@ export default function StaffAssignmentPage() {
     // Load drivers
     const loadDrivers = useCallback(async () => {
         try {
-            const token = getCookie('access_token') || '';
-            const driverList = await staffManagementService.getDrivers(token);
+            const token = await getAccessToken?.() || '';
+            const driverList = await staffManagementService.getDrivers(token, user?.sub);
             setDrivers(driverList.filter((d: DriverProfile) => d.accountStatus?.toLowerCase() === 'active'));
         } catch (err) {
             console.error('Error loading drivers:', err);

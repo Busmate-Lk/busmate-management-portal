@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Search, Clock, AlertTriangle, Info, CheckCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { listNotifications, type NotificationListItem } from "@/lib/services/notificationService"
-import { useAuth } from "@/context/AuthContext"
+import { useAsgardeo } from '@asgardeo/nextjs'
 
 function toRelativeTime(dateStr?: string) {
     if (!dateStr) return ''
@@ -27,7 +27,7 @@ function toRelativeTime(dateStr?: string) {
 
 export function NotificationPanel() {
     const router = useRouter()
-    const { user, isLoading } = useAuth()
+    const { user, isLoading, getAccessToken } = useAsgardeo()
     const [notifications, setNotifications] = useState<NotificationListItem[]>([])
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState("")
@@ -38,7 +38,8 @@ export function NotificationPanel() {
         const fetchNotifications = async () => {
             try {
                 setLoading(true)
-                const data = await listNotifications(50)
+                const token = await getAccessToken?.()
+                const data = await listNotifications(50, token || undefined)
 
                 // Operator only sees messages targeted to fleet_operators or all
                 const filtered = data.filter(n => {

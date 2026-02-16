@@ -4,8 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { User, Camera, Upload, FileText, Calendar, ChevronDown } from "lucide-react"
 import { staffManagementService, ConductorProfile, DriverProfile } from "@/lib/services/staff-management-service"
-import { getCookie } from "@/lib/utils/cookieUtils"
-import { getUserFromToken } from "@/lib/utils/jwtHandler"
+import { useAsgardeo } from '@asgardeo/nextjs'
 
 interface StaffFormData {
   role: "Driver" | "Conductor"
@@ -38,6 +37,7 @@ interface StaffFormData {
 
 export function AddStaffForm() {
   const router = useRouter()
+  const { user, getAccessToken } = useAsgardeo()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -121,11 +121,10 @@ export function AddStaffForm() {
       // Generate employee ID if not provided
       const employeeId = formData.employeeId || `${formData.role.substring(0, 3).toUpperCase()}${Date.now().toString().slice(-6)}`
 
-      const token = getCookie('access_token') || ''
+      const token = await getAccessToken?.() || ''
 
-      // Get operator ID from token
-      const userFromToken = getUserFromToken(token)
-      const operatorId = userFromToken?.id || ''
+      // Get operator ID from Asgardeo user
+      const operatorId = user?.sub || ''
 
       if (formData.role === 'Conductor') {
         const conductorData: Omit<ConductorProfile, 'userId'> = {

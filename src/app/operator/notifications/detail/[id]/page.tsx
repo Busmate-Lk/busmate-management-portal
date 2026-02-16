@@ -1,6 +1,6 @@
 "use client"
 
-import { Header } from "@/components/operator/header"
+import { Header } from "@/components/shared/header"
 // Use a relative import to avoid any ts-path alias resolution issues in nested route segments
 import { NotificationDetail } from "../../../../../components/operator/notifications/notification-detail"
 

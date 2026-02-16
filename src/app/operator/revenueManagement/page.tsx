@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Header } from "@/components/operator/header"
+import { Header } from "@/components/shared/header"
 import { RevenueAnalytics, SalaryManagement } from "@/components/operator/revenue"
 import { Tabs } from "@/components/operator/tabs"
 

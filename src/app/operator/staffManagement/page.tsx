@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/operator/sidebar"
-import { Header } from "@/components/operator/header"
+import { Header } from "@/components/shared/header"
 import { MetricCard } from "@/components/operator/metric-card"
 import { StaffTable } from "@/components/operator/staff-table"
 import { Users, Car, Ticket, Calendar, Plus, Search } from "lucide-react"
 import Link from "next/link"
 import { staffManagementService, StaffListItem, StaffStats } from "@/lib/services/staff-management-service"
-import { getCookie } from "@/lib/utils/cookieUtils"
+import { useAsgardeo } from '@asgardeo/nextjs'
 
 interface StaffMember {
   id: string
@@ -25,6 +25,7 @@ interface StaffMember {
 
 export default function StaffManagement() {
   const router = useRouter()
+  const { user, getAccessToken } = useAsgardeo()
   const [activeTab, setActiveTab] = useState("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
@@ -46,11 +47,11 @@ export default function StaffManagement() {
     try {
       setIsLoading(true)
       setError(null)
-      const token = getCookie('access_token') || ''
+      const token = await getAccessToken?.() || ''
 
       const [staffData, statsData] = await Promise.all([
-        staffManagementService.getAllStaff(token),
-        staffManagementService.getStaffStats(token),
+        staffManagementService.getAllStaff(token, user?.sub),
+        staffManagementService.getStaffStats(token, user?.sub),
       ])
 
       setStaffList(staffData)
@@ -61,7 +62,7 @@ export default function StaffManagement() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [getAccessToken])
 
   useEffect(() => {
     loadStaffData()
@@ -111,7 +112,7 @@ export default function StaffManagement() {
       const staff = staffList.find(s => s.id === staffId)
       if (!staff) return
 
-      const token = getCookie('access_token') || ''
+      const token = await getAccessToken?.() || ''
       await staffManagementService.deleteStaff(token, staffId, staff.role)
 
       // Reload data after deletion

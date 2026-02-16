@@ -21,14 +21,14 @@ import {
     RouteGroupResponse,
     BusResponse
 } from '../../../../../generated/api-clients/route-management';
-import { Header } from '@/components/operator/header';
-import { useAuth } from '@/context/AuthContext';
+import { Header } from '@/components/shared/header';
+import { useAsgardeo } from '@asgardeo/nextjs';
 
 export default function OperatorPermitDetailsPage() {
     const router = useRouter();
     const params = useParams();
     const permitId = params.permitId as string;
-    const { user } = useAuth();
+    const { user } = useAsgardeo();
 
     // State
     const [permit, setPermit] = useState<PassengerServicePermitResponse | null>(null);

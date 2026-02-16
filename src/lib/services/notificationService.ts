@@ -1,5 +1,3 @@
-import { getCookie } from '@/lib/utils/cookieUtils';
-
 const NOTIFICATION_API_BASE = process.env.NEXT_PUBLIC_NOTIFICATION_MANAGEMENT_API_URL || 'http://localhost:8080';
 
 export interface SendNotificationRequest {
@@ -59,9 +57,7 @@ export interface NotificationListItem {
 /**
  * Send a notification via the notification management service
  */
-export async function sendNotification(request: SendNotificationRequest): Promise<SendNotificationResponse> {
-    const authToken = getCookie('access_token');
-
+export async function sendNotification(request: SendNotificationRequest, authToken: string): Promise<SendNotificationResponse> {
     if (!authToken) {
         throw new Error('Authentication token not found. Please log in again.');
     }
@@ -86,9 +82,7 @@ export async function sendNotification(request: SendNotificationRequest): Promis
 /**
  * Get notification details by ID
  */
-export async function getNotificationDetails(notificationId: string): Promise<NotificationDetails> {
-    const authToken = getCookie('access_token');
-
+export async function getNotificationDetails(notificationId: string, authToken: string): Promise<NotificationDetails> {
     if (!authToken) {
         throw new Error('Authentication token not found. Please log in again.');
     }
@@ -113,11 +107,10 @@ export async function getNotificationDetails(notificationId: string): Promise<No
 /**
  * List recent notifications
  */
-export async function listNotifications(limit: number = 50): Promise<NotificationListItem[]> {
-    const authToken = getCookie('access_token');
-
+export async function listNotifications(limit: number = 50, authToken?: string): Promise<NotificationListItem[]> {
     if (!authToken) {
-        throw new Error('Authentication token not found. Please log in again.');
+        // throw new Error('Authentication token not found. Please log in again.');
+        return [];
     }
 
     const response = await fetch(`${NOTIFICATION_API_BASE}/api/notifications/list?limit=${limit}`, {
@@ -149,8 +142,7 @@ export async function listNotifications(limit: number = 50): Promise<Notificatio
 }
 
 /** Delete a notification by id */
-export async function deleteNotification(notificationId: string): Promise<void> {
-    const authToken = getCookie('access_token');
+export async function deleteNotification(notificationId: string, authToken: string): Promise<void> {
     if (!authToken) {
         throw new Error('Authentication token not found. Please log in again.');
     }

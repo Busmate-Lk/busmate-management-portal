@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { ArrowLeft, Edit, Save, Shield, Clock, Activity, Settings, Bus, Users, Route } from "lucide-react"
-import { uploadImage } from "@/supabase/storage/clients"
+// import { uploadImage } from "@/supabase/storage/clients"
 
 
 
@@ -19,18 +19,18 @@ export function OperatorProfile() {
 
   const handlePhotoChange =async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setUploading(true);
-      // Replace 'avatars' with your Supabase bucket name, and 'profile' with your folder if needed
-      const { imageUrl, error } = await uploadImage({ file, bucket: "profile-photos", folder: "profile_photo" });
-      setUploading(false);
-      if (imageUrl) {
-        console.log("Avatar image URL:", imageUrl);
-        setAvatarUrl(imageUrl);
-      } else {
-        alert(error || "Upload failed");
-      }
-    }
+    // if (file) {
+    //   setUploading(true);
+    //   // Replace 'avatars' with your Supabase bucket name, and 'profile' with your folder if needed
+    //   const { imageUrl, error } = await uploadImage({ file, bucket: "profile-photos", folder: "profile_photo" });
+    //   setUploading(false);
+    //   if (imageUrl) {
+    //     console.log("Avatar image URL:", imageUrl);
+    //     setAvatarUrl(imageUrl);
+    //   } else {
+    //     alert(error || "Upload failed");
+    //   }
+    // }
   };
   return (
     <div>

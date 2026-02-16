@@ -16,8 +16,7 @@ import {
   PassengerServicePermitResponse,
   TripRequest,
 } from '../../../../../generated/api-clients/route-management';
-import { getUserFromToken } from '@/lib/utils/jwtHandler';
-import { getCookie } from '@/lib/utils/cookieUtils';
+import { useAsgardeo } from '@asgardeo/nextjs';
 import { userManagementClient } from '@/lib/api/client';
 
 // Import our custom components
@@ -32,7 +31,6 @@ import { BusReassignmentModal } from '@/components/timeKeeper/trips/BusReassignm
 import { TripStatusChangeModal } from '@/components/timeKeeper/trips/TripStatusChangeModal';
 import { TripNotesModal } from '@/components/timeKeeper/trips/TripNotesModal';
 import { TimeKeeperTripContextMenu } from '@/components/timeKeeper/trip-assignment-workspace/components/TimeKeeperTripContextMenu';
-import { useAuth } from '@/context/AuthContext';
 
 interface QueryParams {
   page: number;
@@ -83,6 +81,7 @@ interface FilterOptions {
 function TimeKeeperTripsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user, getAccessToken } = useAsgardeo();
   const [trips, setTrips] = useState<TripResponse[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -273,29 +272,20 @@ function TimeKeeperTripsContent() {
   useEffect(() => {
     const fetchAssignedBusStop = async () => {
       try {
-        // Step 1: Get access token from cookies
-        const accessToken = getCookie('access_token');
-
-        if (!accessToken) {
-          throw new Error('No access token found. Please log in again.');
+        if (!user?.sub) {
+          throw new Error('User not authenticated. Please log in again.');
         }
 
-        // Step 2: Extract user ID from JWT token
-        const userFromToken = getUserFromToken(accessToken);
-
-        if (!userFromToken?.id) {
-          throw new Error('Invalid access token. Please log in again.');
-        }
-
-        const extractedUserId = userFromToken.id;
+        const extractedUserId = user.sub;
         setUserId(extractedUserId);
 
-        console.log('Extracted User ID from token:', extractedUserId);
+        console.log('Extracted User ID from Asgardeo:', extractedUserId);
 
-        // Step 3: Fetch timekeeper profile to get assigned_stand
-        // Endpoint: GET /api/timekeeper/{userId} or /api/users/{userId}/profile
+        // Fetch timekeeper profile to get assigned_stand
+        const token = await getAccessToken?.();
         const timekeeperResponse = await userManagementClient.get(
-          `/api/timekeeper/profile/${extractedUserId}`
+          `/api/timekeeper/profile/${extractedUserId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         const timekeeperData = timekeeperResponse.data;
@@ -323,7 +313,7 @@ function TimeKeeperTripsContent() {
     };
 
     fetchAssignedBusStop();
-  }, []);
+  }, [user]);
 
   // Load filter options
   const loadFilterOptions = useCallback(async () => {

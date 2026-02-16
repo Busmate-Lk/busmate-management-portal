@@ -1,6 +1,6 @@
 "use client"
 
-import { Header } from "@/components/operator/header"
+import { Header } from "@/components/shared/header"
 import { NotificationPanel } from "@/components/operator/notifications/notification-panel"
 
 export default function OperatorReceivedNotificationsPage() {

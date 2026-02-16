@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Header } from '@/components/operator/header'
+import { Header } from '@/components/shared/header'
 import { staffManagementService, StaffProfile } from '@/lib/services/staff-management-service'
-import { getCookie } from '@/lib/utils/cookieUtils'
+import { useAsgardeo } from '@asgardeo/nextjs'
 import {
     User,
     Mail,
@@ -23,6 +23,7 @@ import Link from 'next/link'
 export default function StaffProfilePage() {
     const params = useParams()
     const router = useRouter()
+    const { getAccessToken } = useAsgardeo()
     const staffId = params?.staffId as string
 
     const [staff, setStaff] = useState<StaffProfile | null>(null)
@@ -40,7 +41,7 @@ export default function StaffProfilePage() {
         const loadStaffProfile = async () => {
             try {
                 setIsLoading(true)
-                const token = getCookie('access_token') || ''
+                const token = await getAccessToken?.() || ''
 
                 // Try to load as conductor first, then driver
                 let profile = await staffManagementService.getStaffById(token, staffId, 'Conductor')
@@ -74,7 +75,7 @@ export default function StaffProfilePage() {
         }
 
         try {
-            const token = getCookie('access_token') || ''
+            const token = await getAccessToken?.() || ''
             await staffManagementService.deleteStaff(
                 token,
                 staff.userId,
@@ -91,7 +92,7 @@ export default function StaffProfilePage() {
         if (!staff) return
         try {
             setError(null)
-            const token = getCookie('access_token') || ''
+            const token = await getAccessToken?.() || ''
             const payload = {
                 fullName,
                 email,

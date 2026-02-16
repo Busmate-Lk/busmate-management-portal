@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import { Header } from '@/components/operator/header';
+import { useAsgardeo } from '@asgardeo/nextjs';
+import { Header } from '@/components/shared/header';
 import { FleetStatsCards } from '@/components/operator/fleet/FleetStatsCards';
 import { FleetActionButtons } from '@/components/operator/fleet/FleetActionButtons';
 import FleetAdvancedFilters from '@/components/operator/fleet/FleetAdvancedFilters';
@@ -28,7 +28,7 @@ interface QueryParams {
 
 export default function FleetManagement() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isSignedIn } = useAsgardeo();
   const [buses, setBuses] = useState<BusResponse[]>([]);
   const [busPermits, setBusPermits] = useState<Record<string, { permitNumber: string; permitType?: string } | null>>({});
   const [searchTerm, setSearchTerm] = useState('');
@@ -82,8 +82,8 @@ export default function FleetManagement() {
   // Get operator ID from authenticated user - use memoized value to prevent unnecessary re-renders
   const operatorId = useMemo(() => {
     // Only use fallback if user is definitely not authenticated
-    return user?.id || (isAuthenticated ? undefined : '11111111-1111-1111-1111-111111111112');
-  }, [user?.id, isAuthenticated]);
+    return user?.id || (isSignedIn ? undefined : '11111111-1111-1111-1111-111111111112');
+  }, [user?.id, isSignedIn]);
 
   // Load fleet data from API
   const loadFleet = useCallback(async () => {

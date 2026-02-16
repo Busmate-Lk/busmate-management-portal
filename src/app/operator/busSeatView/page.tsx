@@ -4,7 +4,7 @@ import { useState } from "react"
 import { ArrowLeft, ChevronDown, Printer } from "lucide-react"
 import { BusDetailsPanel } from "@/components/operator/bus-details-panel"
 import { BusSeatingMap } from "@/components/operator/bus-seating-map"
-import { Header } from "@/components/operator/header"
+import { Header } from "@/components/shared/header"
 
 export default function BusSeatView() {
   const [selectedBus, setSelectedBus] = useState("Bus #001")

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { X, Trash2, FileText, Calendar, PlusCircle } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
+import { useAsgardeo } from '@asgardeo/nextjs';
 import { BusPermitAssignmentService } from '../../../../generated/api-clients/route-management/services/BusPermitAssignmentService';
 import { BusOperatorOperationsService } from '../../../../generated/api-clients/route-management/services/BusOperatorOperationsService';
 import type { BusPassengerServicePermitAssignmentResponse } from '../../../../generated/api-clients/route-management/models/BusPassengerServicePermitAssignmentResponse';
@@ -17,7 +17,7 @@ interface PermitManagementModalProps {
 }
 
 export function PermitManagementModal({ isOpen, onClose, busId, busRegistration, onChanged }: PermitManagementModalProps) {
-    const { user } = useAuth();
+    const { user } = useAsgardeo();
     const operatorId = user?.id;
 
     const [assignments, setAssignments] = useState<BusPassengerServicePermitAssignmentResponse[]>([]);

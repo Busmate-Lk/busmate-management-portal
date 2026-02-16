@@ -10,11 +10,11 @@ import { TodaysBusesTable } from '@/components/timeKeeper/dashboard/todays-buses
 import { TripManagementService } from '../../../../../generated/api-clients/route-management/services/TripManagementService';
 import { BusStopManagementService } from '../../../../../generated/api-clients/route-management/services/BusStopManagementService';
 import { TripResponse } from '../../../../../generated/api-clients/route-management';
-import { getUserFromToken } from '@/lib/utils/jwtHandler';
-import { getCookie } from '@/lib/utils/cookieUtils';
+import { useAsgardeo } from '@asgardeo/nextjs';
 import { userManagementClient } from '@/lib/api/client';
 
 export default function TimeKeeperDashboard() {
+  const { user, isLoading: authLoading, getAccessToken } = useAsgardeo();
   const [todaysTrips, setTodaysTrips] = useState<TripResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [assignedBusStopName, setAssignedBusStopName] =
@@ -31,25 +31,17 @@ export default function TimeKeeperDashboard() {
   useEffect(() => {
     const fetchAssignedBusStop = async () => {
       try {
-        // Step 1: Get access token from cookies
-        const accessToken = getCookie('access_token');
-
-        if (!accessToken) {
-          throw new Error('No access token found. Please log in again.');
+        if (!user?.sub) {
+          throw new Error('User not authenticated. Please log in again.');
         }
 
-        // Step 2: Extract user ID from JWT token
-        const userFromToken = getUserFromToken(accessToken);
+        const extractedUserId = user.sub;
 
-        if (!userFromToken?.id) {
-          throw new Error('Invalid access token. Please log in again.');
-        }
-
-        const extractedUserId = userFromToken.id;
-
-        // Step 3: Fetch timekeeper profile to get assigned_stand
+        // Fetch timekeeper profile to get assigned_stand
+        const token = await getAccessToken?.();
         const timekeeperResponse = await userManagementClient.get(
-          `/api/timekeeper/profile/${extractedUserId}`
+          `/api/timekeeper/profile/${extractedUserId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
         );
 
         const timekeeperData = timekeeperResponse.data;
@@ -72,7 +64,7 @@ export default function TimeKeeperDashboard() {
     };
 
     fetchAssignedBusStop();
-  }, []);
+  }, [user]);
 
   // Load today's trips
   const loadTodaysTrips = useCallback(async () => {

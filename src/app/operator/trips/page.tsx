@@ -17,7 +17,7 @@ import { OperatorTripsTable } from '@/components/operator/trips/OperatorTripsTab
 
 // Import shared UI components
 import Pagination from '@/components/shared/Pagination';
-import { Header } from '@/components/operator/header';
+import { Header } from '@/components/shared/header';
 
 // Mock operator ID - In real implementation, this would come from auth context
 const MOCK_OPERATOR_ID = "8e886a71-445c-4e3a-8bc5-a17b5b2dad24";

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { NotificationDropdown } from "@/components/admin/notifications/notification-dropdown"
 import { User, LogOut, Settings } from "lucide-react"
 import Link from "next/link"
-import { useAuth } from "@/context/AuthContext"
+import { useAsgardeo } from '@asgardeo/nextjs'
 
 interface HeaderProps {
     title: string
@@ -21,7 +21,9 @@ interface HeaderProps {
 }
 
 export function Header({ title, description }: HeaderProps) {
-    const { user, logout, isLoading } = useAuth()
+    const { user, signOut, isLoading } = useAsgardeo()
+
+    const logout = signOut
 
     const getUserDisplayName = () => {
         if (!user) return "Admin User"

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { X, Search, Calendar, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { BusOperatorOperationsService, BusPermitAssignmentService } from '../../../../generated/api-clients/route-management';
 import type { PassengerServicePermitResponse, BusPassengerServicePermitAssignmentRequest } from '../../../../generated/api-clients/route-management';
-import { useAuth } from '@/context/AuthContext';
+import { useAsgardeo } from '@asgardeo/nextjs';
 
 interface BusPermitAssignmentModalProps {
   isOpen: boolean;
@@ -21,7 +21,7 @@ export function BusPermitAssignmentModal({
   busRegistration,
   onAssignmentCreated
 }: BusPermitAssignmentModalProps) {
-  const { user } = useAuth();
+  const { user } = useAsgardeo();
   const operatorId = user?.id || '11111111-1111-1111-1111-111111111112';
 
   // State

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { Header } from "@/components/operator/header"
+import { Header } from "@/components/shared/header"
 import { 
   KPICards,
   LiveFleetStatus,

@@ -1,6 +1,6 @@
 "use client"
 import { Sidebar } from "@/components/operator/sidebar"
-import { Header } from "@/components/operator/header"
+import { Header } from "@/components/shared/header"
 import { EditBusDetailsForm } from "@/components/operator/edit-bus-details-form"
 import { ChevronRight } from "lucide-react"
 

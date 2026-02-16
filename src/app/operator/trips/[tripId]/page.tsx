@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Header } from '@/components/operator/header';
+import { Header } from '@/components/shared/header';
 import { TripManagementService } from '../../../../../generated/api-clients/route-management/services/TripManagementService';
 import { RouteManagementService } from '../../../../../generated/api-clients/route-management/services/RouteManagementService';
 import { ScheduleManagementService } from '../../../../../generated/api-clients/route-management/services/ScheduleManagementService';

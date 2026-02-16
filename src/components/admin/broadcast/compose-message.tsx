@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Bold, Italic, Underline, Link, List, Calendar, Clock, Send, Save, ArrowLeft, Loader2 } from "lucide-react"
 import { usePathname, useRouter } from "next/navigation"
+import { useAsgardeo } from '@asgardeo/nextjs'
 import { sendNotification } from "@/lib/services/notificationService"
 import type { SendNotificationRequest } from "@/lib/services/notificationService"
 import { toast } from "@/hooks/use-toast"
@@ -18,6 +19,7 @@ import { toast } from "@/hooks/use-toast"
 export function ComposeMessage() {
   const router = useRouter()
   const pathname = usePathname()
+  const { getAccessToken } = useAsgardeo()
   const [messageType, setMessageType] = useState<"info" | "warning" | "critical" | "maintenance">("info")
   const [scheduling, setScheduling] = useState("now")
   const [allUsers, setAllUsers] = useState(false)
@@ -103,7 +105,8 @@ export function ComposeMessage() {
       request.city = city || 'all'
       request.route = route || 'all'
 
-      const response = await sendNotification(request)
+      const token = await getAccessToken?.()
+      const response = await sendNotification(request, token || '')
       setLastResponse({ notificationId: response.notificationId, stats: response.stats })
 
       toast({

@@ -8,7 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/compon
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { listNotifications, type NotificationListItem } from "@/lib/services/notificationService"
-import { useAuth } from "@/context/AuthContext"
+import { useAsgardeo } from '@asgardeo/nextjs'
 
 interface Notification {
   id: string
@@ -35,7 +35,7 @@ function toRelativeTime(dateStr?: string) {
 
 export function NotificationDropdown() {
   const router = useRouter()
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, getAccessToken } = useAsgardeo()
   const [isOpen, setIsOpen] = useState(false)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(false)
@@ -46,7 +46,8 @@ export function NotificationDropdown() {
     const fetchNotifications = async () => {
       try {
         setLoading(true)
-        const data = await listNotifications(5) // Get latest 5 notifications
+        const token = await getAccessToken?.()
+        const data = await listNotifications(5, token || undefined) // Get latest 5 notifications
         if (mounted) {
           // Admin doesn't see their own messages or other admin-sent messages in received
           const filtered = data.filter(n => {

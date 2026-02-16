@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Sidebar } from "@/components/operator/sidebar"
-import { Header } from "@/components/operator/header"
+import { Header } from "@/components/shared/header"
 import { RouteDetailsForm } from "@/components/operator/route-details-form"
 import { RoutePreview } from "@/components/operator/route-preview"
 import { ResourceAssignment } from "@/components/operator/resource-assignment"

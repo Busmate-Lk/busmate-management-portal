@@ -2,9 +2,10 @@
 
 import { Bus, ChevronDown, Bell, User, LogOut } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
-import { useAuth } from "@/context/AuthContext"
 import { usePathname, useRouter } from "next/navigation"
+import Link from "next/link"
 import { listNotifications, type NotificationListItem } from "@/lib/services/notificationService"
+import { useAsgardeo } from '@asgardeo/nextjs';
 
 interface HeaderProps {
   pageTitle?: string
@@ -39,7 +40,9 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const [isNotificationOpen, setIsNotificationOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
-  const { user, logout, isLoading } = useAuth()
+  const { user, isLoading, isSignedIn, signOut, getAccessToken } = useAsgardeo();
+
+  const logout = signOut;
   const router = useRouter()
   const pathname = usePathname()
 
@@ -62,15 +65,24 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
         setLoading(true)
         // const data = await listNotifications(5) // Get latest 5 notifications
         // use empty notifications array instead of real backend api for dev period
-        const data: NotificationListItem[] = []
+        const token = await getAccessToken?.()
+        const data = await listNotifications(5, token || undefined) // Get latest 5 notifications
 
         if (mounted) {
           // Filter based on role and map to our Notification interface
+          const isOperator = pathname?.startsWith("/operator")
           const isMot = pathname?.startsWith("/mot")
           const isAdmin = pathname?.startsWith("/admin")
+          const isTimeKeeper = pathname?.startsWith("/timeKeeper")
 
           let filtered = data
-          if (isMot) {
+          if (isOperator) {
+            // Operator only sees messages targeted to fleet_operators or all
+            filtered = data.filter(n => {
+              const ta = (n.targetAudience || '').toLowerCase()
+              return ta === 'fleet_operators' || ta === 'all'
+            })
+          } else if (isMot) {
             // MoT only sees admin-sent messages to mot or all
             filtered = data.filter(n => {
               const senderOk = (n.senderRole || '').toLowerCase() === 'admin'
@@ -85,7 +97,19 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
               const isMine = n.adminId && user?.id ? n.adminId === user.id : false
               return !isAdminSender && !isMine
             })
+          } else if (isTimeKeeper) {
+            // TimeKeeper sees messages targeted to timekeepers or all
+            filtered = data.filter(n => {
+              const ta = (n.targetAudience || '').toLowerCase()
+              return ta === 'timekeepers' || ta === 'all'
+            })
           }
+
+          // Determine base path for redirect
+          let basePath = '/admin'
+          if (isOperator) basePath = '/operator'
+          else if (isMot) basePath = '/mot'
+          else if (isTimeKeeper) basePath = '/timeKeeper'
 
           const mapped: Notification[] = filtered.map(n => ({
             id: n.notificationId,
@@ -93,7 +117,7 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
             message: n.body,
             time: toRelativeTime(n.createdAt),
             type: (n.messageType || 'info') as any,
-            redirectUrl: `${pathname?.startsWith('/mot') ? '/mot' : '/admin'}/notifications/detail/${n.notificationId}`,
+            redirectUrl: `${basePath}/notifications/detail/${n.notificationId}`,
             isRead: false // We can track this locally or from backend if available
           }))
 
@@ -109,14 +133,14 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
     if (user && !isLoading) {
       fetchNotifications()
       // Poll for new notifications every 30 seconds
-      const interval = setInterval(fetchNotifications, 5000)
+      const interval = setInterval(fetchNotifications, 30000)
       return () => {
         mounted = false
         clearInterval(interval)
       }
     }
     return () => { mounted = false }
-  }, [user, isLoading, pathname])
+  }, [user, isLoading, pathname, getAccessToken])
 
   const unreadCount = notifications.filter(n => !n.isRead).length
 
@@ -163,18 +187,23 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
     }
   }
 
-  const getUserDisplayName = () => {
+  const getUserFullName = () => {
     if (!user) return "User"
 
-    // Extract first name from email or use email
-    const emailName = user.email.split('@')[0]
-    return emailName.charAt(0).toUpperCase() + emailName.slice(1)
+    const fullName = user?.name?.givenName + ' ' + user?.name?.familyName;
+    return fullName;
+  }
+
+  const getUserFirstName = () => {
+    if (!user) return "User"
+    const firstName = user?.name?.firstName || user?.name?.givenName || "User";
+    return firstName;
   }
 
   const getUserInitials = () => {
     if (!user) return "U"
 
-    const displayName = getUserDisplayName()
+    const displayName = getUserFullName()
     const parts = displayName.split(' ')
     if (parts.length >= 2) {
       return (parts[0][0] + parts[1][0]).toUpperCase()
@@ -195,7 +224,7 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
       case 'mot':
         return 'MOT Official'
       default:
-        return role || 'User'
+        return role || 'MOT'
     }
   }
 
@@ -214,7 +243,11 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
   }
 
   const handleViewAllNotifications = () => {
-    const base = pathname?.startsWith('/mot') ? '/mot' : '/admin'
+    let base = '/admin'
+    if (pathname?.startsWith('/operator')) base = '/operator'
+    else if (pathname?.startsWith('/mot')) base = '/mot'
+    else if (pathname?.startsWith('/timeKeeper')) base = '/timeKeeper'
+    
     router.push(`${base}/notifications/received`)
     setIsNotificationOpen(false)
   }
@@ -280,10 +313,17 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
               <h1 className="text-2xl font-bold text-gray-900">{pageTitle}</h1>
               {pageDescription && <p className="text-sm text-slate-600 mt-0.5">{pageDescription}</p>}
             </>
+          ) : pathname?.startsWith('/operator') ? (
+            <>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Mandakini Travels PVT LTD
+              </h1>
+              <p className="text-sm text-slate-600 mt-0.5">Fleet Management System</p>
+            </>
           ) : (
             <>
               <h1 className="text-2xl font-bold text-gray-900">
-                {getGreeting()}, {getUserDisplayName()}!
+                {getGreeting()}, {getUserFirstName()}!
               </h1>
               <p className="text-sm text-slate-600 mt-0.5">Welcome back to BUSMATE LK Transportation Dashboard</p>
             </>
@@ -291,22 +331,6 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-4">
-
-          {/* Toggle to switch between real API and mock data - for demo purposes */}
-          {pageTitle === "MOT Admin Dashboard" && (
-            <div className="flex items-center">
-              <label className="inline-flex items-center">
-                <input
-                  type="checkbox"
-                  // checked={useRealApi}
-                  // onChange={(e) => setUseRealApi(e.target.checked)}
-                  className="form-checkbox h-4 w-4 text-blue-600"
-                />
-                <span className="ml-2 text-sm text-gray-700">Use Real API</span>
-              </label>
-            </div>
-          )}
-
           {/* Notifications */}
           <div className="relative" ref={notificationRef}>
             <button
@@ -408,7 +432,7 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
                 <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full border-2 border-white"></div>
               </div>
               <div className="hidden md:block text-left">
-                <div className="text-sm font-medium text-gray-900">{getUserDisplayName()}</div>
+                <div className="text-sm font-medium text-gray-900">{getUserFirstName()}</div>
                 <div className="text-xs text-slate-500">
                   {user ? getRoleDisplayName(user.user_role) : 'User'}
                 </div>
@@ -424,16 +448,30 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
                       <span className="text-white text-sm font-semibold">{getUserInitials()}</span>
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">{getUserDisplayName()}</p>
-                      <p className="text-sm text-gray-500">{user?.email || "user@busmate.lk"}</p>
+                      <p className="font-medium text-gray-900">{getUserFullName()}</p>
+                      <p className="text-sm text-gray-500 truncate max-w-[120px]" title={user?.userName || "user@busmate.lk"}>
+                        {(user?.userName || "user@busmate.lk").length > 10 
+                          ? (user?.userName || "user@busmate.lk").substring(0, 10) + '....' 
+                          : (user?.userName || "user@busmate.lk")}
+                      </p>
                     </div>
                   </div>
                 </div>
 
-                <button className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                  <User className="w-4 h-4" />
-                  View Profile
-                </button>
+                {pathname?.startsWith('/operator') ? (
+                  <Link
+                    href="/operator/profile"
+                    className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    <User className="w-4 h-4" />
+                    View Profile
+                  </Link>
+                ) : (
+                  <button className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                    <User className="w-4 h-4" />
+                    View Profile
+                  </button>
+                )}
                 <button
                   className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   onClick={handleLogout}

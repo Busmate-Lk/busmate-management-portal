@@ -1,4 +1,4 @@
-import { Header } from "@/components/operator/header"
+import { Header } from "@/components/shared/header"
 import { OperatorProfile } from "@/components/operator/profile"
 
 export default function ProfilePage() {

@@ -9,7 +9,7 @@ import {
   ChevronRight,
   FileText
 } from 'lucide-react';
-import { Header } from '@/components/operator/header';
+import { Header } from '@/components/shared/header';
 import { OperatorPermitStatsCards } from '@/components/operator/permits/OperatorPermitStatsCards';
 import { OperatorPermitFilters } from '@/components/operator/permits/OperatorPermitFilters';
 import { OperatorPermitsTable } from '@/components/operator/permits/OperatorPermitsTable';
@@ -18,7 +18,7 @@ import {
   BusOperatorOperationsService,
   PassengerServicePermitResponse
 } from '../../../../generated/api-clients/route-management';
-import { useAuth } from '@/context/AuthContext';
+import { useAsgardeo } from '@asgardeo/nextjs';
 
 interface PermitFilters {
   search: string;
@@ -41,7 +41,7 @@ interface SortState {
 function OperatorPassengerServicePermitsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user } = useAuth();
+  const { user } = useAsgardeo();
 
   // Data states
   const [permits, setPermits] = useState<PassengerServicePermitResponse[]>([]);
