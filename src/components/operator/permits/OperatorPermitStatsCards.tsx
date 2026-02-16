@@ -33,7 +33,7 @@ export function OperatorPermitStatsCards({ stats, loading = false }: OperatorPer
       {/* Total Permits */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
               <FileText className="w-5 h-5 text-blue-600" />
             </div>
@@ -56,7 +56,7 @@ export function OperatorPermitStatsCards({ stats, loading = false }: OperatorPer
       {/* Active Permits */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
               <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
@@ -79,7 +79,7 @@ export function OperatorPermitStatsCards({ stats, loading = false }: OperatorPer
       {/* Inactive Permits */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
               <XCircle className="w-5 h-5 text-gray-600" />
             </div>
@@ -102,7 +102,7 @@ export function OperatorPermitStatsCards({ stats, loading = false }: OperatorPer
       {/* Expiring Soon */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
               <Clock className="w-5 h-5 text-orange-600" />
             </div>
@@ -125,7 +125,7 @@ export function OperatorPermitStatsCards({ stats, loading = false }: OperatorPer
       {/* Route Groups Covered */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
               <Calendar className="w-5 h-5 text-purple-600" />
             </div>
@@ -148,7 +148,7 @@ export function OperatorPermitStatsCards({ stats, loading = false }: OperatorPer
       {/* Compliance Status */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
               expiringSoonCount > 0 ? 'bg-red-100' : 'bg-green-100'
             }`}>

@@ -38,7 +38,7 @@ export function MotAdminProfile({ userId }: MotAdminProfileProps) {
       </div>
 
       {/* Profile Header */}
-      <Card className="mb-6 shadow-lg bg-gradient-to-br from-white to-gray-50">
+      <Card className="mb-6 shadow-lg bg-linear-to-br from-white to-gray-50">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -87,8 +87,8 @@ export function MotAdminProfile({ userId }: MotAdminProfileProps) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Employment Information */}
-        <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-          <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+        <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+          <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
             <CardTitle>Employment Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -140,8 +140,8 @@ export function MotAdminProfile({ userId }: MotAdminProfileProps) {
 
         {/* Security & System Access */}
         <div className="space-y-6">
-          <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+          <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+            <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
               <CardTitle>Security Status</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -166,8 +166,8 @@ export function MotAdminProfile({ userId }: MotAdminProfileProps) {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+          <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+            <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
               <CardTitle>System Access Overview</CardTitle>
             </CardHeader>
             <CardContent>
@@ -195,8 +195,8 @@ export function MotAdminProfile({ userId }: MotAdminProfileProps) {
 
         {/* Recent Activities & Admin Actions */}
         <div className="space-y-6">
-          <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+          <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+            <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
               <CardTitle>Recent System Activities</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -224,8 +224,8 @@ export function MotAdminProfile({ userId }: MotAdminProfileProps) {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+          <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+            <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
               <CardTitle className="flex items-center">⚙️ Admin Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">

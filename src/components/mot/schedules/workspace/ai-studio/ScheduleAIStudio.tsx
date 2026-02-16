@@ -245,7 +245,7 @@ export default function ScheduleAIStudio() {
   return (
     <div className="flex flex-col h-full bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-violet-50 to-purple-50 border-b border-slate-200">
+      <div className="flex items-center justify-between px-5 py-4 bg-linear-to-r from-violet-50 to-purple-50 border-b border-slate-200">
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-violet-600" />
           <h2 className="text-sm font-semibold text-slate-700">AI Schedule Studio</h2>
@@ -328,7 +328,7 @@ export default function ScheduleAIStudio() {
         {/* Route Context Warning */}
         {!hasRouteSelected && (
           <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-amber-800">Route Required</p>
               <p className="text-sm text-amber-700">
@@ -393,7 +393,7 @@ export default function ScheduleAIStudio() {
         {generation.error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <div>
                 <p className="font-medium text-red-800">Generation Failed</p>
                 <p className="text-sm text-red-700 mt-1">{generation.error}</p>

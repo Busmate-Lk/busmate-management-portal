@@ -39,7 +39,7 @@ export function PassengerProfile({ userId }: PassengerProfileProps) {
       </div>
 
       {/* Profile Header */}
-      <Card className="mb-6 shadow-lg bg-gradient-to-br from-white to-gray-50">
+      <Card className="mb-6 shadow-lg bg-linear-to-br from-white to-gray-50">
         <CardContent className="p-6">
           <div className="flex items-center space-x-4">
             <div className="relative">
@@ -117,7 +117,7 @@ export function PassengerProfile({ userId }: PassengerProfileProps) {
               <p className="font-medium">Sinhala</p>
             </div>
 
-            <div className="pt-4 mt-4 bg-gradient-to-r from-gray-50 to-white rounded-lg p-4 shadow-sm">
+            <div className="pt-4 mt-4 bg-linear-to-r from-gray-50 to-white rounded-lg p-4 shadow-sm">
               <h4 className="font-medium mb-3 flex items-center">📍 Address Information</h4>
               <div className="space-y-3">
                 <div>
@@ -131,7 +131,7 @@ export function PassengerProfile({ userId }: PassengerProfileProps) {
               </div>
             </div>
 
-            <div className="pt-4 mt-4 bg-gradient-to-r from-gray-50 to-white rounded-lg p-4 shadow-sm">
+            <div className="pt-4 mt-4 bg-linear-to-r from-gray-50 to-white rounded-lg p-4 shadow-sm">
               <h4 className="font-medium mb-3 flex items-center">📱 Device Information</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
@@ -153,8 +153,8 @@ export function PassengerProfile({ userId }: PassengerProfileProps) {
 
         {/* Travel Statistics & Payment */}
         <div className="space-y-6">
-          <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+          <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+            <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
               <CardTitle className="flex items-center">📊 Travel Statistics</CardTitle>
             </CardHeader>
             <CardContent>
@@ -179,8 +179,8 @@ export function PassengerProfile({ userId }: PassengerProfileProps) {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+          <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+            <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
               <CardTitle className="flex items-center">💳 Payment & Wallet</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -222,8 +222,8 @@ export function PassengerProfile({ userId }: PassengerProfileProps) {
 
         {/* Recent Activity & Admin Actions */}
         <div className="space-y-6">
-          <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+          <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+            <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
               <CardTitle className="flex items-center">📋 Recent Bookings</CardTitle>
             </CardHeader>
             <CardContent>
@@ -270,8 +270,8 @@ export function PassengerProfile({ userId }: PassengerProfileProps) {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+          <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+            <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
               <CardTitle className="flex items-center">📈 Activity Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
@@ -298,8 +298,8 @@ export function PassengerProfile({ userId }: PassengerProfileProps) {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+          <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+            <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
               <CardTitle className="flex items-center">⚙️ Admin Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">

@@ -334,8 +334,8 @@ export function BusDetails({ fleetId, busId }: BusDetailsProps) {
             </Card>
 
             {/* Insurance & Compliance */}
-            <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+            <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+              <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
                 <CardTitle className="flex items-center">
                   <Shield className="h-5 w-5 mr-2 text-orange-600" />
                   Insurance & Service
@@ -367,8 +367,8 @@ export function BusDetails({ fleetId, busId }: BusDetailsProps) {
         <TabsContent value="crew" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Driver Information */}
-            <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+            <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+              <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
                 <CardTitle className="flex items-center">
                   <User className="h-5 w-5 mr-2 text-blue-600" />
                   Driver Information
@@ -437,8 +437,8 @@ export function BusDetails({ fleetId, busId }: BusDetailsProps) {
             </Card>
 
             {/* Conductor Information */}
-            <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+            <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+              <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
                 <CardTitle className="flex items-center">
                   <UserCheck className="h-5 w-5 mr-2 text-green-600" />
                   Conductor Information
@@ -510,8 +510,8 @@ export function BusDetails({ fleetId, busId }: BusDetailsProps) {
 
         {/* Maintenance Tab */}
         <TabsContent value="maintenance" className="space-y-6">
-          <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+          <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+            <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center">
                   <Wrench className="h-5 w-5 mr-2 text-orange-600" />
@@ -558,8 +558,8 @@ export function BusDetails({ fleetId, busId }: BusDetailsProps) {
 
         {/* Recent Trips Tab */}
         <TabsContent value="trips" className="space-y-6">
-          <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
-            <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+          <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
+            <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
               <CardTitle className="flex items-center">
                 <Clock className="h-5 w-5 mr-2 text-blue-600" />
                 Recent Trips
@@ -604,28 +604,28 @@ export function BusDetails({ fleetId, busId }: BusDetailsProps) {
         {/* Performance Tab */}
         <TabsContent value="performance" className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
+            <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
               <CardContent className="p-6 text-center">
                 <DollarSign className="h-8 w-8 text-green-600 mx-auto mb-2" />
                 <div className="text-2xl font-bold text-green-600">{busData.monthlyRevenue}</div>
                 <div className="text-sm text-gray-600">Monthly Revenue</div>
               </CardContent>
             </Card>
-            <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
+            <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
               <CardContent className="p-6 text-center">
                 <Fuel className="h-8 w-8 text-blue-600 mx-auto mb-2" />
                 <div className="text-2xl font-bold text-blue-600">{busData.fuelEfficiency}</div>
                 <div className="text-sm text-gray-600">Fuel Efficiency</div>
               </CardContent>
             </Card>
-            <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
+            <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
               <CardContent className="p-6 text-center">
                 <TrendingUp className="h-8 w-8 text-orange-600 mx-auto mb-2" />
                 <div className="text-2xl font-bold text-orange-600">{busData.averageSpeed}</div>
                 <div className="text-sm text-gray-600">Average Speed</div>
               </CardContent>
             </Card>
-            <Card className="shadow-lg bg-gradient-to-br from-white to-gray-50">
+            <Card className="shadow-lg bg-linear-to-br from-white to-gray-50">
               <CardContent className="p-6 text-center">
                 <Clock className="h-8 w-8 text-purple-600 mx-auto mb-2" />
                 <div className="text-2xl font-bold text-purple-600">{busData.dailyTrips}</div>

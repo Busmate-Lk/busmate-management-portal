@@ -253,7 +253,7 @@ export function RouteDetailsPanel({ routes }: RouteDetailsPanelProps) {
                 {selectedRoute.routeThrough && (
                   <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
                     <div className="flex items-start gap-3">
-                      <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                      <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                       <div>
                         <div className="text-sm font-medium text-blue-900">Route Through</div>
                         <p className="text-sm text-blue-700 mt-0.5">{selectedRoute.routeThrough}</p>
@@ -279,7 +279,7 @@ export function RouteDetailsPanel({ routes }: RouteDetailsPanelProps) {
                   
                   <div className="relative">
                     {/* Timeline line */}
-                    <div className="absolute left-4 top-6 bottom-6 w-0.5 bg-gradient-to-b from-emerald-400 via-gray-200 to-red-400" />
+                    <div className="absolute left-4 top-6 bottom-6 w-0.5 bg-linear-to-b from-emerald-400 via-gray-200 to-red-400" />
 
                     <div className="space-y-0">
                       {getOrderedStops(selectedRoute).map((stop, index) => {

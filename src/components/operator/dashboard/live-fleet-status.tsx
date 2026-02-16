@@ -82,13 +82,13 @@ export function LiveFleetStatus({ buses }: LiveFleetStatusProps) {
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 min-w-0">
                   {/* Location */}
                   <div className="flex items-center space-x-2">
-                    <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                    <MapPin className="h-4 w-4 text-gray-500 shrink-0" />
                     <span className="text-sm text-gray-700 truncate">{bus.location}</span>
                   </div>
 
                   {/* Fuel Level */}
                   <div className="flex items-center space-x-2">
-                    <Fuel className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                    <Fuel className="h-4 w-4 text-gray-500 shrink-0" />
                     <div className="flex items-center space-x-2">
                       <div className="w-16 h-2 bg-gray-200 rounded-full">
                         <div
@@ -107,7 +107,7 @@ export function LiveFleetStatus({ buses }: LiveFleetStatusProps) {
 
                   {/* Staff */}
                   <div className="flex items-center space-x-2">
-                    <User className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                    <User className="h-4 w-4 text-gray-500 shrink-0" />
                     <div className="text-sm text-gray-700 truncate">
                       {bus.driver && bus.conductor
                         ? `${bus.driver.split(' ')[0]} / ${bus.conductor.split(' ')[0]}`

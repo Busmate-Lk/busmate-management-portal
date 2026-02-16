@@ -36,7 +36,7 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 to-purple-900">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-900 to-purple-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
           <div className="text-white text-lg">Loading...</div>
@@ -61,7 +61,7 @@ export default function Home() {
         ></div>
 
         {/* Enhanced overlay for better contrast on the right side */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-gray-900/70"></div>
+        <div className="absolute inset-0 bg-linear-to-r from-transparent via-transparent to-gray-900/70"></div>
       </div>
 
       {/* Login Form - positioned on the right with enhanced visibility */}

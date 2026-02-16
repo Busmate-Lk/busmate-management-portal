@@ -233,7 +233,7 @@ export function NotificationPanel() {
           >
             <CardContent className="p-6">
               <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0 mt-1">
+                <div className="shrink-0 mt-1">
                   <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${(n.messageType || 'info').toLowerCase() === 'error' || (n.messageType || 'info').toLowerCase() === 'critical'
                       ? 'bg-red-100 text-red-600'
                       : (n.messageType || 'info').toLowerCase() === 'warning'

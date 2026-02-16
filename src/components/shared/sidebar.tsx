@@ -204,7 +204,7 @@ export function Sidebar({
             }`}
           >
             {!isCollapsed ? (
-              <div className="bg-blue-800 rounded-lg flex-shrink-0 flex items-center justify-center">
+              <div className="bg-blue-800 rounded-lg shrink-0 flex items-center justify-center">
                 <Image
                   src="/busmate-logo-icon.png"
                   alt="Busmate LK Logo"
@@ -262,7 +262,7 @@ export function Sidebar({
               
               {/* Icon with enhanced styling */}
               <div
-                className={`flex-shrink-0 transition-all duration-200 ${
+                className={`shrink-0 transition-all duration-200 ${
                   item.active
                     ? 'text-blue-600 scale-110'
                     : 'text-blue-100 group-hover:text-white group-hover:scale-105'

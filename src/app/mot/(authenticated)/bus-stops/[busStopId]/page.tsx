@@ -394,7 +394,7 @@ export default function BusStopDetailsPage({ params }: BusStopDetailsPageProps) 
         <div className="mx-auto">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <div className="flex items-start">
-              <AlertCircle className="w-6 h-6 text-red-400 mt-0.5 mr-3 flex-shrink-0" />
+              <AlertCircle className="w-6 h-6 text-red-400 mt-0.5 mr-3 shrink-0" />
               <div className="flex-1">
                 <h3 className="text-lg font-medium text-red-800">Error Loading Bus Stop</h3>
                 <p className="text-red-700 mt-1">{error || 'Bus stop not found'}</p>

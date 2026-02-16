@@ -49,7 +49,7 @@ export function AddMotForm() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-screen-2xl mx-auto p-6">
+      <div className="max-w-(--breakpoint-2xl) mx-auto p-6">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
@@ -266,7 +266,7 @@ export function AddMotForm() {
 
             {/* System Access & Permissions */}
             {/* <Card className="shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+              <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
                 <div className="flex items-center space-x-3">
                   <div className="p-2 bg-purple-100 rounded-lg">
                     <Shield className="h-5 w-5 text-purple-600" />
@@ -483,19 +483,19 @@ export function AddMotForm() {
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-left">
                       <ul className="text-xs text-amber-700 space-y-2">
                         <li className="flex items-start">
-                          <span className="w-1 h-1 bg-amber-600 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                          <span className="w-1 h-1 bg-amber-600 rounded-full mt-2 mr-2 shrink-0"></span>
                           Password must be 8+ characters
                         </li>
                         <li className="flex items-start">
-                          <span className="w-1 h-1 bg-amber-600 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                          <span className="w-1 h-1 bg-amber-600 rounded-full mt-2 mr-2 shrink-0"></span>
                           Must include uppercase, lowercase, number
                         </li>
                         <li className="flex items-start">
-                          <span className="w-1 h-1 bg-amber-600 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                          <span className="w-1 h-1 bg-amber-600 rounded-full mt-2 mr-2 shrink-0"></span>
                           2FA required for Administrator access
                         </li>
                         <li className="flex items-start">
-                          <span className="w-1 h-1 bg-amber-600 rounded-full mt-2 mr-2 flex-shrink-0"></span>
+                          <span className="w-1 h-1 bg-amber-600 rounded-full mt-2 mr-2 shrink-0"></span>
                           Account expires in 90 days if unused
                         </li>
                       </ul>

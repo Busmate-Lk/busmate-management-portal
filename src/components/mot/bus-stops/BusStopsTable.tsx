@@ -165,7 +165,7 @@ export function BusStopsTable({
               <tr key={stop.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10">
+                    <div className="shrink-0 h-10 w-10">
                       <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
                         <MapPin className="h-5 w-5 text-blue-600" />
                       </div>

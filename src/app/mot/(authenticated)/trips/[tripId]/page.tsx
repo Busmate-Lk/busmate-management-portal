@@ -218,7 +218,7 @@ export default function TripDetailsPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="h-[100vh] bg-gray-50">
+      <div className="h-screen bg-gray-50">
         <Layout 
           activeItem="trips" 
           pageTitle="Trip Details" 
@@ -237,7 +237,7 @@ export default function TripDetailsPage() {
   // Error state
   if (error || !trip) {
     return (
-      <div className="h-[100vh] bg-gray-50">
+      <div className="h-screen bg-gray-50">
         <Layout 
           activeItem="trips" 
           pageTitle="Trip Details" 
@@ -269,7 +269,7 @@ export default function TripDetailsPage() {
   }
 
   return (
-    <div className="h-[100vh] bg-gray-50">
+    <div className="h-screen bg-gray-50">
       <Layout 
         activeItem="trips" 
         pageTitle={`Trip Details - ${trip.routeName || 'Unknown Route'}`}

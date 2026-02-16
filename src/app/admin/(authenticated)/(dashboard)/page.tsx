@@ -11,7 +11,7 @@ export default function DashboardPage() {
         <StatsCards />
         {/* User Growth Chart */}
         <div className="mt-8 mb-8">
-          <div className="bg-white rounded-lg shadow-lg bg-gradient-to-br from-purple-50 to-white p-6">
+          <div className="bg-white rounded-lg shadow-lg bg-linear-to-br from-purple-50 to-white p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">User Growth Trends</h3>
             <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center shadow-inner">
               <div className="w-full h-full flex items-center justify-center">

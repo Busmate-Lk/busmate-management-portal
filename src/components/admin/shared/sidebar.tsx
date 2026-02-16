@@ -51,7 +51,7 @@ export function Sidebar() {
         <div className="flex items-center justify-between w-full">
           <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
             {!isCollapsed && (
-              <div className="bg-blue-800 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ width: 48, height: 48 }}>
+              <div className="bg-blue-800 rounded-lg shrink-0 flex items-center justify-center" style={{ width: 48, height: 48 }}>
                 <Image
                   src="/Busmate Lk.svg"
                   alt="Busmate LK Logo"
@@ -108,7 +108,7 @@ export function Sidebar() {
                 title={isCollapsed ? item.name : undefined}
                 style={{ minHeight: 44 }}
               >
-                <item.icon className={cn("w-5 h-5 flex-shrink-0", isActive ? "text-blue-600" : "")} />
+                <item.icon className={cn("w-5 h-5 shrink-0", isActive ? "text-blue-600" : "")} />
                 {!isCollapsed && (
                   <span className="truncate ml-3">{item.name}</span>
                 )}

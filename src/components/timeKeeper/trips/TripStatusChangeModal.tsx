@@ -265,7 +265,7 @@ export function TripStatusChangeModal({
           {/* Error Message */}
           {error && (
             <div className="flex items-start space-x-2 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm text-red-800">{error}</p>
               </div>

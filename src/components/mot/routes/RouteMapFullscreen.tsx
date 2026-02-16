@@ -538,7 +538,7 @@ export function RouteMapFullscreen({ route, isOpen, onClose }: RouteMapFullscree
                 <div key={index} className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
                   <div className="flex items-center gap-3">
                     <div 
-                      className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                      className={`w-3 h-3 rounded-full shrink-0 ${
                         index === 0 ? 'bg-green-500' : 
                         index === stops.length - 1 ? 'bg-red-500' : 
                         route.direction === 'INBOUND' ? 'bg-purple-500' : 'bg-blue-500'

@@ -197,7 +197,7 @@ function Info({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <div className="flex-shrink-0 text-indigo-500 mt-0.5">{icon}</div>
+      <div className="shrink-0 text-indigo-500 mt-0.5">{icon}</div>
       <div>
         <h4 className="text-gray-500 text-xs font-semibold uppercase tracking-wider">{label}</h4>
         <p className="text-gray-800 text-sm font-medium mt-0.5">

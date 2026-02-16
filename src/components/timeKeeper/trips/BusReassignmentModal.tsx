@@ -283,14 +283,14 @@ export function BusReassignmentModal({
             {/* Error Message */}
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start">
-                <AlertCircle className="w-5 h-5 text-red-600 mr-2 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="w-5 h-5 text-red-600 mr-2 shrink-0 mt-0.5" />
                 <div className="text-sm text-red-800">{error}</div>
               </div>
             )}
 
             {/* Warning Notice */}
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start">
-              <AlertCircle className="w-5 h-5 text-amber-600 mr-2 flex-shrink-0 mt-0.5" />
+              <AlertCircle className="w-5 h-5 text-amber-600 mr-2 shrink-0 mt-0.5" />
               <div className="text-sm text-amber-800">
                 <p className="font-medium mb-1">Important:</p>
                 <p>

@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function TripAssignmentPage() {
   return (
-    <div className="h-[100vh] bg-gray-50 overflow-hidden">
+    <div className="h-screen bg-gray-50 overflow-hidden">
     <Layout 
       activeItem="trip-assignment" 
       pageTitle="Trip Assignment" 

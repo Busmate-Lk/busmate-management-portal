@@ -148,7 +148,7 @@ export function TodaysBusesTable({ trips, loading }: TodaysBusesTableProps) {
               <tr key={trip.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-start">
-                    <BusFront className="w-5 h-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
+                    <BusFront className="w-5 h-5 text-gray-400 mr-3 mt-0.5 shrink-0" />
                     <div>
                       <div className="text-sm font-medium text-gray-900">
                         {trip.busPlateNumber || 'Not Assigned'}

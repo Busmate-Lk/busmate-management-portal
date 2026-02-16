@@ -97,10 +97,10 @@ export function NotificationDetail({ notificationId }: NotificationDetailProps) 
 
             {/* Notification Detail Card */}
             <Card className="shadow-lg">
-                <CardContent className="p-8 bg-gradient-to-br from-white to-gray-50/30">
+                <CardContent className="p-8 bg-linear-to-br from-white to-gray-50/30">
                     {/* Title and Icon */}
                     <div className="flex items-start space-x-4 mb-6">
-                        <div className="flex-shrink-0 mt-1">
+                        <div className="shrink-0 mt-1">
                             {getNotificationIcon(notification.messageType)}
                         </div>
                         <div className="flex-1">

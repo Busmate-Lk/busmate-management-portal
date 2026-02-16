@@ -116,7 +116,7 @@ export function ScheduleStopsTab({ schedule, route }: ScheduleStopsTabProps) {
                   className="flex items-center px-4 py-3 hover:bg-gray-50 transition-colors"
                 >
                   {/* Stop Number Badge */}
-                  <div className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-medium text-sm">
+                  <div className="shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-medium text-sm">
                     {stop.stopOrder || index + 1}
                   </div>
 
@@ -128,7 +128,7 @@ export function ScheduleStopsTab({ schedule, route }: ScheduleStopsTabProps) {
                   </div>
 
                   {/* Arrival Time */}
-                  <div className="flex-shrink-0 ml-4 text-center min-w-[80px]">
+                  <div className="shrink-0 ml-4 text-center min-w-[80px]">
                     <div className="text-xs text-gray-500 mb-1">Arrival</div>
                     <div className="text-sm font-mono text-gray-900">
                       {formatTime(stop.arrivalTime)}
@@ -136,7 +136,7 @@ export function ScheduleStopsTab({ schedule, route }: ScheduleStopsTabProps) {
                   </div>
 
                   {/* Departure Time */}
-                  <div className="flex-shrink-0 ml-4 text-center min-w-[80px]">
+                  <div className="shrink-0 ml-4 text-center min-w-[80px]">
                     <div className="text-xs text-gray-500 mb-1">Departure</div>
                     <div className="text-sm font-mono text-gray-900">
                       {formatTime(stop.departureTime)}
@@ -144,7 +144,7 @@ export function ScheduleStopsTab({ schedule, route }: ScheduleStopsTabProps) {
                   </div>
 
                   {/* Dwell Time */}
-                  <div className="flex-shrink-0 ml-4 text-center min-w-[70px]">
+                  <div className="shrink-0 ml-4 text-center min-w-[70px]">
                     <div className="text-xs text-gray-500 mb-1">Dwell</div>
                     <div className="text-sm text-gray-900">
                       {calculateDuration(stop.arrivalTime, stop.departureTime) || '--'}
@@ -152,7 +152,7 @@ export function ScheduleStopsTab({ schedule, route }: ScheduleStopsTabProps) {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex-shrink-0 ml-6 flex items-center space-x-2">
+                  <div className="shrink-0 ml-6 flex items-center space-x-2">
                     <button
                       onClick={() => router.push(`/mot/bus-stops/${stop.stopId}`)}
                       className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"

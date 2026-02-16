@@ -94,7 +94,7 @@ export function StaffTable({ staff, currentPage, totalStaff, onPageChange, onEdi
               <tr key={member.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-8 w-8">
+                    <div className="shrink-0 h-8 w-8">
                       <div className={`h-8 w-8 rounded-lg ${getProfileIconColor(member.role)} flex items-center justify-center`}>
                         <User className={`h-4 w-4 ${getProfileIconTextColor(member.role)}`} />
                       </div>

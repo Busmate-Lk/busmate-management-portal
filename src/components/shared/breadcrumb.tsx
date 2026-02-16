@@ -43,7 +43,7 @@ export function Breadcrumb({ items, showHome = true, className = "" }: Breadcrum
                 <Home className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" />
               </Link>
               {validItems.length > 0 && (
-                <ChevronRight className="w-4 h-4 text-gray-400 mx-1 flex-shrink-0" />
+                <ChevronRight className="w-4 h-4 text-gray-400 mx-1 shrink-0" />
               )}
             </li>
           )}
@@ -62,7 +62,7 @@ export function Breadcrumb({ items, showHome = true, className = "" }: Breadcrum
                       aria-current={isLast ? "page" : undefined}
                     >
                       {item.icon && (
-                        <span className="mr-1.5 flex-shrink-0">{item.icon}</span>
+                        <span className="mr-1.5 shrink-0">{item.icon}</span>
                       )}
                       <span className="truncate">{item.label}</span>
                     </Link>
@@ -76,7 +76,7 @@ export function Breadcrumb({ items, showHome = true, className = "" }: Breadcrum
                       aria-current={isLast ? "page" : undefined}
                     >
                       {item.icon && (
-                        <span className="mr-1.5 flex-shrink-0">{item.icon}</span>
+                        <span className="mr-1.5 shrink-0">{item.icon}</span>
                       )}
                       <span className="truncate">{item.label}</span>
                     </span>
@@ -85,7 +85,7 @@ export function Breadcrumb({ items, showHome = true, className = "" }: Breadcrum
 
                 {/* Separator */}
                 {!isLast && (
-                  <ChevronRight className="w-4 h-4 text-gray-400 mx-2 flex-shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-gray-400 mx-2 shrink-0" />
                 )}
               </Fragment>
             )

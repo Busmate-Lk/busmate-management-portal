@@ -118,7 +118,7 @@ export function ResourceUsage() {
             {/* System Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="shadow-md">
-                    <CardContent className="p-4 bg-gradient-to-br from-blue-50 to-white">
+                    <CardContent className="p-4 bg-linear-to-br from-blue-50 to-white">
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center space-x-2">
                                 <Cpu className="h-5 w-5 text-blue-600" />
@@ -133,7 +133,7 @@ export function ResourceUsage() {
                 </Card>
 
                 <Card className="shadow-md">
-                    <CardContent className="p-4 bg-gradient-to-br from-green-50 to-white">
+                    <CardContent className="p-4 bg-linear-to-br from-green-50 to-white">
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center space-x-2">
                                 <HardDrive className="h-5 w-5 text-green-600" />
@@ -148,7 +148,7 @@ export function ResourceUsage() {
                 </Card>
 
                 <Card className="shadow-md">
-                    <CardContent className="p-4 bg-gradient-to-br from-purple-50 to-white">
+                    <CardContent className="p-4 bg-linear-to-br from-purple-50 to-white">
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center space-x-2">
                                 <Database className="h-5 w-5 text-purple-600" />
@@ -163,7 +163,7 @@ export function ResourceUsage() {
                 </Card>
 
                 <Card className="shadow-md">
-                    <CardContent className="p-4 bg-gradient-to-br from-orange-50 to-white">
+                    <CardContent className="p-4 bg-linear-to-br from-orange-50 to-white">
                         <div className="flex items-center space-x-2 mb-2">
                             <Wifi className="h-5 w-5 text-orange-600" />
                             <span className="text-sm font-semibold">Network</span>
@@ -185,7 +185,7 @@ export function ResourceUsage() {
             {/* Additional Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="shadow-md">
-                    <CardContent className="p-4 bg-gradient-to-br from-indigo-50 to-white">
+                    <CardContent className="p-4 bg-linear-to-br from-indigo-50 to-white">
                         <div className="text-center">
                             <p className="text-2xl font-bold text-gray-900">{systemOverview.activeSessions.toLocaleString()}</p>
                             <p className="text-sm text-gray-600 font-medium">Active User Sessions</p>
@@ -194,7 +194,7 @@ export function ResourceUsage() {
                 </Card>
 
                 <Card className="shadow-md">
-                    <CardContent className="p-4 bg-gradient-to-br from-teal-50 to-white">
+                    <CardContent className="p-4 bg-linear-to-br from-teal-50 to-white">
                         <div className="text-center">
                             <p className="text-2xl font-bold text-gray-900">{systemOverview.databaseConnections}</p>
                             <p className="text-sm text-gray-600 font-medium">Database Connections</p>
@@ -205,7 +205,7 @@ export function ResourceUsage() {
 
             {/* Server Resource Details */}
             <Card className="shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+                <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
                     <CardTitle className="flex items-center space-x-2">
                         <BarChart3 className="h-5 w-5" />
                         <span>Server Resource Details</span>

@@ -553,7 +553,7 @@ export default function RouteStopsList({ routeIndex }: RouteStopsListProps) {
                 </td>
                 <td className="border-b border-slate-100 px-3 py-2">
                     <div className='flex items-center gap-2'>
-                        <div className='flex flex-col gap-1 flex-grow'>
+                        <div className='flex flex-col gap-1 grow'>
                             <div className='flex items-center gap-1'>
                                 <span className='font-mono text-xs text-slate-600'>
                                     {routeStop.stop.id ? routeStop.stop.id.substring(0, 8) + '...' : ''}

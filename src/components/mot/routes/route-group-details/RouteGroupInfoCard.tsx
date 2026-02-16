@@ -103,7 +103,7 @@ export function RouteGroupInfoCard({
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           {/* Icon and Main Name */}
           <div className="flex items-start gap-4">
-            <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-sm">
+            <div className="shrink-0 w-14 h-14 bg-linear-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-sm">
               <RouteIcon className="w-7 h-7 text-white" />
             </div>
             <div className="min-w-0">
@@ -119,7 +119,7 @@ export function RouteGroupInfoCard({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={onEdit}
               disabled={isDeleting}
@@ -180,9 +180,9 @@ export function RouteGroupInfoCard({
         <div className="mb-5">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {stats.map((stat, index) => (
-              <div key={index} className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-lg p-4 border border-gray-200">
+              <div key={index} className="bg-linear-to-br from-gray-50 to-gray-100/50 rounded-lg p-4 border border-gray-200">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className={`w-8 h-8 rounded-lg ${stat.iconBg} flex items-center justify-center flex-shrink-0`}>
+                  <div className={`w-8 h-8 rounded-lg ${stat.iconBg} flex items-center justify-center shrink-0`}>
                     <stat.icon className={`w-4 h-4 ${stat.iconColor}`} />
                   </div>
                   <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">

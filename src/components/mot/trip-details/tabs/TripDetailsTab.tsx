@@ -100,7 +100,7 @@ export function TripDetailsTab({ trip, route, schedule, permit }: TripDetailsTab
           <div className="space-y-6">
             {/* Departure */}
             <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                   <Play className="w-4 h-4 text-green-600" />
                 </div>
@@ -139,7 +139,7 @@ export function TripDetailsTab({ trip, route, schedule, permit }: TripDetailsTab
 
             {/* Journey Line */}
             <div className="flex items-center space-x-4">
-              <div className="flex-shrink-0 w-8 flex justify-center">
+              <div className="shrink-0 w-8 flex justify-center">
                 <div className="w-0.5 h-8 bg-gray-300"></div>
               </div>
               <div className="flex-1">
@@ -152,7 +152,7 @@ export function TripDetailsTab({ trip, route, schedule, permit }: TripDetailsTab
 
             {/* Arrival */}
             <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                   <Pause className="w-4 h-4 text-blue-600" />
                 </div>

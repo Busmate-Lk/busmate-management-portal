@@ -42,7 +42,7 @@ export default function NotificationsLayout({
                 <div>{children}</div>
             ) : (
                 <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-                    <div className="bg-white rounded-lg shadow-lg px-6 py-4 bg-gradient-to-r from-gray-50 to-white mb-6">
+                    <div className="bg-white rounded-lg shadow-lg px-6 py-4 bg-linear-to-r from-gray-50 to-white mb-6">
                         <div className="flex items-center space-x-8">
                             <button
                                 onClick={() => handleTabChange("sent")}

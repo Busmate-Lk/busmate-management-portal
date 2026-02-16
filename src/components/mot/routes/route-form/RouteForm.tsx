@@ -118,7 +118,7 @@ function Alert({ type, title, message, onDismiss, dismissible = true, actions }:
   return (
     <div className={`border rounded-lg p-4 ${styles.container} animate-fadeIn`}>
       <div className="flex items-start">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           {styles.icon}
         </div>
         <div className="ml-3 flex-1">

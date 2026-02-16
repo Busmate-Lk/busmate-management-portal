@@ -302,7 +302,7 @@ export function TripStatusTab({ trip, onRefresh }: TripStatusTabProps) {
               
               return (
                 <div key={index} className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <div className={`w-8 h-8 ${entryStatusDisplay.bgColor} rounded-full flex items-center justify-center`}>
                       <EntryIcon className={`w-4 h-4 ${entryStatusDisplay.color}`} />
                     </div>

@@ -94,7 +94,7 @@ export default function DeleteBusStopModal({
             <div className="bg-white px-8 py-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <AlertTriangle className="h-6 w-6 text-red-600" />
                   </div>
                   <div className="ml-3">
@@ -200,7 +200,7 @@ export default function DeleteBusStopModal({
             </div>
 
             {/* Footer */}
-            <div className="flex-shrink-0 border-t border-gray-200 px-6 py-4">
+            <div className="shrink-0 border-t border-gray-200 px-6 py-4">
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={onClose}

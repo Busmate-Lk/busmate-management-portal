@@ -83,7 +83,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.1.18",
     "@types/js-yaml": "^4.0.9",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22",
@@ -94,7 +94,7 @@
     "eslint-config-next": "15.4.2",
     "openapi-typescript-codegen": "^0.29.0",
     "postcss": "^8.5",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.1.18",
     "typescript": "^5",
     "unimported": "^1.31.1"
   }

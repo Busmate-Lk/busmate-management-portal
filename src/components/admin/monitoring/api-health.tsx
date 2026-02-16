@@ -131,7 +131,7 @@ export function ApiHealth() {
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="shadow-md">
-                    <CardContent className="p-4 bg-gradient-to-br from-green-50 to-white">
+                    <CardContent className="p-4 bg-linear-to-br from-green-50 to-white">
                         <div className="flex items-center space-x-2">
                             <CheckCircle className="h-5 w-5 text-green-600" />
                             <div>
@@ -143,7 +143,7 @@ export function ApiHealth() {
                 </Card>
 
                 <Card className="shadow-md">
-                    <CardContent className="p-4 bg-gradient-to-br from-yellow-50 to-white">
+                    <CardContent className="p-4 bg-linear-to-br from-yellow-50 to-white">
                         <div className="flex items-center space-x-2">
                             <AlertTriangle className="h-5 w-5 text-yellow-600" />
                             <div>
@@ -155,7 +155,7 @@ export function ApiHealth() {
                 </Card>
 
                 <Card className="shadow-md">
-                    <CardContent className="p-4 bg-gradient-to-br from-red-50 to-white">
+                    <CardContent className="p-4 bg-linear-to-br from-red-50 to-white">
                         <div className="flex items-center space-x-2">
                             <XCircle className="h-5 w-5 text-red-600" />
                             <div>
@@ -167,7 +167,7 @@ export function ApiHealth() {
                 </Card>
 
                 <Card className="shadow-md">
-                    <CardContent className="p-4 bg-gradient-to-br from-blue-50 to-white">
+                    <CardContent className="p-4 bg-linear-to-br from-blue-50 to-white">
                         <div className="flex items-center space-x-2">
                             <Activity className="h-5 w-5 text-blue-600" />
                             <div>
@@ -181,7 +181,7 @@ export function ApiHealth() {
 
             {/* API Endpoints List */}
             <Card className="shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+                <CardHeader className="bg-linear-to-r from-gray-50 to-white rounded-t-lg">
                     <CardTitle className="flex items-center space-x-2">
                         <Activity className="h-5 w-5" />
                         <span>API Endpoints Status</span>

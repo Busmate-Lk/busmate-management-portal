@@ -155,7 +155,7 @@ export function TimeKeeperAssignmentPanel({
       {/* Info Banner */}
       <div className="p-3 bg-yellow-50 border-b border-yellow-200">
         <div className="flex items-start space-x-2">
-          <AlertCircle className="h-3.5 w-3.5 text-yellow-600 mt-0.5 flex-shrink-0" />
+          <AlertCircle className="h-3.5 w-3.5 text-yellow-600 mt-0.5 shrink-0" />
           <div className="text-xs text-yellow-800">
             <strong>TimeKeeper Note:</strong> You can only reassign PSPs for
             trips starting from <strong>{workspace.assignedBusStopName}</strong>

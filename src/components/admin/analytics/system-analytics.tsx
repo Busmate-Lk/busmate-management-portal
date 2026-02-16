@@ -112,7 +112,7 @@ export function SystemAnalytics() {
     <div>
       {/* Tabs */}
       <div className="bg-white rounded-lg shadow-lg mb-6">
-        <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+        <div className="px-6 py-4 bg-linear-to-r from-gray-50 to-white rounded-t-lg">
           <div className="flex items-center space-x-8">
             <button
               onClick={() => setActiveTab("monitoring")}
@@ -138,7 +138,7 @@ export function SystemAnalytics() {
             <>
               {/* System Status Cards */}
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-                <Card className="shadow-sm bg-gradient-to-br from-green-50 to-white">
+                <Card className="shadow-sm bg-linear-to-br from-green-50 to-white">
                   <CardContent className="p-4 text-center">
                     <div className="flex items-center justify-center mb-2">
                       <Database className="h-6 w-6 text-green-600" />
@@ -148,7 +148,7 @@ export function SystemAnalytics() {
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-sm bg-gradient-to-br from-blue-50 to-white">
+                <Card className="shadow-sm bg-linear-to-br from-blue-50 to-white">
                   <CardContent className="p-4 text-center">
                     <div className="flex items-center justify-center mb-2">
                       <Zap className="h-6 w-6 text-blue-600" />
@@ -158,7 +158,7 @@ export function SystemAnalytics() {
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-sm bg-gradient-to-br from-yellow-50 to-white">
+                <Card className="shadow-sm bg-linear-to-br from-yellow-50 to-white">
                   <CardContent className="p-4 text-center">
                     <div className="flex items-center justify-center mb-2">
                       <Activity className="h-6 w-6 text-yellow-600" />
@@ -168,7 +168,7 @@ export function SystemAnalytics() {
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-sm bg-gradient-to-br from-purple-50 to-white">
+                <Card className="shadow-sm bg-linear-to-br from-purple-50 to-white">
                   <CardContent className="p-4 text-center">
                     <div className="flex items-center justify-center mb-2">
                       <Users className="h-6 w-6 text-purple-600" />
@@ -178,7 +178,7 @@ export function SystemAnalytics() {
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-sm bg-gradient-to-br from-green-50 to-white">
+                <Card className="shadow-sm bg-linear-to-br from-green-50 to-white">
                   <CardContent className="p-4 text-center">
                     <div className="flex items-center justify-center mb-2">
                       <TrendingUp className="h-6 w-6 text-green-600" />

@@ -35,7 +35,7 @@ export function BusTrackingMap({ selectedBus }: BusTrackingMapProps) {
   }
 
   return (
-    <div className="relative w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 overflow-hidden">
+    <div className="relative w-full h-full bg-linear-to-br from-blue-100 to-blue-200 overflow-hidden">
       {/* Map Background */}
       <div
         className="absolute inset-0 bg-cover bg-center transition-transform duration-300"

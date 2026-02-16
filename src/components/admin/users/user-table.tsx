@@ -181,7 +181,7 @@ export function UserTable() {
         </TableBody>
       </Table>
 
-      <div className="p-6 bg-gradient-to-r from-gray-50 to-white rounded-b-lg flex items-center justify-between">
+      <div className="p-6 bg-linear-to-r from-gray-50 to-white rounded-b-lg flex items-center justify-between">
         <p className="text-sm text-gray-600 font-medium">Showing 1 to 10 of 13,302 results</p>
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" className="bg-gray-500/20 text-gray-600 border-gray-200 hover:bg-gray-500/30 shadow-md">

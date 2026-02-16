@@ -204,7 +204,7 @@ export function MessageHistory() {
 
       {/* Messages Table */}
       <div className="bg-white rounded-lg shadow-lg">
-        <div className="p-6 bg-gradient-to-r from-gray-50 to-white rounded-t-lg">
+        <div className="p-6 bg-linear-to-r from-gray-50 to-white rounded-t-lg">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4" />
             <div className="flex space-x-2">
@@ -271,7 +271,7 @@ export function MessageHistory() {
         </Table>
 
         {/* Pagination */}
-        <div className="p-6 bg-gradient-to-r from-gray-50 to-white rounded-b-lg flex items-center justify-between">
+        <div className="p-6 bg-linear-to-r from-gray-50 to-white rounded-b-lg flex items-center justify-between">
           <p className="text-sm text-gray-600 font-medium">Showing {filtered.length} result(s)</p>
           <div className="flex items-center space-x-2">
             {/* Pagination can be added when backend supports it */}

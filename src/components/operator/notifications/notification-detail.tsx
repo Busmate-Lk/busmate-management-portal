@@ -108,7 +108,7 @@ export function NotificationDetail({ notificationId }: NotificationDetailProps) 
                 <div className="p-6">
                     {/* Title and Icon */}
                     <div className="flex items-start space-x-4 mb-6">
-                        <div className="flex-shrink-0 mt-1">
+                        <div className="shrink-0 mt-1">
                             {getNotificationIcon(notification.messageType)}
                         </div>
                         <div className="flex-1">

@@ -115,7 +115,7 @@ export function NotificationPanel() {
         <div className="p-6 space-y-6">
             {/* Filters */}
             <Card className="shadow-lg">
-                <CardContent className="p-6 bg-gradient-to-r from-gray-50 to-white rounded-lg">
+                <CardContent className="p-6 bg-linear-to-r from-gray-50 to-white rounded-lg">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="relative">
                             <Input
@@ -172,7 +172,7 @@ export function NotificationPanel() {
                     >
                         <CardContent className="p-6">
                             <div className="flex items-start space-x-4">
-                                <div className="flex-shrink-0 mt-1">{getNotificationIcon((n.messageType || 'info'))}</div>
+                                <div className="shrink-0 mt-1">{getNotificationIcon((n.messageType || 'info'))}</div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between">
                                         <div className="flex-1">

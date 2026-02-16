@@ -117,7 +117,7 @@ export function CalendarNavigator({ onDateSelect }: CalendarNavigatorProps) {
   const days = getDaysInMonth(currentDate);
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 shadow-md p-4">
+    <div className="bg-linear-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 shadow-md p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
           <div className="p-1.5 bg-blue-800 rounded-lg">

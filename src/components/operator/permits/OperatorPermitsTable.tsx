@@ -241,7 +241,7 @@ export function OperatorPermitsTable({
               <tr key={permit.id || index} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="flex-shrink-0 h-8 w-8">
+                    <div className="shrink-0 h-8 w-8">
                       <div className="h-8 w-8 rounded-lg bg-blue-100 flex items-center justify-center">
                         <FileText className="h-4 w-4 text-blue-600" />
                       </div>

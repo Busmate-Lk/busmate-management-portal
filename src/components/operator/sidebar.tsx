@@ -38,7 +38,7 @@ export function Sidebar({ activeItem = "dashboard", isCollapsed, setIsCollapsed 
         <div className="flex items-center justify-between w-full">
           <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
             {!isCollapsed && (
-              <div className="bg-blue-800 rounded-lg flex-shrink-0">
+              <div className="bg-blue-800 rounded-lg shrink-0">
                 <Image
                   src="/Busmate Lk.svg"
                   alt="Busmate LK Logo"
@@ -81,7 +81,7 @@ export function Sidebar({ activeItem = "dashboard", isCollapsed, setIsCollapsed 
                 }`}
               title={isCollapsed ? item.label : undefined}
             >
-              <item.icon className={`w-5 h-5 flex-shrink-0 ${item.active ? 'text-blue-600' : ''}`} />
+              <item.icon className={`w-5 h-5 shrink-0 ${item.active ? 'text-blue-600' : ''}`} />
               {!isCollapsed && (
                 <span className="truncate ml-3">{item.label}</span>
               )}

@@ -108,7 +108,7 @@ export function Header({ title, description }: HeaderProps) {
                                     <div className="relative">
                                         <Avatar className="h-8 w-8 ring-2 ring-white shadow-md">
                                             <AvatarImage src="/placeholder.svg" />
-                                            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold">
+                                            <AvatarFallback className="bg-linear-to-br from-blue-500 to-purple-600 text-white font-semibold">
                                                 {getUserInitials()}
                                             </AvatarFallback>
                                         </Avatar>
@@ -124,11 +124,11 @@ export function Header({ title, description }: HeaderProps) {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-64 p-2" align="end" sideOffset={5}>
-                            <DropdownMenuLabel className="p-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg mb-2">
+                            <DropdownMenuLabel className="p-3 bg-linear-to-r from-blue-50 to-purple-50 rounded-lg mb-2">
                                 <div className="flex items-center space-x-3">
                                     <Avatar className="h-10 w-10">
                                         <AvatarImage src="/placeholder.svg" />
-                                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+                                        <AvatarFallback className="bg-linear-to-br from-blue-500 to-purple-600 text-white">
                                             {getUserInitials()}
                                         </AvatarFallback>
                                     </Avatar>

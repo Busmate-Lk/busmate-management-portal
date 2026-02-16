@@ -436,9 +436,9 @@ export function TimeKeeperTripsWorkspace({
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center space-x-3">
                       {isSelected(trip.id || '') ? (
-                        <CheckSquare className="h-5 w-5 text-indigo-600 flex-shrink-0" />
+                        <CheckSquare className="h-5 w-5 text-indigo-600 shrink-0" />
                       ) : (
-                        <Square className="h-5 w-5 text-gray-400 flex-shrink-0" />
+                        <Square className="h-5 w-5 text-gray-400 shrink-0" />
                       )}
                       <div>
                         <div className="flex items-center space-x-2">

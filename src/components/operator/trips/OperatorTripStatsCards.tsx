@@ -22,7 +22,7 @@ export function OperatorTripStatsCards({ stats }: OperatorTripStatsCardsProps) {
       {/* Total Trips */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
               <Calendar className="w-5 h-5 text-blue-600" />
             </div>
@@ -44,7 +44,7 @@ export function OperatorTripStatsCards({ stats }: OperatorTripStatsCardsProps) {
       {/* Today's Trips */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
               <Clock className="w-5 h-5 text-orange-600" />
             </div>
@@ -66,7 +66,7 @@ export function OperatorTripStatsCards({ stats }: OperatorTripStatsCardsProps) {
       {/* Active Trips */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
               <CheckCircle className="w-5 h-5 text-green-600" />
             </div>
@@ -88,7 +88,7 @@ export function OperatorTripStatsCards({ stats }: OperatorTripStatsCardsProps) {
       {/* In Transit Trips */}
       {/* <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
               <MapPin className="w-5 h-5 text-indigo-600" />
             </div>
@@ -110,7 +110,7 @@ export function OperatorTripStatsCards({ stats }: OperatorTripStatsCardsProps) {
       {/* Completed Trips */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
               <CheckCircle className="w-5 h-5 text-emerald-600" />
             </div>
@@ -132,7 +132,7 @@ export function OperatorTripStatsCards({ stats }: OperatorTripStatsCardsProps) {
       {/* Pending Trips */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
               <AlertTriangle className="w-5 h-5 text-yellow-600" />
             </div>
@@ -154,7 +154,7 @@ export function OperatorTripStatsCards({ stats }: OperatorTripStatsCardsProps) {
       {/* Cancelled Trips */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
               <XCircle className="w-5 h-5 text-red-600" />
             </div>
@@ -176,7 +176,7 @@ export function OperatorTripStatsCards({ stats }: OperatorTripStatsCardsProps) {
       {/* Trips with PSP */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
               <FileText className="w-5 h-5 text-purple-600" />
             </div>
@@ -198,7 +198,7 @@ export function OperatorTripStatsCards({ stats }: OperatorTripStatsCardsProps) {
       {/* Trips with Bus */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex items-center">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             <div className="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center">
               <Bus className="w-5 h-5 text-cyan-600" />
             </div>

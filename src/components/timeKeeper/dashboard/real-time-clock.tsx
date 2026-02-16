@@ -33,7 +33,7 @@ export function RealTimeClock() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 shadow-md p-4">
+    <div className="bg-linear-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 shadow-md p-4">
       <div className="flex items-center gap-2 mb-3">
         <div className="p-1.5 bg-blue-800 rounded-lg">
           <Clock className="h-4 w-4 text-white" />
