@@ -150,9 +150,9 @@ export function Sidebar({
     },
     {
       icon: Shield,
-      label: 'Policy Update',
-      active: activeItem === 'policy',
-      href: '/mot/policy-update',
+      label: 'Policies',
+      active: activeItem === 'policies',
+      href: '/mot/policies',
     },
   ];
 
@@ -191,17 +191,15 @@ export function Sidebar({
 
   return (
     <div
-      className={`${
-        isCollapsed ? 'w-20' : 'w-68'
-      } bg-blue-800 text-white transition-all duration-300 ease-in-out flex flex-col h-screen fixed left-0 top-0 z-40`}
+      className={`${isCollapsed ? 'w-20' : 'w-68'
+        } bg-blue-800 text-white transition-all duration-300 ease-in-out flex flex-col h-screen fixed left-0 top-0 z-40`}
     >
       {/* Header Section */}
       <div className="p-4 border-b border-blue-500 h-20 flex items-center justify-center">
         <div className="flex items-center justify-center w-full">
           <div
-            className={`flex items-center gap-3 ${
-              isCollapsed ? 'justify-center' : ''
-            }`}
+            className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''
+              }`}
           >
             {!isCollapsed ? (
               <div className="bg-blue-800 rounded-lg shrink-0 flex items-center justify-center">
@@ -246,27 +244,24 @@ export function Sidebar({
             <Link
               key={index}
               href={item.href}
-              className={`w-full flex items-center ${
-                isCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3 py-3'
-              } rounded-lg text-sm font-medium transition-all duration-200 group relative ${
-                item.active
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3 py-3'
+                } rounded-lg text-sm font-medium transition-all duration-200 group relative ${item.active
                   ? 'bg-white text-blue-600 shadow-sm'
                   : 'text-blue-100 hover:bg-blue-500 hover:text-white'
-              }`}
+                }`}
               title={isCollapsed ? item.label : undefined}
             >
               {/* Active indicator line */}
               {item.active && !isCollapsed && (
                 <div className="absolute left-0 top-0 bottom-0 w-1 rounded-r-lg" />
               )}
-              
+
               {/* Icon with enhanced styling */}
               <div
-                className={`shrink-0 transition-all duration-200 ${
-                  item.active
+                className={`shrink-0 transition-all duration-200 ${item.active
                     ? 'text-blue-600 scale-110'
                     : 'text-blue-100 group-hover:text-white group-hover:scale-105'
-                }`}
+                  }`}
               >
                 <item.icon className="w-5 h-5" />
               </div>
@@ -293,11 +288,10 @@ export function Sidebar({
       <div className="p-2 pr-4 border-t border-blue-500 flex items-center justify-end">
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className={`p-2.5 rounded-lg transition-all duration-200 ${
-            isCollapsed
+          className={`p-2.5 rounded-lg transition-all duration-200 ${isCollapsed
               ? 'bg-blue-600 hover:bg-blue-500 text-white'
               : 'text-blue-100 hover:bg-blue-500 hover:text-white'
-          }`}
+            }`}
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? (
@@ -305,7 +299,7 @@ export function Sidebar({
           ) : (
             <div className='flex'>
               <ChevronLeft className="w-5 h-5 mr-[-12px]" />
-              <ChevronLeft className="w-5 h-5" />            
+              <ChevronLeft className="w-5 h-5" />
             </div>
           )}
         </button>
