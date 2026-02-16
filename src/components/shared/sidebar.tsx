@@ -27,7 +27,6 @@ import {
   AlertCircle,
   TicketIcon,
   Users2,
-  TrendingUp,
   Shield,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -143,10 +142,10 @@ export function Sidebar({
       href: '/mot/notifications',
     },
     {
-      icon: TrendingUp,
-      label: 'Insights & Analytics',
-      active: activeItem === 'dataInsights',
-      href: '/mot/insights-analytics',
+      icon: BarChart3,
+      label: 'Analytics',
+      active: activeItem === 'analytics',
+      href: '/mot/analytics',
     },
     {
       icon: Shield,
