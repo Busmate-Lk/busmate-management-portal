@@ -127,8 +127,8 @@ export function Sidebar({
     {
       icon: DollarSign,
       label: 'Fare Management',
-      active: activeItem === 'bus-fare',
-      href: '/mot/bus-fare',
+      active: activeItem === 'fares',
+      href: '/mot/fares',
     },
     {
       icon: Users2,
@@ -259,8 +259,8 @@ export function Sidebar({
               {/* Icon with enhanced styling */}
               <div
                 className={`shrink-0 transition-all duration-200 ${item.active
-                    ? 'text-blue-600 scale-110'
-                    : 'text-blue-100 group-hover:text-white group-hover:scale-105'
+                  ? 'text-blue-600 scale-110'
+                  : 'text-blue-100 group-hover:text-white group-hover:scale-105'
                   }`}
               >
                 <item.icon className="w-5 h-5" />
@@ -289,8 +289,8 @@ export function Sidebar({
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className={`p-2.5 rounded-lg transition-all duration-200 ${isCollapsed
-              ? 'bg-blue-600 hover:bg-blue-500 text-white'
-              : 'text-blue-100 hover:bg-blue-500 hover:text-white'
+            ? 'bg-blue-600 hover:bg-blue-500 text-white'
+            : 'text-blue-100 hover:bg-blue-500 hover:text-white'
             }`}
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
