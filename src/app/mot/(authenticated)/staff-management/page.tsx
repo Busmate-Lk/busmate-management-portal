@@ -1,341 +1,359 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Layout } from '@/components/shared/layout';
-import TimekeeperAdvancedFilters from '@/components/mot/timekeepers/TimekeeperAdvancedFilters/page';
-import { TimekeeperActionButtons } from '@/components/mot/timekeepers/TimekeeperActionButtons/page';
-import { TimekeeperStatsCards } from '@/components/mot/timekeepers/TimekeeperStatsCards/page';
-import { TimekeepersTable } from '@/components/mot/timekeepers/TimekeepersTable/page';
+import {
+  StaffStatsCards,
+  StaffActionButtons,
+  StaffAdvancedFilters,
+  StaffTable,
+  StaffTypeTabs,
+  DeleteStaffModal,
+} from '@/components/mot/staff';
 import Pagination from '@/components/shared/Pagination';
-import { TimekeeperControllerService } from '../../../../../generated/api-clients/user-management/services/TimekeeperControllerService';
-import { BusStopManagementService } from '../../../../../generated/api-clients/route-management/services/BusStopManagementService'; // added import
+import {
+  getStaffMembers,
+  getStaffStatistics,
+  getStaffFilterOptions,
+  StaffMember,
+  StaffType,
+} from '@/data/staff';
 
-interface TimekeeperResponse {
-  id: string;
-  fullname: string;
-  phonenumber: string;
-  email: string;
-  assign_stand: string;
-  nic: string;
-  province: string;
-  user_id?: string;
-  createdAt?: string;
-  status?: string;
-}
+type TabValue = 'all' | StaffType;
 
-interface QueryParams {
-  page: number;
-  size: number;
-  sortBy: string;
-  sortDir: 'asc' | 'desc';
-  search: string;
-  status?: 'active' | 'inactive';
-}
-
-interface FilterOptions {
-  statuses: Array<'active' | 'inactive'>;
-  provinces: string[];
-  stands: Array<{ id: string; name: string }>; // changed to objects with id + name
-}
-
-export default function TimekeepersPage() {
+export default function StaffManagementPage() {
   const router = useRouter();
 
-  // Core states
-  const [timekeepers, setTimekeepers] = useState<TimekeeperResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Load sample data
+  const allStaff = useMemo(() => getStaffMembers(), []);
+  const statistics = useMemo(() => getStaffStatistics(), []);
+  const filterOptions = useMemo(() => getStaffFilterOptions(), []);
 
-  // Filters
+  // Tab state
+  const [activeTab, setActiveTab] = useState<TabValue>('all');
+
+  // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [provinceFilter, setProvinceFilter] = useState('all');
-  const [standFilter, setStandFilter] = useState('all');
 
-  // Dynamic dropdown filter options
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    statuses: ['active', 'inactive'],
-    provinces: [],
-    stands: [],
-  });
+  // Sort state
+  const [sortBy, setSortBy] = useState('fullName');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
-  // Query params
-  const [queryParams, setQueryParams] = useState<QueryParams>({
-    page: 0,
-    size: 10,
-    sortBy: 'fullname',
-    sortDir: 'asc',
-    search: '',
-  });
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
 
-  // Pagination metadata
-  const [pagination, setPagination] = useState({
-    currentPage: 0,
-    totalPages: 0,
-    totalElements: 0,
-    pageSize: 10,
-  });
+  // Delete modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [staffToDelete, setStaffToDelete] = useState<StaffMember | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  // Stats for dashboard cards
-  const [stats, setStats] = useState({
-    totalTimekeepers: { count: 0 },
-    activeTimekeepers: { count: 0 },
-    inactiveTimekeepers: { count: 0 },
-    provincesCount: { count: 0 },
-  });
+  // Tab counts
+  const tabCounts = useMemo(
+    () => ({
+      all: allStaff.length,
+      timekeeper: allStaff.filter((s) => s.staffType === 'timekeeper').length,
+      inspector: allStaff.filter((s) => s.staffType === 'inspector').length,
+    }),
+    [allStaff]
+  );
 
-  /** Fetch all timekeepers */
-  const loadTimekeepers = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  // Stats for cards
+  const statsForCards = useMemo(
+    () => ({
+      totalStaff: { count: statistics.totalStaff },
+      activeStaff: { count: statistics.activeStaff },
+      inactiveStaff: { count: statistics.inactiveStaff },
+      totalTimekeepers: { count: statistics.totalTimekeepers },
+      totalInspectors: { count: statistics.totalInspectors },
+      provincesCount: { count: statistics.provincesCount },
+    }),
+    [statistics]
+  );
 
-      // fetch timekeepers and stops in parallel
-      const [tkResponse, stopsResp] = await Promise.all([
-        TimekeeperControllerService.getAllTimekeepers(),
-        BusStopManagementService.getAllStopsAsList().catch(() => []), // get all stops from DB
-      ]);
+  // Filter + sort + paginate
+  const filteredStaff = useMemo(() => {
+    let list = allStaff;
 
-      const normalized = (tkResponse || []).map((r: any) => ({
-        id: r.id ?? r.timekeeperId ?? r._id ?? r.userId ?? '',
-        fullname: r.fullname ?? r.name ?? '',
-        phonenumber: r.phonenumber ?? r.phone ?? '',
-        email: r.email ?? '',
-        assign_stand: r.assign_stand ?? r.assignStand ?? r.assignedStand ?? '',
-        nic: r.nic ?? '',
-        province: r.province ?? '',
-        user_id: r.user_id ?? r.userId ?? undefined,
-        createdAt: r.createdAt ?? r.created_at ?? undefined,
-        status: r.status ?? 'active',
-      }));
-
-      // build stop id -> name map from stops service
-      const stopsArray = (stopsResp || []) as any[];
-      const stopsMap: Record<string, string> = {};
-      const stopsList = stopsArray.map((s: any) => {
-        const id = s.id ?? s.stop_id ?? s._id ?? String(s);
-        const name = s.name ?? s.displayName ?? s.label ?? String(s);
-        stopsMap[id] = name;
-        return { id, name };
-      });
-
-      setTimekeepers(
-        normalized.map((t) => ({
-          ...t,
-          assign_stand_name: stopsMap[t.assign_stand] ?? t.assign_stand,
-        }))
-      );
-
-      // Calculate statistics
-      setStats({
-        totalTimekeepers: { count: normalized.length },
-        activeTimekeepers: {
-          count: normalized.filter((t) => t.status === 'active').length,
-        },
-        inactiveTimekeepers: {
-          count: normalized.filter((t) => t.status === 'inactive').length,
-        },
-        provincesCount: {
-          count: new Set(normalized.map((t) => t.province).filter(Boolean)).size,
-        },
-      });
-
-      // Derive filter options
-      const provinces = [...new Set(normalized.map((t) => t.province).filter(Boolean))];
-
-      // use stopsList (from DB) as the stand filter options (id + friendly name)
-      const stands = stopsList;
-
-      setFilterOptions((prev) => ({ ...prev, provinces, stands }));
-    } catch (err) {
-      console.error('Error loading timekeepers:', err);
-      setError('Failed to load timekeepers. Please try again.');
-      setTimekeepers([]);
-    } finally {
-      setIsLoading(false);
+    // Tab filter
+    if (activeTab !== 'all') {
+      list = list.filter((s) => s.staffType === activeTab);
     }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      list = list.filter((s) => s.status === statusFilter);
+    }
+
+    // Province filter
+    if (provinceFilter !== 'all') {
+      list = list.filter((s) => s.province === provinceFilter);
+    }
+
+    // Search
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      list = list.filter(
+        (s) =>
+          s.fullName.toLowerCase().includes(term) ||
+          s.email.toLowerCase().includes(term) ||
+          s.nic.toLowerCase().includes(term) ||
+          s.phone.toLowerCase().includes(term) ||
+          s.assignedLocation.toLowerCase().includes(term)
+      );
+    }
+
+    // Sort
+    list = [...list].sort((a, b) => {
+      const aVal = (a as any)[sortBy] || '';
+      const bVal = (b as any)[sortBy] || '';
+      const cmp = String(aVal).localeCompare(String(bVal));
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+
+    return list;
+  }, [allStaff, activeTab, statusFilter, provinceFilter, searchTerm, sortBy, sortDir]);
+
+  // Paginated
+  const paginatedStaff = useMemo(() => {
+    const start = currentPage * pageSize;
+    return filteredStaff.slice(start, start + pageSize);
+  }, [filteredStaff, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(filteredStaff.length / pageSize) || 1;
+
+  // Transform for table
+  const tableData = useMemo(
+    () =>
+      paginatedStaff.map((s) => ({
+        id: s.id,
+        fullName: s.fullName,
+        phone: s.phone,
+        email: s.email,
+        assignedLocation: s.assignedLocation,
+        province: s.province,
+        staffType: s.staffType,
+        nic: s.nic,
+        status: s.status,
+        createdAt: s.createdAt,
+      })),
+    [paginatedStaff]
+  );
+
+  // Handlers
+  const handleSearch = useCallback((term: string) => {
+    setSearchTerm(term);
+    setCurrentPage(0);
   }, []);
 
-  /** Initial load */
-  useEffect(() => {
-    loadTimekeepers();
-  }, [loadTimekeepers]);
+  const handleSort = useCallback((field: string, direction: 'asc' | 'desc') => {
+    setSortBy(field);
+    setSortDir(direction);
+    setCurrentPage(0);
+  }, []);
 
-  /** Update query parameters */
-  const updateQueryParams = useCallback(
-    (updates: Partial<QueryParams>) => {
-      setQueryParams((prev) => {
-        const updated = { ...prev, ...updates };
-        if (!('status' in updates)) {
-          if (statusFilter !== 'all') {
-            updated.status = statusFilter as QueryParams['status'];
-          } else {
-            delete updated.status;
-          }
-        }
-        return updated;
-      });
-    },
-    [statusFilter]
-  );
+  const handleTabChange = useCallback((tab: TabValue) => {
+    setActiveTab(tab);
+    setCurrentPage(0);
+  }, []);
 
-  /** React to filter changes */
-  useEffect(() => {
-    const debounce = setTimeout(() => {
-      updateQueryParams({ page: 0 });
-    }, 300);
-    return () => clearTimeout(debounce);
-  }, [statusFilter, provinceFilter, standFilter, updateQueryParams]);
+  const handleClearAllFilters = useCallback(() => {
+    setSearchTerm('');
+    setStatusFilter('all');
+    setProvinceFilter('all');
+    setCurrentPage(0);
+  }, []);
 
-  /** Handle Actions */
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    updateQueryParams({ search: term, page: 0 });
+  const handleAddStaff = () => {
+    router.push('/mot/staff-management/add-new');
   };
 
-  const handleAddNew = () => router.push('/mot/staff-management/add-new');
-  const handleView = (id: string) => router.push(`/mot/staff-management/${id}`);
-  const handleEdit = (id: string) => router.push(`/mot/staff-management/${id}/edit`);
-  const handleDelete = (id: string) => alert(`Delete not implemented yet for ID: ${id}`);
+  const handleExportAll = () => {
+    const dataToExport = filteredStaff.map((s) => ({
+      ID: s.id,
+      'Full Name': s.fullName,
+      Phone: s.phone,
+      Email: s.email,
+      NIC: s.nic,
+      'Staff Type': s.staffType,
+      Province: s.province,
+      'Assigned Location': s.assignedLocation,
+      Status: s.status,
+      'Created At': s.createdAt,
+    }));
 
-  /** Filtering + Pagination */
-  const filteredTimekeepers = useMemo(() => {
-    let list = timekeepers;
-    if (provinceFilter !== 'all') list = list.filter((t) => t.province === provinceFilter);
-    if (standFilter !== 'all') list = list.filter((t) => t.assign_stand === standFilter);
-    if (statusFilter !== 'all') list = list.filter((t) => t.status === statusFilter);
-    if (searchTerm)
-      list = list.filter((t) =>
-        [t.fullname, t.email, t.nic, t.assign_stand, t.province]
-          .join(' ')
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase())
-      );
-    return list;
-  }, [timekeepers, provinceFilter, standFilter, statusFilter, searchTerm]);
+    if (dataToExport.length === 0) {
+      alert('No data to export');
+      return;
+    }
 
-  const paginatedTimekeepers = useMemo(() => {
-    const start = queryParams.page * queryParams.size;
-    const end = start + queryParams.size;
-    return filteredTimekeepers.slice(start, end);
-  }, [filteredTimekeepers, queryParams.page, queryParams.size]);
+    const headers = Object.keys(dataToExport[0]);
+    const csvContent = [
+      headers.join(','),
+      ...dataToExport.map((row) =>
+        headers
+          .map((header) => {
+            const value = row[header as keyof typeof row];
+            return typeof value === 'string' && value.includes(',')
+              ? `"${value.replace(/"/g, '""')}"`
+              : value;
+          })
+          .join(',')
+      ),
+    ].join('\n');
 
-  const transformed = useMemo(
-    () =>
-      paginatedTimekeepers.map((tk) => ({
-        id: tk.id,
-        fullname: tk.fullname,
-        phonenumber: tk.phonenumber,
-        email: tk.email,
-        assign_stand: tk.assign_stand,
-        province: tk.province,
-        nic: tk.nic,
-        status: tk.status,
-        createdAt: tk.createdAt,
-      })),
-    [paginatedTimekeepers]
-  );
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `staff-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
 
-  useEffect(() => {
-    setPagination({
-      currentPage: queryParams.page,
-      totalPages: Math.ceil(filteredTimekeepers.length / queryParams.size) || 1,
-      totalElements: filteredTimekeepers.length,
-      pageSize: queryParams.size,
-    });
-  }, [filteredTimekeepers, queryParams.page, queryParams.size]);
+  const handleView = (id: string) => {
+    router.push(`/mot/staff-management/${id}`);
+  };
 
-  /** Render */
+  const handleEdit = (id: string) => {
+    router.push(`/mot/staff-management/${id}/edit`);
+  };
+
+  const handleDelete = (id: string, name: string) => {
+    const member = allStaff.find((s) => s.id === id);
+    if (member) {
+      setStaffToDelete(member);
+      setShowDeleteModal(true);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!staffToDelete) return;
+    setIsDeleting(true);
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    setIsDeleting(false);
+    setShowDeleteModal(false);
+    setStaffToDelete(null);
+    // In real implementation, refresh data from API
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setStaffToDelete(null);
+  };
+
   return (
     <Layout
-      activeItem="timekeepers"
-      pageTitle="Timekeepers"
-      pageDescription="Manage timekeepers (stand assignments and staff)"
+      activeItem="staff"
+      pageTitle="Staff Management"
+      pageDescription="Manage timekeepers, inspectors, and other staff members"
       role="mot"
     >
       <div className="space-y-6">
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <h3 className="text-sm font-medium text-red-800">Error</h3>
-            <p className="text-sm text-red-700 mt-1">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="text-sm text-red-600 hover:text-red-800 underline mt-2"
-            >
-              Dismiss
-            </button>
-          </div>
-        )}
+        {/* Statistics Cards */}
+        <div className="mb-6">
+          <StaffStatsCards stats={statsForCards} />
+        </div>
 
-        {/* Statistics */}
-        <TimekeeperStatsCards stats={stats} />
+        {/* Staff Type Tabs */}
+        <div className="mb-6">
+          <StaffTypeTabs
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            counts={tabCounts}
+          />
+        </div>
 
-        {/* Only "Add New" button now */}
-        <TimekeeperActionButtons onAddTimekeeper={handleAddNew} />
+        {/* Action Buttons */}
+        <div className="mb-6">
+          <StaffActionButtons
+            onAddStaff={handleAddStaff}
+            onExportAll={handleExportAll}
+          />
+        </div>
 
-        {/* Filters */}
-        <TimekeeperAdvancedFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          statusFilter={statusFilter}
-          setStatusFilter={setStatusFilter}
-          provinceFilter={provinceFilter}
-          setProvinceFilter={setProvinceFilter}
-          standFilter={standFilter}
-          setStandFilter={setStandFilter}
-          filterOptions={filterOptions}
-          loading={isLoading}
-          totalCount={pagination.totalElements}
-          filteredCount={transformed.length}
-          onSearch={handleSearch}
-          onClearAll={() => {
-            setSearchTerm('');
-            setStatusFilter('all');
-            setProvinceFilter('all');
-            setStandFilter('all');
-          }}
-        />
+        {/* Advanced Filters */}
+        <div className="mb-6">
+          <StaffAdvancedFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            statusFilter={statusFilter}
+            setStatusFilter={setStatusFilter}
+            provinceFilter={provinceFilter}
+            setProvinceFilter={setProvinceFilter}
+            filterOptions={{
+              statuses: filterOptions.statuses,
+              provinces: filterOptions.provinces,
+              locations: filterOptions.locations,
+            }}
+            loading={false}
+            totalCount={
+              activeTab === 'all'
+                ? allStaff.length
+                : allStaff.filter((s) => s.staffType === activeTab).length
+            }
+            filteredCount={tableData.length}
+            onSearch={handleSearch}
+            onClearAll={handleClearAllFilters}
+          />
+        </div>
 
-        {/* Table */}
+        {/* Staff Table */}
         <div className="bg-white rounded-lg shadow">
-          <TimekeepersTable
-            timekeepers={transformed}
+          <StaffTable
+            staff={tableData}
             onView={handleView}
             onEdit={handleEdit}
             onDelete={handleDelete}
-            onSort={(sortBy, sortDir) => updateQueryParams({ sortBy, sortDir })}
+            onSort={handleSort}
             activeFilters={{
               search: searchTerm,
               status: statusFilter !== 'all' ? statusFilter : undefined,
               province: provinceFilter !== 'all' ? provinceFilter : undefined,
-              stand: standFilter !== 'all' ? standFilter : undefined,
             }}
-            loading={isLoading}
-            currentSort={{ field: queryParams.sortBy, direction: queryParams.sortDir }}
+            loading={false}
+            currentSort={{ field: sortBy, direction: sortDir }}
           />
 
-          {pagination.totalElements > 0 && (
+          {/* Pagination */}
+          {filteredStaff.length > 0 && (
             <div className="border-t border-gray-200">
               <Pagination
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                totalElements={pagination.totalElements}
-                pageSize={pagination.pageSize}
-                onPageChange={(page) => updateQueryParams({ page })}
-                onPageSizeChange={(size) => updateQueryParams({ size, page: 0 })}
-                loading={isLoading}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalElements={filteredStaff.length}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  setCurrentPage(0);
+                }}
+                loading={false}
                 searchActive={Boolean(searchTerm)}
-                filterCount={[
-                  statusFilter !== 'all',
-                  provinceFilter !== 'all',
-                  standFilter !== 'all',
-                ].filter(Boolean).length}
+                filterCount={
+                  [statusFilter !== 'all', provinceFilter !== 'all'].filter(
+                    Boolean
+                  ).length
+                }
               />
             </div>
           )}
         </div>
+
+        {/* Delete Staff Modal */}
+        <DeleteStaffModal
+          isOpen={showDeleteModal}
+          onClose={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
+          staff={staffToDelete}
+          isDeleting={isDeleting}
+        />
       </div>
     </Layout>
   );
