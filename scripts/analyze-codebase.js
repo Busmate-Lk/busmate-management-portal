@@ -3,7 +3,17 @@
 const fs = require('fs');
 const path = require('path');
 
+// Parse command line arguments
+const args = process.argv.slice(2);
+const options = {
+  save: args.includes('--save') || args.includes('-s'),
+  outputDir: 'reports/codebase-analysis',
+  format: args.includes('--json') ? 'json' : 'text',
+  quiet: args.includes('--quiet') || args.includes('-q'),
+};
+
 const srcPath = path.join(__dirname, '../src');
+const reportsDir = path.join(__dirname, '..', options.outputDir);
 
 // Color codes for terminal output
 const colors = {
@@ -29,6 +39,11 @@ const stats = {
   totalBlankLines: 0,
   byExtension: {},
   byDirectory: {},
+  metadata: {
+    timestamp: new Date().toISOString(),
+    analyzedDirectory: 'src',
+    fileExtensions: includedExtensions,
+  },
 };
 
 /**
@@ -143,95 +158,265 @@ function formatNumber(num) {
 }
 
 /**
- * Print header
+ * Create directory if it doesn't exist
  */
-function printHeader(text) {
-  console.log(
-    `\n${colors.bright}${colors.cyan}${'='.repeat(60)}${colors.reset}`
-  );
-  console.log(`${colors.bright}${colors.cyan}${text}${colors.reset}`);
-  console.log(
-    `${colors.bright}${colors.cyan}${'='.repeat(60)}${colors.reset}\n`
-  );
+function ensureDirectoryExists(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath, { recursive: true });
+  }
 }
 
 /**
- * Main execution
+ * Generate timestamped filename
  */
-function analyze() {
-  console.log(`${colors.bright}${colors.blue}📊 Analyzing codebase...${colors.reset}\n`);
+function generateTimestampedFilename(prefix = 'codebase-analysis', extension = 'txt') {
+  const now = new Date();
+  const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
+  return `${prefix}-${timestamp}.${extension}`;
+}
 
-  walkDir(srcPath);
+/**
+ * Save analysis results to file
+ */
+function saveResults(output) {
+  ensureDirectoryExists(reportsDir);
 
-  // Print results
-  printHeader('📈 CODEBASE OVERVIEW');
+  const filename = generateTimestampedFilename('codebase-analysis', options.format === 'json' ? 'json' : 'txt');
+  const filePath = path.join(reportsDir, filename);
 
-  console.log(`${colors.green}✓ Total Files:${colors.reset} ${formatNumber(stats.totalFiles)}`);
-  console.log(`${colors.green}✓ Total Lines:${colors.reset} ${formatNumber(stats.totalLines)}`);
-  console.log(`${colors.green}✓ Code Lines:${colors.reset} ${formatNumber(stats.totalCodeLines)} (${((stats.totalCodeLines / stats.totalLines) * 100).toFixed(1)}%)`);
-  console.log(`${colors.green}✓ Comment Lines:${colors.reset} ${formatNumber(stats.totalCommentLines)} (${((stats.totalCommentLines / stats.totalLines) * 100).toFixed(1)}%)`);
-  console.log(`${colors.green}✓ Blank Lines:${colors.reset} ${formatNumber(stats.totalBlankLines)} (${((stats.totalBlankLines / stats.totalLines) * 100).toFixed(1)}%)`);
+  fs.writeFileSync(filePath, output, 'utf-8');
 
-  // Print by file type
-  printHeader('📄 BREAKDOWN BY FILE TYPE');
+  // Update or create index file
+  updateReportsIndex(filename);
 
+  return filePath;
+}
+
+/**
+ * Update reports index file
+ */
+function updateReportsIndex(newReportFilename) {
+  const indexPath = path.join(reportsDir, 'index.json');
+  let index = { reports: [] };
+
+  if (fs.existsSync(indexPath)) {
+    try {
+      index = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
+    } catch (error) {
+      // If index is corrupted, start fresh
+      index = { reports: [] };
+    }
+  }
+
+  // Add new report
+  const reportEntry = {
+    filename: newReportFilename,
+    timestamp: stats.metadata.timestamp,
+    totalFiles: stats.totalFiles,
+    totalLines: stats.totalLines,
+    totalCodeLines: stats.totalCodeLines,
+  };
+
+  index.reports.push(reportEntry);
+
+  // Sort by timestamp (newest first)
+  index.reports.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  // Keep only last 50 reports to prevent index from growing too large
+  if (index.reports.length > 50) {
+    index.reports = index.reports.slice(0, 50);
+  }
+
+  fs.writeFileSync(indexPath, JSON.stringify(index, null, 2), 'utf-8');
+}
+
+/**
+ * Generate JSON output
+ */
+function generateJsonOutput() {
   const sortedExtensions = Object.entries(stats.byExtension)
     .sort((a, b) => b[1].codeLines - a[1].codeLines);
 
-  console.log(
-    `${colors.bright}${colors.yellow}File Type${colors.reset.padEnd(15)} | ` +
-    `${colors.bright}${colors.yellow}Files${colors.reset.padEnd(8)} | ` +
-    `${colors.bright}${colors.yellow}Lines${colors.reset.padEnd(10)} | ` +
-    `${colors.bright}${colors.yellow}Code Lines${colors.reset.padEnd(12)}`
-  );
-  console.log('-'.repeat(55));
+  const sortedDirs = Object.entries(stats.byDirectory)
+    .sort((a, b) => b[1].codeLines - a[1].codeLines);
+
+  const avgLinesPerFile = Math.round(stats.totalCodeLines / stats.totalFiles);
+  const avgCodeDensity = ((stats.totalCodeLines / stats.totalLines) * 100).toFixed(1);
+
+  return JSON.stringify({
+    metadata: stats.metadata,
+    overview: {
+      totalFiles: stats.totalFiles,
+      totalLines: stats.totalLines,
+      totalCodeLines: stats.totalCodeLines,
+      totalCommentLines: stats.totalCommentLines,
+      totalBlankLines: stats.totalBlankLines,
+      codeDensity: parseFloat(avgCodeDensity),
+      averageLinesPerFile: avgLinesPerFile,
+    },
+    byExtension: sortedExtensions.map(([ext, data]) => ({
+      extension: ext,
+      files: data.files,
+      lines: data.lines,
+      codeLines: data.codeLines,
+    })),
+    byDirectory: sortedDirs.map(([dir, data]) => ({
+      directory: dir,
+      files: data.files,
+      lines: data.lines,
+      codeLines: data.codeLines,
+    })),
+  }, null, 2);
+}
+
+/**
+ * Print header
+ */
+function printHeader(text) {
+  const header = `\n${'='.repeat(60)}\n${text}\n${'='.repeat(60)}\n`;
+  if (!options.quiet) {
+    console.log(`${colors.bright}${colors.cyan}${header}${colors.reset}`);
+  }
+  return header;
+}
+
+/**
+ * Generate text output
+ */
+function generateTextOutput() {
+  let output = '';
+
+  output += `📊 Analyzing codebase...\n\n`;
+
+  // Overview
+  output += printHeader('📈 CODEBASE OVERVIEW');
+  output += `✓ Total Files: ${formatNumber(stats.totalFiles)}\n`;
+  output += `✓ Total Lines: ${formatNumber(stats.totalLines)}\n`;
+  output += `✓ Code Lines: ${formatNumber(stats.totalCodeLines)} (${((stats.totalCodeLines / stats.totalLines) * 100).toFixed(1)}%)\n`;
+  output += `✓ Comment Lines: ${formatNumber(stats.totalCommentLines)} (${((stats.totalCommentLines / stats.totalLines) * 100).toFixed(1)}%)\n`;
+  output += `✓ Blank Lines: ${formatNumber(stats.totalBlankLines)} (${((stats.totalBlankLines / stats.totalLines) * 100).toFixed(1)}%)\n`;
+
+  // By file type
+  output += printHeader('📄 BREAKDOWN BY FILE TYPE');
+  const sortedExtensions = Object.entries(stats.byExtension)
+    .sort((a, b) => b[1].codeLines - a[1].codeLines);
+
+  output += `File Type${''.padEnd(15)} | Files${''.padEnd(8)} | Lines${''.padEnd(10)} | Code Lines${''.padEnd(12)}\n`;
+  output += '-'.repeat(55) + '\n';
 
   for (const [ext, data] of sortedExtensions) {
     const extDisplay = ext.padEnd(15);
     const filesDisplay = data.files.toString().padEnd(8);
     const linesDisplay = formatNumber(data.lines).padEnd(10);
     const codeDisplay = formatNumber(data.codeLines).padEnd(12);
-
-    console.log(
-      `${colors.cyan}${extDisplay}${colors.reset} | ${filesDisplay} | ${linesDisplay} | ${codeDisplay}`
-    );
+    output += `${extDisplay} | ${filesDisplay} | ${linesDisplay} | ${codeDisplay}\n`;
   }
 
-  // Print by directory
-  printHeader('📁 BREAKDOWN BY DIRECTORY');
-
+  // By directory
+  output += printHeader('📁 BREAKDOWN BY DIRECTORY');
   const sortedDirs = Object.entries(stats.byDirectory)
     .sort((a, b) => b[1].codeLines - a[1].codeLines);
 
-  console.log(
-    `${colors.bright}${colors.yellow}Directory${colors.reset.padEnd(35)} | ` +
-    `${colors.bright}${colors.yellow}Files${colors.reset.padEnd(8)} | ` +
-    `${colors.bright}${colors.yellow}Code Lines${colors.reset.padEnd(12)}`
-  );
-  console.log('-'.repeat(65));
+  output += `Directory${''.padEnd(35)} | Files${''.padEnd(8)} | Code Lines${''.padEnd(12)}\n`;
+  output += '-'.repeat(65) + '\n';
 
   for (const [dir, data] of sortedDirs) {
     const dirDisplay = dir.padEnd(35);
     const filesDisplay = data.files.toString().padEnd(8);
     const codeDisplay = formatNumber(data.codeLines).padEnd(12);
-
-    console.log(
-      `${colors.magenta}${dirDisplay}${colors.reset} | ${filesDisplay} | ${codeDisplay}`
-    );
+    output += `${dirDisplay} | ${filesDisplay} | ${codeDisplay}\n`;
   }
 
-  // Print summary statistics
-  printHeader('📊 SUMMARY STATISTICS');
-
+  // Summary statistics
+  output += printHeader('📊 SUMMARY STATISTICS');
   const avgLinesPerFile = Math.round(stats.totalCodeLines / stats.totalFiles);
   const avgCodeDensity = ((stats.totalCodeLines / stats.totalLines) * 100).toFixed(1);
 
-  console.log(`${colors.green}✓ Average Lines per File:${colors.reset} ${formatNumber(avgLinesPerFile)}`);
-  console.log(`${colors.green}✓ Code Density:${colors.reset} ${avgCodeDensity}%`);
-  console.log(`${colors.green}✓ File Types:${colors.reset} ${sortedExtensions.length}`);
-  console.log(`${colors.green}✓ Directories:${colors.reset} ${sortedDirs.length}`);
+  output += `✓ Average Lines per File: ${formatNumber(avgLinesPerFile)}\n`;
+  output += `✓ Code Density: ${avgCodeDensity}%\n`;
+  output += `✓ File Types: ${sortedExtensions.length}\n`;
+  output += `✓ Directories: ${sortedDirs.length}\n`;
 
-  console.log(`\n${colors.bright}${colors.green}✅ Analysis complete!${colors.reset}\n`);
+  output += `\n✅ Analysis complete!\n`;
+
+  return output;
+}
+
+/**
+ * Print usage information
+ */
+function printUsage() {
+  console.log(`
+${colors.bright}${colors.cyan}📊 Codebase Analysis Tool${colors.reset}
+
+${colors.yellow}Usage:${colors.reset}
+  npm run analyze [options]
+
+${colors.yellow}Options:${colors.reset}
+  --save, -s          Save analysis results to file
+  --json              Output in JSON format (default: text)
+  --quiet, -q         Suppress console output when saving to file
+  --help, -h          Show this help message
+
+${colors.yellow}Examples:${colors.reset}
+  npm run analyze                    # Display in console only
+  npm run analyze --save             # Display in console and save to file
+  npm run analyze --save --json      # Save as JSON file (quiet)
+  npm run analyze --save --quiet     # Save to file only (no console output)
+
+${colors.yellow}Output:${colors.reset}
+  Reports are saved to: ${options.outputDir}/
+  Index file tracks all reports: ${options.outputDir}/index.json
+`);
+}
+
+/**
+ * Main execution
+ */
+function analyze() {
+  // Check for help flag
+  if (args.includes('--help') || args.includes('-h')) {
+    printUsage();
+    return;
+  }
+
+  if (!options.quiet) {
+    console.log(`${colors.bright}${colors.blue}📊 Analyzing codebase...${colors.reset}\n`);
+  }
+
+  walkDir(srcPath);
+
+  // Generate output based on format
+  let output;
+  if (options.format === 'json') {
+    output = generateJsonOutput();
+  } else {
+    output = generateTextOutput();
+  }
+
+  // Display in console (unless quiet mode)
+  if (!options.quiet) {
+    if (options.format === 'json') {
+      console.log(output);
+    } else {
+      // Text output is already formatted for console
+      console.log(output);
+    }
+  }
+
+  // Save to file if requested
+  if (options.save) {
+    const filePath = saveResults(output);
+    const relativePath = path.relative(process.cwd(), filePath);
+
+    if (!options.quiet) {
+      console.log(`${colors.green}💾 Report saved to: ${relativePath}${colors.reset}`);
+      console.log(`${colors.gray}   View all reports: ${path.relative(process.cwd(), reportsDir)}/${colors.reset}`);
+    } else {
+      // In quiet mode, just show the file path
+      console.log(relativePath);
+    }
+  }
 }
 
 // Run analysis
