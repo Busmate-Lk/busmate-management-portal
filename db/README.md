@@ -9,12 +9,16 @@ db/
 ├── dumps/              # Generated export files (git-ignored)
 │   ├── schema.sql              # Database schema only
 │   ├── reference-data.sql      # Reference table data
-│   └── full-*.dump             # Timestamped full backups
+│   ├── data-only.sql           # All table data (no schema)
+│   ├── full-*.sql              # Timestamped full SQL exports
+│   └── full-*.dump             # Timestamped full backups (custom format)
 ├── scripts/            # Export shell scripts
 │   ├── helpers.sh              # Shared functions and configuration
 │   ├── export-schema.sh        # Schema export script
 │   ├── export-reference.sh     # Reference data export script
-│   ├── export-full.sh          # Full backup script
+│   ├── export-data.sh          # Data-only export script
+│   ├── export-full-sql.sh      # Full SQL export script
+│   ├── export-full.sh          # Full backup script (.dump)
 │   └── export-all.sh           # Combined export runner
 └── README.md           # This file
 ```
@@ -45,7 +49,9 @@ make db-all
 # Individual exports
 make db-schema      # Schema only
 make db-reference   # Reference data only
-make db-backup      # Full backup only
+make db-data        # All data only (no schema)
+make db-full-sql    # Full SQL (schema + data)
+make db-backup      # Full backup (.dump)
 ```
 
 Or run scripts directly:
@@ -57,6 +63,8 @@ bash db/scripts/export-all.sh
 # Individual exports
 bash db/scripts/export-schema.sh
 bash db/scripts/export-reference.sh
+bash db/scripts/export-data.sh
+bash db/scripts/export-full-sql.sh
 bash db/scripts/export-full.sh
 ```
 
@@ -143,7 +151,75 @@ psql $DATABASE_URL < db/dumps/reference-data.sql
 
 ---
 
-### 3. Full Backup Export (`full-<timestamp>.dump`)
+### 3. Data-Only Export (`data-only.sql`)
+
+**Purpose**: Export all table data without schema definitions
+
+**What it includes**:
+- All data from all tables
+- INSERT statements with explicit column names
+- Trigger-disable wrappers for clean import
+
+**What it excludes**:
+- Schema definitions (tables, indexes, constraints)
+- Ownership information
+- Privileges/grants
+
+**When to use**:
+- To migrate data between databases with the same schema
+- To inspect all stored data in a readable format
+- To seed a pre-existing schema with data
+- To create a portable data snapshot
+
+**Command**:
+```bash
+make db-data
+```
+
+**Output**: `db/dumps/data-only.sql`
+
+**Restore**:
+```bash
+# Assumes schema already exists in the target database
+psql $DATABASE_URL < db/dumps/data-only.sql
+```
+
+---
+
+### 4. Full SQL Export (`full-<timestamp>.sql`)
+
+**Purpose**: Human-readable complete database export (schema + data)
+
+**What it includes**:
+- Complete schema definitions
+- All data from all tables
+- Plain-text SQL format — can be read, searched, and applied with `psql`
+
+**What it excludes**:
+- Ownership information
+- Privileges/grants
+
+**When to use**:
+- When you need a readable, inspectable full export
+- To share a complete database state via plain SQL
+- As an alternative to `.dump` when `pg_restore` is not available
+- For environments that only support plain SQL imports
+
+**Command**:
+```bash
+make db-full-sql
+```
+
+**Output**: `db/dumps/full-2026-02-21_14-30-45.sql` (example)
+
+**Restore**:
+```bash
+psql $DATABASE_URL < db/dumps/full-2026-02-21_14-30-45.sql
+```
+
+---
+
+### 5. Full Backup Export (`full-<timestamp>.dump`)
 
 **Purpose**: Complete database backup for disaster recovery
 
@@ -189,9 +265,9 @@ pg_restore -d $DATABASE_URL -t users db/dumps/full-2026-02-21_14-30-45.dump
 
 ---
 
-### 4. Combined Export (`export-all.sh`)
+### 6. Combined Export (`export-all.sh`)
 
-Runs all three export types in sequence.
+Runs all five export types in sequence.
 
 **Command**:
 ```bash
@@ -201,8 +277,10 @@ make db-all
 **What it does**:
 1. Exports schema
 2. Exports reference data
-3. Creates full backup
-4. Shows summary of results
+3. Exports data only
+4. Creates full SQL export
+5. Creates full backup (.dump)
+6. Shows summary of results
 
 ## 🔧 Configuration
 
