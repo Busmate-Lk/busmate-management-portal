@@ -176,6 +176,45 @@ export function Sidebar({
     },
   ];
 
+  const operatorSidebarItems: SidebarItem[] = [
+    {
+      icon: BarChart3,
+      label: 'Dashboard',
+      active: activeItem === 'dashboard',
+      href: '/operator/dashboard',
+    },
+    {
+      icon: FileText,
+      label: 'Service Permits',
+      active: activeItem === 'passenger-service-permits',
+      href: '/operator/passenger-service-permits',
+    },
+    {
+      icon: Bus,
+      label: 'Fleet Management',
+      active: activeItem === 'fleetmanagement',
+      href: '/operator/fleet-management',
+    },
+    {
+      icon: Navigation,
+      label: 'Trip Management',
+      active: activeItem === 'trips',
+      href: '/operator/trips',
+    },
+    {
+      icon: Users,
+      label: 'Staff Management',
+      active: activeItem === 'staff',
+      href: '/operator/staffManagement',
+    },
+    {
+      icon: DollarSign,
+      label: 'Revenue Management',
+      active: activeItem === 'revenue',
+      href: '/operator/revenueManagement',
+    },
+  ];
+
   let sidebarItems = null;
   switch (role) {
     case 'mot':
@@ -183,6 +222,9 @@ export function Sidebar({
       break;
     case 'timeKeeper':
       sidebarItems = timeKeeperSidebarItems;
+      break;
+    case 'operator':
+      sidebarItems = operatorSidebarItems;
       break;
     default:
       sidebarItems = motSidebarItems;

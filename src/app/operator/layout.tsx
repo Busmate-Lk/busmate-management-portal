@@ -1,11 +1,11 @@
 "use client"
 import { useState } from "react";
-import { Sidebar } from "@/components/operator/sidebar";
+import { Sidebar } from "@/components/shared/sidebar";
 import { usePathname } from "next/navigation";
 
 export default function OperatorLayout({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const sidebarWidth = isCollapsed ? 64 : 256; // px
+  const sidebarWidth = isCollapsed ? 80 : 272; // px
   const pathname = usePathname();
 
   // Map the current pathname to the corresponding active item
@@ -21,7 +21,12 @@ export default function OperatorLayout({ children }: { children: React.ReactNode
 
   return (
     <div>
-      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} activeItem={activeItem} />
+      <Sidebar 
+        isCollapsed={isCollapsed} 
+        setIsCollapsed={setIsCollapsed} 
+        activeItem={activeItem}
+        role="operator"
+      />
       <div
         style={{
           marginLeft: sidebarWidth,
