@@ -10,7 +10,6 @@ import {
   ChevronRight,
   FileText,
   Bell,
-  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -38,8 +37,6 @@ export function Sidebar({ activeItem = "dashboard", isCollapsed, setIsCollapsed 
     { icon: Bus, label: "Fleet Management", active: activeItem === "fleetmanagement", href: "/operator/fleet-management" },
     { icon: Navigation, label: "Trip Management", active: activeItem === "trips", href: "/operator/trips" },
     { icon: Users, label: "Staff Management", active: activeItem === "staff", href: "/operator/staffManagement" },
-    { icon: UserCheck, label: "Staff Assignment", active: activeItem === "staff-assignment", href: "/operator/staff-assignment" },
-    { icon: Bell, label: "Notifications", active: activeItem === "notifications", href: "/operator/notifications/received" },
     { icon: DollarSign, label: "Revenue Management", active: activeItem === "revenue", href: "/operator/revenueManagement" },
   ];
 
