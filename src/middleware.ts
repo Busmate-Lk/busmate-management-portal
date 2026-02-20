@@ -72,7 +72,7 @@ export async function middleware(request: NextRequest) {
     const roleRoutes = {
       'Mot': '/mot',
       'FleetOperator': '/operator',
-      'Timekeeper': '/timeKeeper',
+      'Timekeeper': '/timekeeper',
       'SystemAdmin': '/admin',
       'Admin': '/admin',
     };

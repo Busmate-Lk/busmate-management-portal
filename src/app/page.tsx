@@ -21,7 +21,7 @@ export default function Home() {
           case 'operator':
             return '/operator/dashboard';
           case 'timekeeper':
-            return '/timeKeeper/dashboard';
+            return '/timekeeper/dashboard';
           case 'admin':
           case 'systemadmin':
           case 'system-admin':

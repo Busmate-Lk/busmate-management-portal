@@ -160,19 +160,19 @@ export function Sidebar({
       icon: LayoutDashboard,
       label: 'Dashboard',
       active: activeItem === 'dashboard',
-      href: '/timeKeeper/dashboard',
+      href: '/timekeeper/dashboard',
     },
     {
-      icon: Calendar,
-      label: 'Trip Managemanet',
-      active: activeItem === 'trip',
-      href: '/timeKeeper/trip',
+      icon: Users,
+      label: 'Attendance',
+      active: activeItem === 'attendance',
+      href: '/timekeeper/attendance',
     },
     {
       icon: Bus,
-      label: 'Trip Assignment',
-      active: activeItem === 'trip-assignment',
-      href: '/timeKeeper/trip-assignment',
+      label: 'Trips',
+      active: activeItem === 'trips',
+      href: '/timekeeper/trips',
     },
   ];
 
