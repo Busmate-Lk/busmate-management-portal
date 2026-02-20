@@ -3,7 +3,7 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useMemo, useCallback } from 'react';
 import { Layout } from '@/components/shared/layout';
-import { getFareById } from '@/data/fares';
+import { getFareById } from '@/data/mot/fares';
 import { FareSummary } from '@/components/mot/fares/FareSummary';
 import { FareTabsSection } from '@/components/mot/fares/FareTabsSection';
 import { DeleteFareModal } from '@/components/mot/fares/DeleteFareModal';

@@ -1,7 +1,7 @@
 'use client';
 
 import { DollarSign, CheckCircle, AlertTriangle, TrendingUp, Clock } from 'lucide-react';
-import { FareStatistics } from '@/data/fares';
+import { FareStatistics } from '@/data/mot/fares';
 
 interface FareStatsCardsProps {
     stats: FareStatistics | null;

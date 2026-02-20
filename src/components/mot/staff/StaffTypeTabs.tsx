@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Users, Clock, Search } from 'lucide-react';
-import type { StaffType } from '@/data/staff';
+import type { StaffType } from '@/data/mot/staff';
 
 type TabValue = 'all' | StaffType;
 

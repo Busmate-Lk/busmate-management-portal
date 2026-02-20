@@ -14,7 +14,7 @@ import { Layout } from '@/components/shared/layout';
 import { PolicySummary } from '@/components/mot/policies/PolicySummary';
 import { PolicyTabsSection } from '@/components/mot/policies/PolicyTabsSection';
 import { DeletePolicyModal } from '@/components/mot/policies/DeletePolicyModal';
-import { getPolicyById } from '@/data/policies';
+import { getPolicyById } from '@/data/mot/policies';
 
 export default function PolicyDetailsPage() {
     const router = useRouter();

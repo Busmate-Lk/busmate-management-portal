@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertTriangle } from 'lucide-react';
-import { Fare } from '@/data/fares';
+import { Fare } from '@/data/mot/fares';
 
 interface DeleteFareModalProps {
     fare: Fare;

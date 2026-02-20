@@ -10,7 +10,7 @@ import {
     AlertTriangle,
     ExternalLink,
 } from 'lucide-react';
-import { Policy } from '@/data/policies';
+import { Policy } from '@/data/mot/policies';
 
 interface PolicySummaryProps {
     policy: Policy;

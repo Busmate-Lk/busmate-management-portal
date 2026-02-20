@@ -1,7 +1,7 @@
 'use client';
 
 import { Eye, Edit, Trash2, Power, ArrowUpDown } from 'lucide-react';
-import { Fare } from '@/data/fares';
+import { Fare } from '@/data/mot/fares';
 
 interface FaresTableProps {
     fares: Fare[];

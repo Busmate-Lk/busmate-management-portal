@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useCallback } from 'react';
 import { Layout } from '@/components/shared/layout';
-import { FareFormData } from '@/data/fares';
+import { FareFormData } from '@/data/mot/fares';
 import { FareForm } from '@/components/mot/fares/FareForm';
 import { ChevronRight, AlertCircle } from 'lucide-react';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertTriangle, X } from 'lucide-react';
-import { Policy } from '@/data/policies';
+import { Policy } from '@/data/mot/policies';
 
 interface DeletePolicyModalProps {
     isOpen: boolean;

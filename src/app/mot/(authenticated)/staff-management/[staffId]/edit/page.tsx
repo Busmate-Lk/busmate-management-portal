@@ -4,7 +4,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Layout } from '@/components/shared/layout';
 import StaffForm from '@/components/mot/staff/StaffForm';
-import type { StaffMember } from '@/data/staff';
+import type { StaffMember } from '@/data/mot/staff';
 
 export default function EditStaffPage() {
     const router = useRouter();

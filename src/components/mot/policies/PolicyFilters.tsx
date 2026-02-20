@@ -1,7 +1,7 @@
 'use client';
 
 import { Search, X, Upload, Download, Filter } from 'lucide-react';
-import { PolicyFilterOptions } from '@/data/policies';
+import { PolicyFilterOptions } from '@/data/mot/policies';
 
 interface PolicyFiltersProps {
     searchTerm: string;

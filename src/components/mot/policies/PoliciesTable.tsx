@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText, Eye, Edit, Trash2, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
-import { Policy } from '@/data/policies';
+import { Policy } from '@/data/mot/policies';
 
 interface PoliciesTableProps {
     policies: Policy[];

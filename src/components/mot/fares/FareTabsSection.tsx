@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Fare } from '@/data/fares';
+import { Fare } from '@/data/mot/fares';
 import { User, Calendar, FileText, MapPin, AlertTriangle, CheckCircle, Phone } from 'lucide-react';
 
 interface FareTabsSectionProps {

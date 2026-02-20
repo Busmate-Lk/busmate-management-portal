@@ -1,6 +1,6 @@
 'use client';
 
-import { Fare } from '@/data/fares';
+import { Fare } from '@/data/mot/fares';
 import { DollarSign, MapPin, Calendar, User, AlertCircle } from 'lucide-react';
 
 interface FareSummaryProps {

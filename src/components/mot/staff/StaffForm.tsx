@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
-import type { StaffMember, StaffFormData, StaffType, StaffStatus } from '@/data/staff';
-import { getStaffMemberById } from '@/data/staff';
+import type { StaffMember, StaffFormData, StaffType, StaffStatus } from '@/data/mot/staff';
+import { getStaffMemberById } from '@/data/mot/staff';
 
 interface StaffFormProps {
     staffId?: string;

@@ -18,7 +18,7 @@ import {
   getStaffFilterOptions,
   StaffMember,
   StaffType,
-} from '@/data/staff';
+} from '@/data/mot/staff';
 
 type TabValue = 'all' | StaffType;
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { FileText, BookOpen, Paperclip, History, ExternalLink, Download } from 'lucide-react';
-import { Policy } from '@/data/policies';
+import { Policy } from '@/data/mot/policies';
 
 interface PolicyTabsSectionProps {
     policy: Policy;

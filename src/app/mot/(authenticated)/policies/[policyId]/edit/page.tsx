@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react';
 import { ChevronRight, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Layout } from '@/components/shared/layout';
 import { PolicyForm, PolicyFormData } from '@/components/mot/policies/PolicyForm';
-import { getPolicyById } from '@/data/policies';
+import { getPolicyById } from '@/data/mot/policies';
 
 export default function EditPolicyPage() {
     const router = useRouter();

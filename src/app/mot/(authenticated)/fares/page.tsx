@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useMemo, useCallback } from 'react';
 import { Layout } from '@/components/shared/layout';
-import { getFares, getFareStatistics, getFareFilterOptions, Fare } from '@/data/fares';
+import { getFares, getFareStatistics, getFareFilterOptions, Fare } from '@/data/mot/fares';
 import { FareStatsCards } from '@/components/mot/fares/FareStatsCards';
 import { FareFilters } from '@/components/mot/fares/FareFilters';
 import { FaresTable } from '@/components/mot/fares/FaresTable';

@@ -1,7 +1,7 @@
 'use client';
 
 import { Search, X, Upload, Download, Filter } from 'lucide-react';
-import { FareFilterOptions } from '@/data/fares';
+import { FareFilterOptions } from '@/data/mot/fares';
 
 interface FareFiltersProps {
     searchTerm: string;

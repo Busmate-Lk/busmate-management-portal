@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Policy } from '@/data/policies';
+import { Policy } from '@/data/mot/policies';
 
 interface PolicyFormProps {
     policy?: Policy;

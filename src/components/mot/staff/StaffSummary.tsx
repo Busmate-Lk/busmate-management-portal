@@ -14,7 +14,7 @@ import {
     Building,
     Calendar,
 } from 'lucide-react';
-import type { StaffMember } from '@/data/staff';
+import type { StaffMember } from '@/data/mot/staff';
 
 interface StaffSummaryProps {
     staff: StaffMember;

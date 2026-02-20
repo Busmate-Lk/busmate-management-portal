@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText, CheckCircle, Clock, Eye, Archive } from 'lucide-react';
-import { PolicyStatistics } from '@/data/policies';
+import { PolicyStatistics } from '@/data/mot/policies';
 
 interface PolicyStatsCardsProps {
     stats: PolicyStatistics | null;

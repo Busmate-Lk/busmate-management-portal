@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import { Layout } from '@/components/shared/layout';
 import { StaffSummary, DeleteStaffModal } from '@/components/mot/staff';
-import { getStaffMemberById, StaffMember } from '@/data/staff';
+import { getStaffMemberById, StaffMember } from '@/data/mot/staff';
 
 export default function StaffDetailsPage() {
     const router = useRouter();

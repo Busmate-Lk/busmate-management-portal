@@ -14,7 +14,7 @@ import {
     getPolicyStatistics,
     getPolicyFilterOptions,
     Policy,
-} from '@/data/policies';
+} from '@/data/mot/policies';
 
 function PoliciesListContent() {
     const router = useRouter();

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { FareFormData } from '@/data/fares';
+import { FareFormData } from '@/data/mot/fares';
 
 interface FareFormProps {
     initialData?: Partial<FareFormData>;
