@@ -20,19 +20,19 @@ import {
 } from './data';
 
 // Import components
-import { KPICards } from '@/components/admin/dashboard/KPICards';
-import { 
+import { KPICards } from '@/components/mot/dashboard/KPICards';
+import {
   FleetDistributionChart,
   RouteAnalyticsChart,
   PermitStatusChart,
   OperatorPerformanceChart,
   MonthlyTrendChart,
   GeographicDistributionChart,
-  CapacityUtilizationChart
-} from '@/components/admin/dashboard/DashboardCharts';
-import { SystemAlerts } from '@/components/admin/dashboard/SystemAlerts';
-import { LiveStats } from '@/components/admin/dashboard/LiveStats';
-import { QuickActions } from '@/components/admin/dashboard/QuickActions';
+  CapacityUtilizationChart,
+} from '@/components/mot/dashboard/DashboardCharts';
+import { SystemAlerts } from '@/components/mot/dashboard/SystemAlerts';
+import { LiveStats } from '@/components/mot/dashboard/LiveStats';
+import { QuickActions } from '@/components/mot/dashboard/QuickActions';
 import { Layout } from '@/components/shared/layout';
 
 interface DashboardData {
