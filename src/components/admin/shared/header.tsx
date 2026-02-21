@@ -10,7 +10,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { NotificationDropdown } from "@/components/admin/notifications/notification-dropdown"
+import { Bell } from "lucide-react"
 import { User, LogOut, Settings } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/context/AuthContext"
@@ -98,7 +98,9 @@ export function Header({ title, description }: HeaderProps) {
                 {/* Right section - Notifications & Profile */}
                 <div className="flex items-center space-x-3">
                     {/* Notifications */}
-                    <NotificationDropdown />
+                    <Button variant="ghost" size="icon" className="relative">
+                        <Bell className="h-5 w-5 text-gray-600" />
+                    </Button>
 
                     {/* User Profile Menu */}
                     <DropdownMenu>

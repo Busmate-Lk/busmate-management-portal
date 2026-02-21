@@ -37,7 +37,7 @@ const actions = [
     description: "View sent messages",
     icon: MessageSquare,
     color: "bg-indigo-500 hover:bg-indigo-600",
-    href: "/admin/notifications/sent",
+    href: "/admin/notifications/listing",
   },
   {
     title: "System Logs",

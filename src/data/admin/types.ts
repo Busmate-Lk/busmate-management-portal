@@ -76,6 +76,7 @@ export interface Notification {
   title: string;
   body: string;
   type: 'info' | 'warning' | 'success' | 'error' | 'critical' | 'maintenance';
+  priority: 'low' | 'medium' | 'high' | 'critical';
   targetAudience: 'all' | 'passengers' | 'conductors' | 'fleet_operators' | 'mot_officers' | 'timekeepers';
   status: 'sent' | 'scheduled' | 'draft' | 'failed';
   createdAt: string;
@@ -85,8 +86,10 @@ export interface Notification {
   totalRecipients: number;
   senderId: string;
   senderName: string;
+  channel?: 'push' | 'email' | 'sms' | 'in-app';
 }
 
+/** @deprecated Use NotificationStats from ./notifications instead */
 export interface NotificationStats {
   totalSent: number;
   totalScheduled: number;

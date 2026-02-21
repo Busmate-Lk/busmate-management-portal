@@ -4,7 +4,17 @@ import { Bus, ChevronDown, Bell, User, LogOut } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useAuth } from "@/context/AuthContext"
 import { usePathname, useRouter } from "next/navigation"
-import { listNotifications, type NotificationListItem } from "@/lib/services/notificationService"
+// NotificationListItem type for header notification dropdown
+interface NotificationListItem {
+  notificationId: string
+  title: string
+  body: string
+  messageType?: string
+  senderRole?: string
+  targetAudience?: string
+  adminId?: string
+  createdAt?: string
+}
 
 interface HeaderProps {
   pageTitle?: string
@@ -93,7 +103,7 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
             message: n.body,
             time: toRelativeTime(n.createdAt),
             type: (n.messageType || 'info') as any,
-            redirectUrl: `${pathname?.startsWith('/mot') ? '/mot' : '/admin'}/notifications/detail/${n.notificationId}`,
+            redirectUrl: `${pathname?.startsWith('/mot') ? '/mot' : '/admin'}/notifications/${n.notificationId}`,
             isRead: false // We can track this locally or from backend if available
           }))
 
@@ -215,7 +225,7 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
 
   const handleViewAllNotifications = () => {
     const base = pathname?.startsWith('/mot') ? '/mot' : '/admin'
-    router.push(`${base}/notifications/received`)
+    router.push(`${base}/notifications`)
     setIsNotificationOpen(false)
   }
 

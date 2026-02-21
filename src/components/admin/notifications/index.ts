@@ -1,3 +1,6 @@
-export { NotificationPanel } from './notification-panel'
-export { NotificationDropdown } from './notification-dropdown'
-export { NotificationDetail } from './notification-detail'
+export { NotificationStatsCards } from './NotificationStatsCards';
+export { NotificationFilters } from './NotificationFilters';
+export { NotificationTable } from './NotificationTable';
+export { NotificationDetailPanel } from './NotificationDetailPanel';
+export { NotificationTrendChart } from './NotificationTrendChart';
+export { ComposeNotificationForm } from './ComposeNotificationForm';

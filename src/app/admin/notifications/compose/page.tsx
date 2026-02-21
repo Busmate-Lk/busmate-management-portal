@@ -1,10 +1,9 @@
 "use client"
 
 import { useSetPageMetadata } from "@/context/PageMetadata"
-import { ComposeMessage } from "@/components/admin/broadcast"
+import { ComposeNotificationForm } from "@/components/admin/notifications"
 
 export default function ComposeNotificationPage() {
-  // Set page metadata with breadcrumbs
   useSetPageMetadata({
     title: "Compose Notification",
     description: "Create and send notifications to users",
@@ -16,5 +15,5 @@ export default function ComposeNotificationPage() {
     ]
   })
 
-  return <ComposeMessage />
+  return <ComposeNotificationForm />
 }

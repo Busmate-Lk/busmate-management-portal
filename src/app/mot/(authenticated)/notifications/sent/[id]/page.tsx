@@ -1,13 +1,46 @@
 "use client"
 
-import { SentNotificationDetail } from "@/components/admin/notifications/sent-notification-detail"
-import { use } from "react"
+import { useMemo } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { NotificationDetailPanel } from "@/components/admin/notifications"
+import { getNotificationById } from "@/data/admin"
+import { ArrowLeft, AlertTriangle } from "lucide-react"
 
-export default function SentNotificationDetailPage({ params }: { params: Promise<{ id: string }> }) {
-    const resolvedParams = use(params)
+export default function SentNotificationDetailPage() {
+    const params = useParams()
+    const router = useRouter()
+    const notificationId = params.id as string
+    const notification = useMemo(() => getNotificationById(notificationId), [notificationId])
+
+    if (!notification) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20">
+                <div className="p-4 bg-amber-50 rounded-full mb-4">
+                    <AlertTriangle className="h-8 w-8 text-amber-600" />
+                </div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-1">Notification Not Found</h2>
+                <p className="text-sm text-gray-500 mb-6">ID: {notificationId}</p>
+                <button
+                    onClick={() => router.back()}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 font-medium"
+                >
+                    <ArrowLeft className="h-4 w-4" />
+                    Back
+                </button>
+            </div>
+        )
+    }
+
     return (
-        <div>
-            <SentNotificationDetail notificationId={resolvedParams.id} />
+        <div className="space-y-4">
+            <button
+                onClick={() => router.back()}
+                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            >
+                <ArrowLeft className="h-4 w-4" />
+                Back
+            </button>
+            <NotificationDetailPanel notification={notification} />
         </div>
     )
 }

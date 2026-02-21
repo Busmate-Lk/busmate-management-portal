@@ -73,11 +73,15 @@ export {
   getScheduledNotifications,
   getDraftNotifications,
   getReceivedNotifications,
+  filterNotifications,
   sendNotification,
   scheduleNotification,
   deleteNotification,
+  getUniqueAudiences,
+  getUniqueSenders,
   mockData as notificationsMockData,
 } from './notifications';
+export type { NotificationStats as NotificationStatsData } from './notifications';
 
 // Monitoring data and functions
 export {
