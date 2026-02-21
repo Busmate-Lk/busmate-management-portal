@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata, usePageContext } from '@/context/PageContext';
 import {
   RealTimeClock,
   StatsCards,
@@ -24,6 +24,16 @@ export default function TimeKeeperDashboardPage() {
   const [departures, setDepartures] = useState<TripSchedule[]>([]);
   const [assignedStop, setAssignedStop] = useState<AssignedStop | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  useSetPageMetadata({
+    title: 'Dashboard',
+    description: 'Real-time overview of trips, attendance, and your assigned stop',
+    activeItem: 'dashboard',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Dashboard' }],
+  });
+
+  const { setMetadata } = usePageContext();
 
   useEffect(() => {
     // Simulate API loading
@@ -52,55 +62,48 @@ export default function TimeKeeperDashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Update header description once assigned stop is known
+  useEffect(() => {
+    if (assignedStop) {
+      setMetadata({ description: `Assigned Stop: ${assignedStop.name}` });
+    }
+  }, [assignedStop, setMetadata]);
+
   if (isLoading || !stats || !assignedStop) {
     return (
-      <Layout
-        activeItem="dashboard"
-        pageTitle="Dashboard"
-        pageDescription="Loading..."
-        role="timeKeeper"
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      </div>
     );
   }
 
   return (
-    <Layout
-      activeItem="dashboard"
-      pageTitle="Dashboard"
-      pageDescription={`Assigned Stop: ${assignedStop.name}`}
-      role="timeKeeper"
-    >
-      <div className="space-y-6">
-        {/* Stats Cards */}
-        <StatsCards stats={stats} />
+    <div className="space-y-6">
+      {/* Stats Cards */}
+      <StatsCards stats={stats} />
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Clock and Assigned Stop Info */}
-          <div className="space-y-6">
-            {/* Real-time Clock */}
-            <RealTimeClock />
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column - Clock and Assigned Stop Info */}
+        <div className="space-y-6">
+          {/* Real-time Clock */}
+          <RealTimeClock />
 
-            {/* Assigned Stop Info */}
-            <AssignedStopInfo 
-              stop={assignedStop} 
-              busesAtStop={stats.busesAtStop} 
-            />
-          </div>
+          {/* Assigned Stop Info */}
+          <AssignedStopInfo 
+            stop={assignedStop} 
+            busesAtStop={stats.busesAtStop} 
+          />
+        </div>
 
-          {/* Right Column - Upcoming Departures (spans 2 columns on large screens) */}
-          <div className="lg:col-span-2">
-            <UpcomingDepartures 
-              departures={departures} 
-              title="Upcoming Departures"
-            />
-          </div>
+        {/* Right Column - Upcoming Departures (spans 2 columns on large screens) */}
+        <div className="lg:col-span-2">
+          <UpcomingDepartures 
+            departures={departures} 
+            title="Upcoming Departures"
+          />
         </div>
       </div>
-    </Layout>
+    </div>
   );
 }

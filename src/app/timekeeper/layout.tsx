@@ -1,16 +1,24 @@
-import type React from 'react';
+import type React from 'react'
+import type { Metadata } from 'next'
+import { Toaster } from '@/components/ui/toaster'
+import { TimekeeperLayoutClient } from './layout-client'
 
-// Authenticated layout wrapper for Time Keeper portal
-// Add your authentication check here in the future
-export default function AuthenticatedLayout({
+export const metadata: Metadata = {
+  title: 'BUSMATE LK Timekeeper Portal',
+  description: 'Timekeeper portal for BUSMATE LK transportation system',
+}
+
+export default function TimekeeperRootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  // You can add authentication logic here
-  // For example: redirect to login if not authenticated
-  // const session = await getSession();
-  // if (!session) redirect('/login');
-
-  return <>{children}</>;
+  return (
+    <>
+      <TimekeeperLayoutClient>
+        {children}
+      </TimekeeperLayoutClient>
+      <Toaster />
+    </>
+  )
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata, useSetPageActions, usePageContext } from '@/context/PageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +38,16 @@ export default function TimeKeeperAttendancePage() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [assignedStop, setAssignedStop] = useState<AssignedStop | null>(null);
+
+  useSetPageMetadata({
+    title: 'Attendance Management',
+    description: 'Manage attendance for your assigned stop',
+    activeItem: 'attendance',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Attendance' }],
+  });
+
+  const { setMetadata } = usePageContext();
 
   // Staff attendance state
   const [staffStats, setStaffStats] = useState<AttendanceStats | null>(null);
@@ -77,6 +87,26 @@ export default function TimeKeeperAttendancePage() {
     loadData();
   }, [loadData]);
 
+  // Update header description once assigned stop is known
+  useEffect(() => {
+    if (assignedStop) {
+      setMetadata({ description: `Manage attendance for ${assignedStop.name}` });
+    }
+  }, [assignedStop, setMetadata]);
+
+  // Refresh action in the content header
+  useSetPageActions(
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={loadData}
+      disabled={isLoading}
+    >
+      <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+      Refresh
+    </Button>
+  );
+
   // Staff attendance actions
   const handleMarkStaffAttendance = useCallback(
     (staffId: string, status: AttendanceStatus, notes?: string) => {
@@ -114,50 +144,26 @@ export default function TimeKeeperAttendancePage() {
 
   if (isLoading && !staffStats && !busStats) {
     return (
-      <Layout
-        activeItem="attendance"
-        pageTitle="Attendance Management"
-        pageDescription="Loading..."
-        role="timeKeeper"
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+      </div>
     );
   }
 
   return (
-    <Layout
-      activeItem="attendance"
-      pageTitle="Attendance Management"
-      pageDescription={`Manage attendance for ${assignedStop?.name || 'your assigned stop'}`}
-      role="timeKeeper"
-    >
-      <div className="space-y-6">
-        {/* Header with Date Selector and Refresh */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-gray-500" />
-              <Input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-auto"
-              />
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadData}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+    <div className="space-y-6">
+      {/* Date Selector */}
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-gray-500" />
+          <Input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="w-auto"
+          />
         </div>
+      </div>
 
         {/* Tabs for Staff and Bus Attendance */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -195,7 +201,6 @@ export default function TimeKeeperAttendancePage() {
             />
           </TabsContent>
         </Tabs>
-      </div>
-    </Layout>
+    </div>
   );
 }
