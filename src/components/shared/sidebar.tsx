@@ -28,10 +28,15 @@ import {
   TicketIcon,
   Users2,
   Shield,
+  User,
+  LogOut,
+  CircleUser,
+  ListCollapseIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 interface SidebarItem {
   icon: any;
@@ -54,6 +59,20 @@ export function Sidebar({
   role,
 }: SidebarProps) {
   const [internalIsCollapsed, setInternalIsCollapsed] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const { user, logout } = useAuth();
+
+  // Close user menu on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Use external state if provided, otherwise use internal state
   const isCollapsed =
@@ -278,27 +297,27 @@ export function Sidebar({
         } bg-blue-800 text-white transition-all duration-300 ease-in-out flex flex-col h-screen fixed left-0 top-0 z-40`}
     >
       {/* Header Section */}
-      <div className="p-4 border-b border-blue-500 h-20 flex items-center justify-center">
+      <div className="p-4 border-b border-blue-500 h-17 flex items-center justify-center">
         <div className="flex items-center justify-center w-full">
           <div
             className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''
               }`}
           >
             {!isCollapsed ? (
-              <div className="bg-blue-800 rounded-lg shrink-0 flex items-center justify-center">
+              <div className="bg-blue-800 ml-[-25px] rounded-lg shrink-0 flex items-center justify-center">
                 <Image
                   src="/busmate-logo-icon.png"
                   alt="Busmate LK Logo"
                   width={1408}
                   height={768}
-                  className="w-20 h-12 object-cover"
+                  className="w-15 h-7 object-cover"
                 />
                 <Image
                   src="/busmate-logo-text.png"
                   alt="Busmate LK Logo"
                   width={1408}
                   height={768}
-                  className="w-36 h-12 object-cover ml-[-5px] mt-[3px]"
+                  className="w-36 h-12 object-cover ml-[-15px] mt-[3px]"
                 />
               </div>
             ) : (
@@ -367,25 +386,101 @@ export function Sidebar({
         </nav>
       </div>
 
-      {/* Footer Section with Collapse Button */}
-      <div className="p-2 pr-4 border-t border-blue-500 flex items-center justify-end">
-        <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
-          className={`p-2.5 rounded-lg transition-all duration-200 ${isCollapsed
-            ? 'bg-blue-600 hover:bg-blue-500 text-white'
-            : 'text-blue-100 hover:bg-blue-500 hover:text-white'
-            }`}
-          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {isCollapsed ? (
-            <ChevronRight className="w-5 h-5" />
-          ) : (
-            <div className='flex'>
-              <ChevronLeft className="w-5 h-5 mr-[-12px]" />
-              <ChevronLeft className="w-5 h-5" />
-            </div>
-          )}
-        </button>
+      {/* Footer Section with User Menu + Collapse Button */}
+      <div className="border-t border-blue-500">
+        <div className={`flex ${isCollapsed ? 'flex-col items-center gap-4 py-4' : 'flex-row items-center'} p-2`}>
+          {/* User Menu Container */}
+          <div className="relative flex-1" ref={userMenuRef}>
+            {/* Dropdown (opens upward) */}
+            {userMenuOpen && (
+              <div className={`absolute bottom-full ${isCollapsed ? 'left-1/2 transform -translate-x-1/7' : 'left-0 right-3'} mb-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 min-w-[200px]`}>
+                {/* User info header */}
+                <div className="px-4 py-3 border-b border-gray-100">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {user?.email || 'Administrator'}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate mt-0.5">
+                    {user?.user_role || role || 'Admin'}
+                  </p>
+                </div>
+
+                {/* Menu items */}
+                <Link
+                  href={`/${role || 'admin'}/profile`}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={() => setUserMenuOpen(false)}
+                >
+                  <CircleUser className="w-4 h-4 text-gray-400" />
+                  Profile
+                </Link>
+                <Link
+                  href={`/${role || 'admin'}/settings`}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  onClick={() => setUserMenuOpen(false)}
+                >
+                  <Settings className="w-4 h-4 text-gray-400" />
+                  Settings
+                </Link>
+                <div className="border-t border-gray-100 my-1" />
+                <button
+                  onClick={() => {
+                    setUserMenuOpen(false);
+                    logout();
+                  }}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
+                </button>
+              </div>
+            )}
+
+            {/* User button */}
+            <button
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className={`flex items-center gap-3  text-blue-100 hover:bg-blue-700 transition-colors ${
+                isCollapsed ? 'justify-center w-full p-0 rounded-full' : 'flex-1 px-3 py-2 rounded-lg'
+              } ${userMenuOpen ? 'bg-blue-700' : ''}`}
+              title={isCollapsed ? (user?.email || 'Account') : undefined}
+            >
+              <div className={`${isCollapsed ? 'w-9 h-9' : 'w-8 h-8'} rounded-full bg-blue-600 flex items-center justify-center shrink-0 ring-2 ring-blue-400/30`}>
+                <User className="w-4 h-4 text-white" />
+              </div>
+              {!isCollapsed && (
+                <>
+                  <div className="flex-1 text-left min-w-0">
+                    <p className="text-sm font-medium text-white truncate">
+                      {user?.email || 'Administrator'}
+                    </p>
+                    <p className="text-xs text-blue-300 truncate">
+                      {user?.user_role || role || 'Admin'}
+                    </p>
+                  </div>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Collapse toggle */}
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className={`p-2 bg-blue-600 rounded-lg transition-all duration-200 ${isCollapsed
+              ? 'bg-blue-600 hover:bg-blue-500 text-white'
+              : 'text-blue-100 hover:bg-blue-500 hover:text-white ml-2'
+              }`}
+            title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {isCollapsed ? (
+              <div className='flex'>
+                <ChevronRight className="w-5 h-5" />
+              </div>
+            ) : (
+              <div className='flex'>
+                <ChevronLeft className="w-5 h-5" />
+              </div>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

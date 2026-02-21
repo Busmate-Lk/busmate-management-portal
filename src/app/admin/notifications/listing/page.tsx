@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useSetPageMetadata } from '@/context/PageMetadata';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageMetadata';
 import {
   NotificationFilters,
   NotificationTable,
@@ -52,6 +52,25 @@ export default function NotificationsListingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialTab = (searchParams.get('tab') as TabKey) || 'all';
+
+  useSetPageActions(
+    <>
+      <button
+        className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors"
+        onClick={() => {/* TODO: export */}}
+      >
+        <Download className="h-4 w-4" />
+        Export
+      </button>
+      <button
+        onClick={() => router.push('/admin/notifications/compose')}
+        className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        Compose
+      </button>
+    </>
+  );
 
   const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
   const [searchTerm, setSearchTerm] = useState('');
@@ -256,22 +275,7 @@ export default function NotificationsListingPage() {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
-              onClick={() => {/* TODO: export */}}
-            >
-              <Download className="h-4 w-4" />
-              Export
-            </button>
-            <button
-              onClick={() => router.push('/admin/notifications/compose')}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Compose
-            </button>
-          </div>
+
         </div>
 
         {/* Filters */}

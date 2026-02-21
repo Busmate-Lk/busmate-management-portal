@@ -9,6 +9,11 @@ export default function AlertsPage() {
     title: "Alerts & Notifications",
     description: "Manage alert thresholds and view active alerts",
     activeItem: "monitoring",
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: 'Monitoring', href: '/admin/monitoring' },
+      { label: 'Alerts' },
+    ],
   })
 
   const monitoring = useSystemMonitoring({

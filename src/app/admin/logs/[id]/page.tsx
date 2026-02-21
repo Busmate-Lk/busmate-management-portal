@@ -16,6 +16,12 @@ export default function LogDetailPage() {
     title: 'Log Detail',
     description: 'View detailed information about a log entry',
     activeItem: 'logs',
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: 'Logs', href: '/admin/logs' },
+      { label: 'Explorer', href: '/admin/logs/listing' },
+      { label: logId },
+    ],
   });
 
   const log = useMemo(() => getLogById(logId), [logId]);

@@ -9,6 +9,11 @@ export default function PerformancePage() {
     title: "Performance Metrics",
     description: "Detailed CPU, memory, and response time analytics",
     activeItem: "monitoring",
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: 'Monitoring', href: '/admin/monitoring' },
+      { label: 'Microservice Uptime' },
+    ],
   })
 
   const monitoring = useSystemMonitoring({

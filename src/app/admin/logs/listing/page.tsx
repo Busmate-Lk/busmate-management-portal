@@ -42,6 +42,11 @@ export default function LogsListingPage() {
     title: 'Log Explorer',
     description: 'Browse and filter all system logs',
     activeItem: 'logs',
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: 'Logs', href: '/admin/logs' },
+      { label: 'Explorer' },
+    ],
   });
 
   const router = useRouter();

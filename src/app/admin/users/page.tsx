@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSetPageMetadata } from '@/context/PageMetadata';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageMetadata';
 import { UserStatsCards, UserFilters, UsersTable, ConfirmDialog } from '@/components/admin/users';
 import {
   getUserStatsData,
@@ -20,7 +20,19 @@ export default function UsersPage() {
     title: 'User Management',
     description: 'Manage users, permissions, and account settings across the platform',
     activeItem: 'users',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'User Management' }],
   });
+
+  useSetPageActions(
+    <Link
+      href="/admin/users/create"
+      className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+    >
+      <Plus className="h-4 w-4" />
+      Add User
+    </Link>
+  );
 
   const router = useRouter();
 
@@ -132,18 +144,6 @@ export default function UsersPage() {
     <div className="space-y-6">
       {/* Stats */}
       <UserStatsCards stats={stats} />
-
-      {/* Actions bar */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">All Users</h2>
-        <Link
-          href="/admin/users/create"
-          className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-        >
-          <Plus className="h-4 w-4" />
-          Add User
-        </Link>
-      </div>
 
       {/* Filters */}
       <UserFilters

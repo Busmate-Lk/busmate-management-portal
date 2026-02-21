@@ -9,6 +9,11 @@ export default function ApiMonitoringPage() {
     title: "API Monitoring",
     description: "Track API endpoint performance and microservice health",
     activeItem: "monitoring",
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: 'Monitoring', href: '/admin/monitoring' },
+      { label: 'API' },
+    ],
   })
 
   const monitoring = useSystemMonitoring({

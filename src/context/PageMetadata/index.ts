@@ -6,7 +6,8 @@
  */
 
 export { PageMetadataProvider } from "./PageMetadataProvider"
-export { usePageMetadata, useSetPageMetadata } from "./usePageMetadata"
+export { PageActionsProvider, PageActionsContext, usePageActionsValue } from "./PageActionsContext"
+export { usePageMetadata, useSetPageMetadata, usePageActions, useSetPageActions } from "./usePageMetadata"
 export { 
   PageMetadataContext, 
   DEFAULT_METADATA,

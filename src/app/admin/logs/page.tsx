@@ -26,6 +26,8 @@ export default function LogsOverviewPage() {
     title: 'System Logs',
     description: 'Overview of all system logging activity and trends',
     activeItem: 'logs',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Logs' }],
   });
 
   const router = useRouter();

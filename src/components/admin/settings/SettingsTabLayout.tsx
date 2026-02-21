@@ -63,7 +63,7 @@ export function SettingsTabLayout({ initialTab = 'general' }: SettingsTabLayoutP
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 px-4 py-4 text-md font-bold border-b-2 whitespace-nowrap transition-colors ${
+                className={`flex items-center gap-2 px-4 py-4 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
                   isActive
                     ? `${tab.color.active} ${tab.color.border}`
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'

@@ -1,7 +1,7 @@
 'use client';
 
 import { RefreshCw, Radio } from 'lucide-react';
-import { useSetPageMetadata } from '@/context/PageMetadata';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageMetadata';
 import { useDashboard } from '@/hooks/useDashboard';
 import {
   DashboardKPICards,
@@ -19,6 +19,8 @@ export default function AdminDashboardPage() {
     title: 'System Dashboard',
     description: 'Real-time overview of system performance, user activity, and key metrics',
     activeItem: 'dashboard',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Dashboard' }],
   });
 
   const {
@@ -35,45 +37,35 @@ export default function AdminDashboardPage() {
     toggleLive,
   } = useDashboard({ refreshInterval: 5000 });
 
+  useSetPageActions(
+    <>
+      <span className="text-xs text-gray-400 hidden sm:inline">
+        Updated {lastRefresh.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+      </span>
+      <button
+        onClick={toggleLive}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+          isLive
+            ? 'bg-green-100 text-green-700 hover:bg-green-200'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        }`}
+      >
+        <Radio className={`h-3.5 w-3.5 ${isLive ? 'animate-pulse' : ''}`} />
+        {isLive ? 'Live' : 'Paused'}
+      </button>
+      <button
+        onClick={refresh}
+        disabled={loading}
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+      >
+        <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+        Refresh
+      </button>
+    </>
+  );
+
   return (
     <div className="space-y-6">
-      {/* ── Page header ─────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">System Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Last updated:{' '}
-            <span className="font-medium">
-              {lastRefresh.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-            </span>
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Live indicator */}
-          <button
-            onClick={toggleLive}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-              isLive
-                ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            <Radio className={`h-3.5 w-3.5 ${isLive ? 'animate-pulse' : ''}`} />
-            {isLive ? 'Live' : 'Paused'}
-          </button>
-
-          {/* Manual refresh */}
-          <button
-            onClick={refresh}
-            disabled={loading}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
-        </div>
-      </div>
 
       {/* ── Row 1: KPI Cards ─────────────────────────────────────── */}
       <DashboardKPICards kpis={kpis} loading={loading} />

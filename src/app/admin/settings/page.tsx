@@ -8,6 +8,8 @@ export default function SettingsPage() {
     title: "System Settings",
     description: "Configure general settings, API, maintenance, and backup options",
     activeItem: "settings",
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Settings' }],
   })
 
   return <SettingsTabLayout />

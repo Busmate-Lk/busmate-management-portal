@@ -1,7 +1,8 @@
 "use client"
 
-import { useContext, useEffect } from "react"
+import { useContext, useEffect, useLayoutEffect, useRef, type ReactNode } from "react"
 import { PageMetadataContext, type PageMetadata } from "./PageMetadataContext"
+import { PageActionsContext } from "./PageActionsContext"
 
 /**
  * Hook to access and update page metadata
@@ -72,4 +73,49 @@ export function useSetPageMetadata(metadata: Partial<PageMetadata>, resetOnUnmou
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setMetadata, resetMetadata, resetOnUnmount])
+}
+
+/**
+ * Hook to access the page actions setters.
+ */
+export function usePageActions() {
+  const context = useContext(PageActionsContext)
+  if (context === undefined) {
+    throw new Error("usePageActions must be used within a PageActionsProvider")
+  }
+  return context
+}
+
+/**
+ * Hook to set page-level action buttons in the content header.
+ *
+ * Uses an external store (useSyncExternalStore) so that when actions
+ * change, ONLY the AdminContentHeader re-renders — the page component
+ * is never re-rendered by this hook, eliminating the infinite loop.
+ *
+ * `useLayoutEffect` without a dependency array re-runs after every render
+ * of the calling page, keeping actions in sync with page state (e.g.,
+ * a loading spinner inside an action button).
+ *
+ * @param actions - ReactNode containing action buttons
+ */
+export function useSetPageActions(actions: ReactNode) {
+  const { setPageActions, clearPageActions } = usePageActions()
+
+  // Keep a ref so useLayoutEffect always reads the freshest value
+  const actionsRef = useRef<ReactNode>(actions)
+  actionsRef.current = actions
+
+  // Push latest actions into the external store after every render.
+  // Because the store uses useSyncExternalStore, only the
+  // AdminContentHeader subscribes and re-renders — not this page.
+  useLayoutEffect(() => {
+    setPageActions(actionsRef.current)
+  })
+
+  // Clear when the component unmounts
+  useEffect(() => {
+    return () => clearPageActions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 }

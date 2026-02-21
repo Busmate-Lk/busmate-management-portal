@@ -113,8 +113,8 @@ interface MonitoringOverviewProps {
   loading: boolean;
   lastRefresh: Date;
   isLive: boolean;
-  onToggleLive: () => void;
-  onRefresh: () => void;
+  apiEndpoints?: any[]; // Add proper type if known
+  microservices?: any[]; // Add proper type if known
 }
 
 export function MonitoringOverview({
@@ -126,8 +126,8 @@ export function MonitoringOverview({
   loading,
   lastRefresh,
   isLive,
-  onToggleLive,
-  onRefresh,
+  apiEndpoints,
+  microservices,
 }: MonitoringOverviewProps) {
   if (loading || !healthSummary) {
     return (
@@ -152,36 +152,6 @@ export function MonitoringOverview({
 
   return (
     <div className="space-y-6">
-      {/* Header Row */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">System Monitoring Overview</h2>
-          <p className="text-sm text-gray-500">
-            Real-time health and performance dashboard
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          {/* Live indicator */}
-          <button
-            onClick={onToggleLive}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-              isLive
-                ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-                : 'bg-gray-50 text-gray-500 border-gray-200 hover:bg-gray-100'
-            }`}
-          >
-            <span className={`w-2 h-2 rounded-full ${isLive ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
-            {isLive ? 'Live' : 'Paused'}
-          </button>
-          <button
-            onClick={onRefresh}
-            className="px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Refresh
-          </button>
-        </div>
-      </div>
-
       {/* Health Score + Summary Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Health Score Card */}

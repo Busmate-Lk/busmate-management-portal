@@ -9,6 +9,11 @@ export default function ResourceUsagePage() {
     title: "Resource Usage",
     description: "Monitor server resource utilization and trends",
     activeItem: "monitoring",
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: 'Monitoring', href: '/admin/monitoring' },
+      { label: 'Resources' },
+    ],
   })
 
   const monitoring = useSystemMonitoring({

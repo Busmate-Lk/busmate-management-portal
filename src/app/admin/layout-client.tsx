@@ -2,9 +2,8 @@
 
 import { useState, type ReactNode } from "react"
 import { Sidebar } from "@/components/shared/sidebar"
-import { Header } from "@/components/shared/header"
-import { Breadcrumb } from "@/components/shared/breadcrumb"
-import { PageMetadataProvider, usePageMetadata } from "@/context/PageMetadata"
+import { AdminContentHeader } from "@/components/admin/AdminContentHeader"
+import { PageMetadataProvider, PageActionsProvider, usePageMetadata } from "@/context/PageMetadata"
 
 /**
  * Inner layout component that consumes page metadata
@@ -28,23 +27,12 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
       />
       
       {/* Main content area - adjusts based on sidebar state */}
-      <div className={`transition-all duration-300 ease-in-out ${isCollapsed ? 'ml-20' : 'ml-68'} min-h-screen`}>
-        {/* Header with page title and description from metadata */}
-        <Header 
-          pageTitle={metadata.title} 
-          pageDescription={metadata.description} 
-        />
-        
-        {/* Breadcrumb Navigation - Optional */}
-        {metadata.showBreadcrumbs && metadata.breadcrumbs && metadata.breadcrumbs.length > 0 && (
-          <Breadcrumb 
-            items={metadata.breadcrumbs} 
-            showHome={metadata.showBreadcrumbHome ?? true} 
-          />
-        )}
+      <div className={`transition-all duration-300 ease-in-out ${isCollapsed ? 'ml-20' : 'ml-68'} min-h-screen flex flex-col`}>
+        {/* Content header: breadcrumbs + page title + actions */}
+        <AdminContentHeader metadata={metadata} />
 
         {/* Page content */}
-        <main className={paddingClass}>
+        <main className={`flex-1 ${paddingClass}`}>
           {children}
         </main>
       </div>
@@ -69,7 +57,12 @@ export function AdminLayoutClient({ children }: { children: ReactNode }) {
         padding: 6
       }}
     >
-      <AdminLayoutContent>{children}</AdminLayoutContent>
+      {/* PageActionsProvider must be INSIDE PageMetadataProvider so
+          usePageActions works, but its state is kept separate so that
+          setting actions never re-renders page components. */}
+      <PageActionsProvider>
+        <AdminLayoutContent>{children}</AdminLayoutContent>
+      </PageActionsProvider>
     </PageMetadataProvider>
   )
 }

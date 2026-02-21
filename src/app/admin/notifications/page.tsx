@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSetPageMetadata } from '@/context/PageMetadata';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageMetadata';
 import {
   NotificationStatsCards,
   NotificationTrendChart,
@@ -26,6 +26,8 @@ export default function NotificationsOverviewPage() {
     title: 'Notifications',
     description: 'Overview of notification activity and delivery metrics',
     activeItem: 'notifications',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Notifications' }],
   });
 
   const router = useRouter();
@@ -42,24 +44,26 @@ export default function NotificationsOverviewPage() {
   const upcoming = useMemo(() => getScheduledNotifications(5), []);
   const drafts = useMemo(() => getDraftNotifications(5), []);
 
+  useSetPageActions(
+    <>
+      <button
+        onClick={() => router.push('/admin/notifications/listing')}
+        className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+      >
+        View All Notifications
+      </button>
+      <button
+        onClick={() => router.push('/admin/notifications/compose')}
+        className="flex items-center gap-2 px-4 py-2.5 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-semibold shadow-sm transition-colors"
+      >
+        <Plus className="h-4 w-4" />
+        Compose
+      </button>
+    </>
+  );
+
   return (
     <div className="space-y-6">
-      {/* Quick Actions Bar */}
-      <div className="flex items-center justify-end gap-3">
-        <button
-          onClick={() => router.push('/admin/notifications/listing')}
-          className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors"
-        >
-          View All Notifications
-        </button>
-        <button
-          onClick={() => router.push('/admin/notifications/compose')}
-          className="flex items-center gap-2 px-4 py-2.5 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-semibold shadow-sm transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          Compose
-        </button>
-      </div>
 
       {/* Stats Cards */}
       <NotificationStatsCards stats={stats} loading={loading} />

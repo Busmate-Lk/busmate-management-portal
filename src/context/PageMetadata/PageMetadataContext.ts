@@ -1,4 +1,4 @@
-import { createContext } from "react"
+import { createContext, type ReactNode } from "react"
 
 /**
  * Breadcrumb item structure for page navigation
