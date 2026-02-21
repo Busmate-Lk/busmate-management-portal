@@ -215,6 +215,51 @@ export function Sidebar({
     },
   ];
 
+  const adminSidebarItems: SidebarItem[] = [
+    {
+      icon: LayoutDashboard,
+      label: 'Dashboard',
+      active: activeItem === 'dashboard',
+      href: '/admin',
+    },
+    {
+      icon: Users,
+      label: 'User Management',
+      active: activeItem === 'users',
+      href: '/admin/users',
+    },
+    {
+      icon: MessageSquare,
+      label: 'Notifications',
+      active: activeItem === 'notifications',
+      href: '/admin/notifications',
+    },
+    {
+      icon: BarChart3,
+      label: 'System Monitoring',
+      active: activeItem === 'monitoring',
+      href: '/admin/monitoring',
+    },
+    {
+      icon: FileText,
+      label: 'System Logs',
+      active: activeItem === 'logs',
+      href: '/admin/logs',
+    },
+    {
+      icon: BarChart3,
+      label: 'Analytics',
+      active: activeItem === 'analytics',
+      href: '/admin/analytics',
+    },
+    {
+      icon: Settings,
+      label: 'System Settings',
+      active: activeItem === 'settings',
+      href: '/admin/settings',
+    },
+  ];
+
   let sidebarItems = null;
   switch (role) {
     case 'mot':
@@ -225,6 +270,9 @@ export function Sidebar({
       break;
     case 'operator':
       sidebarItems = operatorSidebarItems;
+      break;
+    case 'admin':
+      sidebarItems = adminSidebarItems;
       break;
     default:
       sidebarItems = motSidebarItems;

@@ -8,10 +8,10 @@ import { ArrowLeft, Download, Edit, RotateCcw, MessageSquare, FileText, Ban, Tru
 import Link from "next/link"
 
 interface FleetProfileProps {
-  userId: string
+  fleetId: string
 }
 
-export function FleetProfile({ userId }: FleetProfileProps) {
+export function FleetProfile({ fleetId }: FleetProfileProps) {
   const fleetData = [
     {
       id: "LE-001",

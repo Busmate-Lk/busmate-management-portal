@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "../globals.css"
 import { Toaster } from "@/components/ui/toaster"
+import { AuthProvider } from "@/context/AuthContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -12,7 +13,7 @@ export const metadata: Metadata = {
   generator: 'v0.dev'
 }
 
-export default function RootLayout({
+export default function AdminRootLayout({
   children,
 }: {
   children: React.ReactNode
@@ -20,7 +21,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className={`${inter.className} h-full antialiased`}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
         <Toaster />
       </body>
     </html>
