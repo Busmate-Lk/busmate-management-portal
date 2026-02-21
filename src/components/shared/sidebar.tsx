@@ -13,25 +13,16 @@ import {
   MessageSquare,
   Navigation,
   Bell,
-  Search,
-  ChevronDown,
   ChevronRight,
   ChevronLeft,
   DollarSign,
-  Menu,
-  X,
-  Clock,
   Settings,
-  Pen,
-  Briefcase,
-  AlertCircle,
   TicketIcon,
   Users2,
   Shield,
   User,
   LogOut,
   CircleUser,
-  ListCollapseIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -293,92 +284,90 @@ export function Sidebar({
 
   return (
     <div
-      className={`${isCollapsed ? 'w-20' : 'w-68'
-        } bg-blue-800 text-white transition-all duration-300 ease-in-out flex flex-col h-screen fixed left-0 top-0 z-40`}
+      className={`${
+        isCollapsed ? 'w-20' : 'w-68'
+      } bg-blue-800 text-white transition-all duration-300 ease-in-out flex flex-col h-screen fixed left-0 top-0 z-40 shadow-xl`}
     >
       {/* Header Section */}
-      <div className="p-4 border-b border-blue-500 h-17 flex items-center justify-center">
-        <div className="flex items-center justify-center w-full">
-          <div
-            className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''
-              }`}
-          >
-            {!isCollapsed ? (
-              <div className="bg-blue-800 ml-[-25px] rounded-lg shrink-0 flex items-center justify-center">
-                <Image
-                  src="/busmate-logo-icon.png"
-                  alt="Busmate LK Logo"
-                  width={1408}
-                  height={768}
-                  className="w-15 h-7 object-cover"
-                />
-                <Image
-                  src="/busmate-logo-text.png"
-                  alt="Busmate LK Logo"
-                  width={1408}
-                  height={768}
-                  className="w-36 h-12 object-cover ml-[-15px] mt-[3px]"
-                />
-              </div>
-            ) : (
+      <div className="px-4 py-3 border-b border-blue-700 flex items-center justify-center min-h-16">
+        <div className="flex items-center justify-center w-full overflow-hidden">
+          {!isCollapsed ? (
+            <div className="flex items-center gap-1">
               <Image
                 src="/busmate-logo-icon.png"
-                alt="Busmate LK Logo"
+                alt="Busmate LK"
                 width={1408}
                 height={768}
-                className="w-12 h-8 object-cover"
+                className="w-9 h-7 object-cover shrink-0"
               />
-            )}
-          </div>
+              <Image
+                src="/busmate-logo-text.png"
+                alt="Busmate LK"
+                width={1408}
+                height={768}
+                className="w-32 h-10 object-cover shrink-0"
+              />
+            </div>
+          ) : (
+            <Image
+              src="/busmate-logo-icon.png"
+              alt="Busmate LK"
+              width={1408}
+              height={768}
+              className="w-10 h-8 object-cover"
+            />
+          )}
         </div>
       </div>
 
       {/* Navigation Section */}
       <div
-        className="flex-1 overflow-y-auto"
-        style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-        }}
+        className="flex-1 overflow-y-auto py-3"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        <nav className="p-4 space-y-2">
+        <nav className="px-3 space-y-3">
           {sidebarItems.map((item, index) => (
             <Link
               key={index}
               href={item.href}
-              className={`w-full flex items-center ${isCollapsed ? 'justify-center px-2 py-3' : 'gap-3 px-3 py-3'
-                } rounded-lg text-sm font-medium transition-all duration-200 group relative ${item.active
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-blue-100 hover:bg-blue-500 hover:text-white'
-                }`}
+              className={`w-full flex items-center ${
+                isCollapsed ? 'justify-center px-0 py-3' : 'gap-3 px-3 py-2.5'
+              } rounded-lg text-sm font-medium transition-all duration-200 group relative ${
+                item.active
+                  ? 'bg-white text-blue-700 shadow-sm'
+                  : 'text-blue-100 hover:bg-blue-700/60 hover:text-white'
+              }`}
               title={isCollapsed ? item.label : undefined}
             >
-              {/* Active indicator line */}
+              {/* Active indicator bar */}
               {item.active && !isCollapsed && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 rounded-r-lg" />
+                <div className="absolute left-0 top-1 bottom-1 w-1 bg-blue-400 rounded-r-full" />
               )}
 
-              {/* Icon with enhanced styling */}
+              {/* Icon */}
               <div
-                className={`shrink-0 transition-all duration-200 ${item.active
-                  ? 'text-blue-600 scale-110'
-                  : 'text-blue-100 group-hover:text-white group-hover:scale-105'
-                  }`}
+                className={`shrink-0 transition-all duration-200 ${
+                  item.active
+                    ? 'text-blue-600 scale-110'
+                    : 'text-blue-200 group-hover:text-white group-hover:scale-105'
+                }`}
               >
                 <item.icon className="w-5 h-5" />
               </div>
 
-              {/* Label */}
+              {/* Label — fades with collapse */}
               {!isCollapsed && (
-                <span className="truncate ml-2 transition-all duration-200">
+                <span className="truncate transition-all duration-200 leading-none">
                   {item.label}
                 </span>
               )}
 
               {/* Tooltip for collapsed state */}
               {isCollapsed && (
-                <div className="absolute left-16 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg border border-gray-700">
+                <div className="absolute left-[calc(100%+10px)] top-1/2 -translate-y-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 shadow-lg border border-gray-700">
                   {item.label}
+                  {/* Arrow */}
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
                 </div>
               )}
             </Link>
@@ -386,20 +375,30 @@ export function Sidebar({
         </nav>
       </div>
 
-      {/* Footer Section with User Menu + Collapse Button */}
-      <div className="border-t border-blue-500">
-        <div className={`flex ${isCollapsed ? 'flex-col items-center gap-4 py-4' : 'flex-row items-center'} p-2`}>
-          {/* User Menu Container */}
-          <div className="relative flex-1" ref={userMenuRef}>
+      {/* Footer: user menu + collapse toggle */}
+      <div className="border-t border-blue-700 px-2 py-2">
+        <div
+          className={`flex items-center ${
+            isCollapsed ? 'flex-col gap-2' : 'flex-row gap-1'
+          }`}
+        >
+          {/* User Menu */}
+          <div className={`relative ${isCollapsed ? 'w-full flex justify-center' : 'flex-1'}`} ref={userMenuRef}>
             {/* Dropdown (opens upward) */}
             {userMenuOpen && (
-              <div className={`absolute bottom-full ${isCollapsed ? 'left-1/2 transform -translate-x-1/7' : 'left-0 right-3'} mb-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 min-w-[200px]`}>
+              <div
+                className={`absolute bottom-full mb-2 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 min-w-[210px] ${
+                  isCollapsed
+                    ? '-left-2 ml-2 bottom-0 top-auto'
+                    : 'left-0 right-0'
+                }`}
+              >
                 {/* User info header */}
                 <div className="px-4 py-3 border-b border-gray-100">
                   <p className="text-sm font-semibold text-gray-900 truncate">
                     {user?.email || 'Administrator'}
                   </p>
-                  <p className="text-xs text-gray-500 truncate mt-0.5">
+                  <p className="text-xs text-gray-400 truncate mt-0.5 capitalize">
                     {user?.user_role || role || 'Admin'}
                   </p>
                 </div>
@@ -438,46 +437,49 @@ export function Sidebar({
             {/* User button */}
             <button
               onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className={`flex items-center gap-3  text-blue-100 hover:bg-blue-700 transition-colors ${
-                isCollapsed ? 'justify-center w-full p-0 rounded-full' : 'flex-1 px-3 py-2 rounded-lg'
-              } ${userMenuOpen ? 'bg-blue-700' : ''}`}
+              className={`flex items-center gap-2.5 text-blue-100 rounded-lg transition-all duration-200 ${
+                isCollapsed
+                  ? 'justify-center p-2 w-full'
+                  : 'flex-1 px-3 py-2 w-full'
+              } ${
+                userMenuOpen
+                  ? 'bg-blue-700 text-white'
+                  : 'hover:bg-blue-700/60 hover:text-white'
+              }`}
               title={isCollapsed ? (user?.email || 'Account') : undefined}
             >
-              <div className={`${isCollapsed ? 'w-9 h-9' : 'w-8 h-8'} rounded-full bg-blue-600 flex items-center justify-center shrink-0 ring-2 ring-blue-400/30`}>
+              <div
+                className={`${
+                  isCollapsed ? 'w-9 h-9' : 'w-8 h-8'
+                } rounded-full bg-blue-600 flex items-center justify-center shrink-0 ring-2 ring-blue-400/40`}
+              >
                 <User className="w-4 h-4 text-white" />
               </div>
               {!isCollapsed && (
-                <>
-                  <div className="flex-1 text-left min-w-0">
-                    <p className="text-sm font-medium text-white truncate">
-                      {user?.email || 'Administrator'}
-                    </p>
-                    <p className="text-xs text-blue-300 truncate">
-                      {user?.user_role || role || 'Admin'}
-                    </p>
-                  </div>
-                </>
+                <div className="flex-1 text-left min-w-0">
+                  <p className="text-sm font-medium text-white truncate leading-tight">
+                    {user?.email || 'Administrator'}
+                  </p>
+                  <p className="text-xs text-blue-300 truncate capitalize leading-tight mt-0.5">
+                    {user?.user_role || role || 'Admin'}
+                  </p>
+                </div>
               )}
             </button>
           </div>
 
-          {/* Collapse toggle */}
+          {/* Collapse toggle button */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className={`p-2 bg-blue-600 rounded-lg transition-all duration-200 ${isCollapsed
-              ? 'bg-blue-600 hover:bg-blue-500 text-white'
-              : 'text-blue-100 hover:bg-blue-500 hover:text-white ml-2'
-              }`}
+            className={`shrink-0 flex items-center justify-center rounded-lg transition-all duration-200 text-blue-200 hover:bg-blue-700/60 hover:text-white ${
+              isCollapsed ? 'w-full p-2' : 'p-2'
+            }`}
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {isCollapsed ? (
-              <div className='flex'>
-                <ChevronRight className="w-5 h-5" />
-              </div>
+              <ChevronRight className="w-5 h-5" />
             ) : (
-              <div className='flex'>
-                <ChevronLeft className="w-5 h-5" />
-              </div>
+              <ChevronLeft className="w-5 h-5" />
             )}
           </button>
         </div>
