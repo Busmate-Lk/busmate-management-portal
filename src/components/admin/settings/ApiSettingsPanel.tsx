@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -53,10 +52,10 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="pb-8 mb-8 border-b border-gray-100 last:border-0 last:mb-0 last:pb-0">
+    <div className="px-6 py-6 border-b border-gray-100">
       <div className="flex items-center gap-2 mb-1">
         {icon}
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">{title}</h3>
       </div>
       {description && (
         <p className="text-sm text-gray-500 mb-5">{description}</p>
@@ -226,19 +225,14 @@ export function ApiSettingsPanel({ onSaved }: ApiSettingsPanelProps) {
 
   if (!settings) {
     return (
-      <Card className="shadow-sm">
-        <CardContent className="p-10 flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
-        </CardContent>
-      </Card>
+      <div className="px-6 py-16 flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* ── Rate Limiting & Timeouts ──────────────── */}
-      <Card className="shadow-sm">
-        <CardContent className="p-6">
+    <div>
           <Section
             icon={<Zap className="h-5 w-5 text-amber-600" />}
             title="Rate Limiting & Timeouts"
@@ -427,8 +421,8 @@ export function ApiSettingsPanel({ onSaved }: ApiSettingsPanelProps) {
             )}
           </Section>
 
-          {/* ── Action Buttons ────────────────────────── */}
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          {/* ── Action Bar ──────────────────────────── */}
+          <div className="px-6 py-4 flex items-center justify-between bg-gray-50/50 border-t border-gray-100">
             <div className="flex items-center gap-2 text-sm">
               {saved && (
                 <span className="flex items-center gap-1 text-green-600">
@@ -463,36 +457,28 @@ export function ApiSettingsPanel({ onSaved }: ApiSettingsPanelProps) {
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
       {/* ── API Keys ──────────────────────────────────── */}
-      <Card className="shadow-sm">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Key className="h-5 w-5 text-amber-600" />
-                API Keys
-              </CardTitle>
-              <p className="text-sm text-gray-500 mt-1">
-                Manage API keys used by external integrations
-              </p>
+      <div className="px-6 py-6 border-t border-gray-200">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Key className="h-4 w-4 text-amber-600" />
+              <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">API Keys</h3>
             </div>
-            <Button
-              size="sm"
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={() => {
-                /* placeholder – a modal / drawer could be added here */
-                alert('TODO: Show API key creation dialog');
-              }}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Generate Key
-            </Button>
+            <p className="text-sm text-gray-500 mt-0.5">Manage API keys used by external integrations</p>
           </div>
-        </CardHeader>
-        <CardContent>
+          <Button
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            onClick={() => {
+              alert('TODO: Show API key creation dialog');
+            }}
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Generate Key
+          </Button>
+        </div>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
@@ -562,8 +548,7 @@ export function ApiSettingsPanel({ onSaved }: ApiSettingsPanelProps) {
               </TableBody>
             </Table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
     </div>
   );
 }

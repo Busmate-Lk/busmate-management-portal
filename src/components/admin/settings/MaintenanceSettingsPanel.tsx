@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
@@ -79,77 +78,61 @@ function StatusBadge({ status }: { status: MaintenanceHistoryEntry['status'] }) 
 function SystemStatusCards({ status }: { status: SystemStatus }) {
   const healthColor =
     status.health === 'operational'
-      ? 'bg-green-50 text-green-700'
+      ? 'bg-green-50 border-green-200 text-green-700'
       : status.health === 'degraded'
-      ? 'bg-amber-50 text-amber-700'
-      : 'bg-red-50 text-red-700';
+      ? 'bg-amber-50 border-amber-200 text-amber-700'
+      : 'bg-red-50 border-red-200 text-red-700';
 
   const healthIcon =
     status.health === 'operational' ? (
-      <CheckCircle className="h-8 w-8 text-green-600" />
+      <CheckCircle className="h-7 w-7 text-green-600" />
     ) : status.health === 'degraded' ? (
-      <AlertTriangle className="h-8 w-8 text-amber-600" />
+      <AlertTriangle className="h-7 w-7 text-amber-600" />
     ) : (
-      <XCircle className="h-8 w-8 text-red-600" />
+      <XCircle className="h-7 w-7 text-red-600" />
     );
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card className="shadow-sm">
-        <CardContent className="p-4">
-          <div className={`rounded-lg p-3 ${healthColor}`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">System Health</p>
-                <p className="text-lg font-semibold capitalize">{status.health}</p>
-              </div>
-              {healthIcon}
-            </div>
+      <div className={`rounded-xl border p-4 ${healthColor}`}>
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide opacity-70">System Health</p>
+            <p className="text-lg font-semibold capitalize mt-0.5">{status.health}</p>
           </div>
-        </CardContent>
-      </Card>
+          {healthIcon}
+        </div>
+      </div>
 
-      <Card className="shadow-sm">
-        <CardContent className="p-4">
-          <div className="bg-blue-50 rounded-lg p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-700">Active Sessions</p>
-                <p className="text-lg font-semibold text-blue-900">{status.activeSessions}</p>
-              </div>
-              <Users className="h-8 w-8 text-blue-600" />
-            </div>
+      <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-blue-600 uppercase tracking-wide">Active Sessions</p>
+            <p className="text-lg font-semibold text-blue-900 mt-0.5">{status.activeSessions}</p>
           </div>
-        </CardContent>
-      </Card>
+          <Users className="h-7 w-7 text-blue-500" />
+        </div>
+      </div>
 
-      <Card className="shadow-sm">
-        <CardContent className="p-4">
-          <div className="bg-purple-50 rounded-lg p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-purple-700">Uptime</p>
-                <p className="text-lg font-semibold text-purple-900">{status.uptimePercentage}%</p>
-              </div>
-              <Zap className="h-8 w-8 text-purple-600" />
-            </div>
+      <div className="rounded-xl border border-violet-200 bg-violet-50 p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-violet-600 uppercase tracking-wide">Uptime</p>
+            <p className="text-lg font-semibold text-violet-900 mt-0.5">{status.uptimePercentage}%</p>
           </div>
-        </CardContent>
-      </Card>
+          <Zap className="h-7 w-7 text-violet-500" />
+        </div>
+      </div>
 
-      <Card className="shadow-sm">
-        <CardContent className="p-4">
-          <div className="bg-gray-50 rounded-lg p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Running Since</p>
-                <p className="text-lg font-semibold text-gray-900">{status.uptime}</p>
-              </div>
-              <Server className="h-8 w-8 text-gray-500" />
-            </div>
+      <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Running Since</p>
+            <p className="text-lg font-semibold text-gray-900 mt-0.5">{status.uptime}</p>
           </div>
-        </CardContent>
-      </Card>
+          <Server className="h-7 w-7 text-gray-400" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -233,22 +216,22 @@ export function MaintenanceSettingsPanel({ onSaved }: MaintenanceSettingsPanelPr
 
   if (!settings || !status) {
     return (
-      <Card className="shadow-sm">
-        <CardContent className="p-10 flex items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
-        </CardContent>
-      </Card>
+      <div className="px-6 py-16 flex items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* System Status */}
-      <SystemStatusCards status={status} />
+    <div>
+      {/* ── System Status ─────────────────────────────── */}
+      <div className="px-6 py-6 border-b border-gray-100">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">System Status</p>
+        <SystemStatusCards status={status} />
+      </div>
 
-      {/* Maintenance Mode Toggle */}
-      <Card className={`shadow-sm border-2 ${settings.maintenanceMode ? 'border-orange-300 bg-orange-50/30' : 'border-transparent'}`}>
-        <CardContent className="p-6">
+      {/* ── Maintenance Mode Toggle ──────────────────── */}
+      <div className={`px-6 py-6 border-b border-gray-100 ${settings.maintenanceMode ? 'bg-orange-50/40' : ''}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`p-3 rounded-lg ${settings.maintenanceMode ? 'bg-orange-100' : 'bg-gray-100'}`}>
@@ -314,20 +297,20 @@ export function MaintenanceSettingsPanel({ onSaved }: MaintenanceSettingsPanelPr
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="px-6 py-6 border-b border-gray-100">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Scheduled Maintenance */}
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5 text-blue-600" />
-              Scheduled Maintenance
-            </CardTitle>
-            <p className="text-sm text-gray-500">Configure automatic maintenance windows</p>
-          </CardHeader>
-          <CardContent className="space-y-5">
+        <div className="rounded-xl border border-gray-200">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-blue-600" />
+              <h3 className="text-sm font-semibold text-gray-900">Scheduled Maintenance</h3>
+            </div>
+            <p className="text-sm text-gray-500 mt-0.5">Configure automatic maintenance windows</p>
+          </div>
+          <div className="p-5 space-y-5">
             <div className="flex items-center justify-between">
               <div>
                 <Label htmlFor="autoMaintenanceEnabled" className="text-base font-medium">
@@ -447,19 +430,18 @@ export function MaintenanceSettingsPanel({ onSaved }: MaintenanceSettingsPanelPr
                 </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+        </div>
 
         {/* Quick Actions */}
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Wrench className="h-5 w-5 text-purple-600" />
-              Maintenance Actions
-            </CardTitle>
-            <p className="text-sm text-gray-500">Run on-demand maintenance tasks</p>
-          </CardHeader>
-          <CardContent className="space-y-3">
+        <div className="rounded-xl border border-gray-200">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <div className="flex items-center gap-2">
+              <Wrench className="h-4 w-4 text-violet-600" />
+              <h3 className="text-sm font-semibold text-gray-900">Maintenance Actions</h3>
+            </div>
+            <p className="text-sm text-gray-500 mt-0.5">Run on-demand maintenance tasks</p>
+          </div>
+          <div className="p-5 space-y-3">
             {(
               [
                 { action: 'optimize-db', icon: Database, label: 'Database Optimization', color: 'blue' },
@@ -499,18 +481,18 @@ export function MaintenanceSettingsPanel({ onSaved }: MaintenanceSettingsPanelPr
                 Emergency Shutdown
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+        </div>
       </div>
 
-      {/* Maintenance History */}
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle>Recent Maintenance History</CardTitle>
-          <p className="text-sm text-gray-500">Record of past maintenance tasks and their outcomes</p>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
+      {/* ── Maintenance History ─────────────────────── */}
+      <div className="px-6 py-6">
+        <div className="flex items-center gap-2 mb-1">
+          <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Maintenance History</h3>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">Record of past maintenance tasks and their outcomes</p>
+        <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -551,8 +533,8 @@ export function MaintenanceSettingsPanel({ onSaved }: MaintenanceSettingsPanelPr
               </TableBody>
             </Table>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,12 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  Settings,
-  Zap,
-  Wrench,
-  Database,
-} from 'lucide-react';
+import { Settings, Zap, Wrench, Database } from 'lucide-react';
 import { GeneralSettingsPanel } from './GeneralSettingsPanel';
 import { ApiSettingsPanel } from './ApiSettingsPanel';
 import { MaintenanceSettingsPanel } from './MaintenanceSettingsPanel';
@@ -20,31 +15,31 @@ const TABS: {
   key: SettingsTab;
   label: string;
   icon: React.ReactNode;
-  description: string;
+  color: { active: string; border: string };
 }[] = [
   {
     key: 'general',
     label: 'General',
     icon: <Settings className="h-4 w-4" />,
-    description: 'Site info, contact, security & notifications',
+    color: { active: 'text-blue-700 bg-blue-50', border: 'border-blue-500' },
   },
   {
     key: 'api',
     label: 'API Settings',
     icon: <Zap className="h-4 w-4" />,
-    description: 'Rate limits, CORS, caching & API keys',
+    color: { active: 'text-violet-700 bg-violet-50', border: 'border-violet-500' },
   },
   {
     key: 'maintenance',
     label: 'Maintenance',
     icon: <Wrench className="h-4 w-4" />,
-    description: 'Maintenance mode, scheduling & actions',
+    color: { active: 'text-amber-700 bg-amber-50', border: 'border-amber-500' },
   },
   {
     key: 'backup',
     label: 'Backup & Restore',
     icon: <Database className="h-4 w-4" />,
-    description: 'Backup config, history & recovery',
+    color: { active: 'text-green-700 bg-green-50', border: 'border-green-500' },
   },
 ];
 
@@ -58,33 +53,35 @@ export function SettingsTabLayout({ initialTab = 'general' }: SettingsTabLayoutP
   const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
 
   return (
-    <div>
-      {/* Tab Navigation */}
-      <div className="bg-white rounded-lg shadow-sm px-4 py-3 mb-6">
-        <div className="flex items-center gap-2 overflow-x-auto">
-          {TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg transition-colors whitespace-nowrap text-sm font-medium ${
-                activeTab === tab.key
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-              title={tab.description}
-            >
-              {tab.icon}
-              <span>{tab.label}</span>
-            </button>
-          ))}
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl border border-gray-200">
+        {/* ── Tab navigation ───────────────────────────── */}
+        <div className="flex items-center border-b border-gray-200 overflow-x-auto">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-2 px-4 py-4 text-md font-bold border-b-2 whitespace-nowrap transition-colors ${
+                  isActive
+                    ? `${tab.color.active} ${tab.color.border}`
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
-      </div>
 
-      {/* Tab Content */}
-      {activeTab === 'general' && <GeneralSettingsPanel />}
-      {activeTab === 'api' && <ApiSettingsPanel />}
-      {activeTab === 'maintenance' && <MaintenanceSettingsPanel />}
-      {activeTab === 'backup' && <BackupSettingsPanel />}
+        {/* ── Tab content ──────────────────────────────── */}
+        {activeTab === 'general' && <GeneralSettingsPanel />}
+        {activeTab === 'api' && <ApiSettingsPanel />}
+        {activeTab === 'maintenance' && <MaintenanceSettingsPanel />}
+        {activeTab === 'backup' && <BackupSettingsPanel />}
+      </div>
     </div>
   );
 }
