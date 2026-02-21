@@ -15,20 +15,48 @@ export {
 
 // User management data and functions
 export {
-  getUsers,
+  // New API functions
+  getAllUsers,
   getUserById,
+  getFilteredUsers,
+  getUserStatsData,
+  updateUser,
+  updateUserStatus,
+  deleteUserById,
+  createUser,
+  getUserDisplayName,
+  formatUserDate,
+  formatDateShort,
+  timeAgo,
+  // Config maps
+  USER_TYPE_CONFIG,
+  USER_STATUS_CONFIG,
+  // Legacy compatibility
+  getUsers,
   getUserStats,
+  deleteUser,
+  createMOTUser,
   getPassengerProfile,
   getConductorProfile,
   getFleetProfile,
   getTimekeeperProfile,
   getMOTProfile,
-  updateUserStatus,
-  deleteUser,
-  createMOTUser,
   mockData as usersMockData,
 } from './users';
 export type {
+  UserType,
+  UserStatus,
+  UserBase,
+  MOTUser,
+  TimekeeperUser,
+  OperatorUser,
+  ConductorUser,
+  DriverUser,
+  PassengerUser,
+  SystemUser,
+  UserStatsData,
+  UserFiltersState,
+  // Legacy types
   PassengerProfile,
   ConductorProfile,
   FleetProfile,

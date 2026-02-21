@@ -33,7 +33,9 @@ export interface QuickActionItem {
   color: string;
 }
 
-// User management types
+// User management types (DEPRECATED - use types from ./users.ts instead)
+// Kept for backward compatibility only
+/** @deprecated Use SystemUser from ./users instead */
 export interface User {
   id: string;
   name: string;
@@ -46,6 +48,7 @@ export interface User {
   avatar?: string;
 }
 
+/** @deprecated Use UserStatsData from ./users instead */
 export interface UserStats {
   totalUsers: number;
   activeUsers: number;
@@ -58,6 +61,7 @@ export interface UserStats {
   motCount: number;
 }
 
+/** @deprecated Use UserFiltersState from ./users instead */
 export interface UserFilter {
   search: string;
   type: string;
