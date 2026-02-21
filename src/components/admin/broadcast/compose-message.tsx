@@ -145,7 +145,7 @@ export function ComposeMessage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-4">
-          <Button className="bg-gray-500/20 text-gray-600 hover:bg-gray-500/30 shadow-md" variant="ghost" size="sm" onClick={() => router.push(`${pathname?.startsWith('/mot') ? '/mot' : '/admin'}/notifications/sent`)}>
+          <Button className="bg-gray-500/20 text-gray-600 hover:bg-gray-500/30 shadow-md" variant="ghost" size="sm" onClick={() => router.push(`${pathname?.startsWith('/mot') ? '/mot' : '/admin/dashboard'}/notifications/sent`)}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Messages
           </Button>
@@ -464,7 +464,7 @@ export function ComposeMessage() {
                 </div>
                 <div className="flex gap-2 pt-3">
                   <Button size="sm" onClick={() => {
-                    const base = pathname?.startsWith('/mot') ? '/mot' : '/admin'
+                    const base = pathname?.startsWith('/mot') ? '/mot' : '/admin/dashboard'
                     router.push(`${base}/notifications/sent`)
                   }}>View in Sent</Button>
                   <Button size="sm" variant="outline" onClick={() => setLastResponse(null)}>Dismiss</Button>

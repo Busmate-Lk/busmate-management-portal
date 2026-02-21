@@ -51,12 +51,12 @@ export function MessageHistory() {
   }, [])
 
   const handleSendMessage = () => {
-    const base = pathname?.startsWith('/mot') ? '/mot' : '/admin'
+    const base = pathname?.startsWith('/mot') ? '/mot' : '/admin/dashboard'
     router.push(`${base}/notifications/compose`)
   }
 
   const handleMessageClick = (messageId: string | number) => {
-    const base = pathname?.startsWith('/mot') ? '/mot' : '/admin'
+    const base = pathname?.startsWith('/mot') ? '/mot' : '/admin/dashboard'
     router.push(`${base}/notifications/sent/${messageId}`)
   }
 

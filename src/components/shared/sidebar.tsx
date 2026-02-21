@@ -230,7 +230,7 @@ export function Sidebar({
       icon: LayoutDashboard,
       label: 'Dashboard',
       active: activeItem === 'dashboard',
-      href: '/admin',
+      href: '/admin/dashboard',
     },
     {
       icon: Users,

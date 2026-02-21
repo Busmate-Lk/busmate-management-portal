@@ -25,7 +25,7 @@ export default function Home() {
           case 'admin':
           case 'systemadmin':
           case 'system-admin':
-            return '/admin';
+            return '/admin/dashboard';
           default:
             return '/operator/dashboard';
         }

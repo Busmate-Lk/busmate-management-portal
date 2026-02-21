@@ -103,7 +103,7 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
             message: n.body,
             time: toRelativeTime(n.createdAt),
             type: (n.messageType || 'info') as any,
-            redirectUrl: `${pathname?.startsWith('/mot') ? '/mot' : '/admin'}/notifications/${n.notificationId}`,
+            redirectUrl: `${pathname?.startsWith('/mot') ? '/mot' : '/admin/dashboard'}/notifications/${n.notificationId}`,
             isRead: false // We can track this locally or from backend if available
           }))
 
@@ -224,7 +224,7 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
   }
 
   const handleViewAllNotifications = () => {
-    const base = pathname?.startsWith('/mot') ? '/mot' : '/admin'
+    const base = pathname?.startsWith('/mot') ? '/mot' : '/admin/dashboard'
     router.push(`${base}/notifications`)
     setIsNotificationOpen(false)
   }
