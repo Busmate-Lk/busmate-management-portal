@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import type { QuickAction } from '@/app/mot/(authenticated)/dashboard/data';
+import type { QuickAction } from '@/app/mot/dashboard/data';
 
 const COLOR_STYLE: Record<string, string> = {
   blue:   'bg-blue-50 border-blue-100 hover:border-blue-300 hover:bg-blue-100',

@@ -12,7 +12,7 @@ import {
   TrendingDown,
   Minus,
 } from 'lucide-react';
-import type { DashboardKPI } from '@/app/mot/(authenticated)/dashboard/data';
+import type { DashboardKPI } from '@/app/mot/dashboard/data';
 
 const ICON_MAP: Record<string, React.ReactNode> = {
   bus:      <Bus className="h-6 w-6" />,

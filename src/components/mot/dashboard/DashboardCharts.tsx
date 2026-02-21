@@ -13,7 +13,7 @@ import {
   Filler,
 } from 'chart.js';
 import { Doughnut, Bar, Line, Pie } from 'react-chartjs-2';
-import type { ChartData } from '@/app/mot/(authenticated)/dashboard/data';
+import type { ChartData } from '@/app/mot/dashboard/data';
 
 ChartJS.register(
   ArcElement,

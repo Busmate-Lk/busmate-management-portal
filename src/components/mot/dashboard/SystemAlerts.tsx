@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertTriangle, Info, XCircle, CheckCircle2, Clock } from 'lucide-react';
-import type { SystemAlert } from '@/app/mot/(authenticated)/dashboard/data';
+import type { SystemAlert } from '@/app/mot/dashboard/data';
 
 const CONFIG = {
   critical: { icon: <XCircle className="h-4 w-4 text-red-500" />,   border: 'border-l-red-500',   bg: 'bg-red-50' },

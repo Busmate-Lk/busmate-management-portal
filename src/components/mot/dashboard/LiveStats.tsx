@@ -1,7 +1,7 @@
 'use client';
 
 import { RefreshCw, CheckCircle2, AlertTriangle, XCircle } from 'lucide-react';
-import type { LiveStat } from '@/app/mot/(authenticated)/dashboard/data';
+import type { LiveStat } from '@/app/mot/dashboard/data';
 
 const STATUS_STYLE: Record<LiveStat['status'], { icon: React.ReactNode; cls: string }> = {
   healthy:  { icon: <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />,  cls: 'text-green-600' },
