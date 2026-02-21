@@ -105,10 +105,10 @@ const mockQuickActions: QuickActionItem[] = [
   },
   {
     id: '3',
-    title: 'View Reports',
-    description: 'Access analytics reports',
-    icon: 'BarChart3',
-    href: '/admin/analytics/reports',
+    title: 'System Logs',
+    description: 'Browse system activity logs',
+    icon: 'FileText',
+    href: '/admin/logs',
     color: 'purple',
   },
   {
@@ -129,10 +129,10 @@ const mockQuickActions: QuickActionItem[] = [
   },
   {
     id: '6',
-    title: 'API Health',
-    description: 'Monitor API endpoints',
+    title: 'System Monitoring',
+    description: 'Monitor system health',
     icon: 'Activity',
-    href: '/admin/monitoring/api-health',
+    href: '/admin/monitoring',
     color: 'teal',
   },
 ];

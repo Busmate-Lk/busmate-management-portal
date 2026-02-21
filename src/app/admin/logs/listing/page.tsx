@@ -281,6 +281,7 @@ export default function LogsListingPage() {
             onSearchChange={handleSearchChange}
             filters={filters}
             onFilterChange={handleFilterChange}
+            onClearAll={() => { setSearchTerm(''); setFilters({}); setCurrentPage(1); }}
             filterConfig={filterConfig}
             totalCount={totalCounts[activeTab]}
             filteredCount={filteredLogs.length}

@@ -97,36 +97,7 @@ export interface NotificationStats {
   averageReadRate: number;
 }
 
-// Monitoring types
-export interface ApiEndpoint {
-  id: string;
-  name: string;
-  endpoint: string;
-  status: 'healthy' | 'warning' | 'error';
-  responseTime: string;
-  lastChecked: string;
-  uptime: string;
-  requests24h: string;
-}
-
-export interface MicroserviceStatus {
-  id: string;
-  name: string;
-  status: 'running' | 'degraded' | 'down';
-  cpu: number;
-  memory: number;
-  uptime: string;
-  version: string;
-  lastRestart: string;
-}
-
-export interface ResourceUsage {
-  timestamp: string;
-  cpu: number;
-  memory: number;
-  disk: number;
-  network: number;
-}
+// Monitoring types are now in ./system-monitoring.ts
 
 // Log types
 export interface LogEntry {

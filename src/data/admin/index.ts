@@ -83,19 +83,35 @@ export {
 } from './notifications';
 export type { NotificationStats as NotificationStatsData } from './notifications';
 
-// Monitoring data and functions
+// System Monitoring data and functions
 export {
-  getApiEndpoints,
-  getApiEndpointById,
-  getMicroservices,
-  getMicroserviceById,
-  getResourceUsage,
-  getMonitoringStats,
-  restartService,
-  refreshApiHealth,
-  mockData as monitoringMockData,
-} from './monitoring';
-export type { MonitoringStats } from './monitoring';
+  getPerformanceHistory,
+  getLatestPerformance,
+  getResourceHistory,
+  getLatestResource,
+  getApiEndpointMetrics,
+  getMicroserviceList,
+  getMonitoringAlerts,
+  getActiveAlerts,
+  getAlertRules,
+  getSystemHealthSummary,
+  simulatePerformanceTick,
+  simulateResourceTick,
+  simulateApiEndpointTick,
+  acknowledgeAlert,
+  resolveAlert,
+  toggleAlertRule,
+  restartMicroservice,
+} from './system-monitoring';
+export type {
+  PerformanceSnapshot,
+  ResourceSnapshot,
+  ApiEndpointMetric,
+  MicroserviceInfo,
+  MonitoringAlert,
+  AlertRule,
+  SystemHealthSummary,
+} from './system-monitoring';
 
 // Logs data and functions
 export {
@@ -115,22 +131,6 @@ export {
   mockData as logsMockData,
 } from './logs';
 export type { LogStats } from './logs';
-
-// Analytics data and functions
-export {
-  getAnalyticsMetrics,
-  getReports,
-  getReportById,
-  getUserGrowthChart,
-  getRevenueChart,
-  getTransactionChart,
-  getUserTypeDistribution,
-  getSystemStatus,
-  generateReport,
-  downloadReport,
-  mockData as analyticsMockData,
-} from './analytics';
-export type { SystemStatus } from './analytics';
 
 // Settings data and functions
 export {

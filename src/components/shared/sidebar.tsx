@@ -247,12 +247,6 @@ export function Sidebar({
       href: '/admin/logs',
     },
     {
-      icon: BarChart3,
-      label: 'Analytics',
-      active: activeItem === 'analytics',
-      href: '/admin/analytics',
-    },
-    {
       icon: Settings,
       label: 'System Settings',
       active: activeItem === 'settings',
