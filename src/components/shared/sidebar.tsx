@@ -215,13 +215,13 @@ export function Sidebar({
       icon: Users,
       label: 'Staff Management',
       active: activeItem === 'staff',
-      href: '/operator/staffManagement',
+      href: '/operator/staff-management',
     },
     {
       icon: DollarSign,
       label: 'Revenue Management',
       active: activeItem === 'revenue',
-      href: '/operator/revenueManagement',
+      href: '/operator/revenue-management',
     },
   ];
 

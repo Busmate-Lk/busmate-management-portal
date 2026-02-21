@@ -104,7 +104,7 @@ export function DriversTable({ drivers }: DriversTableProps) {
                 {/* Actions – view only */}
                 <td className="px-4 py-3 whitespace-nowrap">
                   <Link
-                    href={`/operator/staffManagement/${driver.id}`}
+                    href={`/operator/staff-management/${driver.id}`}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
                   >
                     <Eye className="w-3.5 h-3.5" />

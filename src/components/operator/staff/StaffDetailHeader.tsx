@@ -48,7 +48,7 @@ export function StaffDetailHeader({ staff }: StaffDetailHeaderProps) {
       {/* Back navigation */}
       <div className="px-6 pt-5 pb-0">
         <Link
-          href="/operator/staffManagement"
+          href="/operator/staff-management"
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
