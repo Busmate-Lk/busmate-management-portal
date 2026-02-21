@@ -45,17 +45,6 @@ export function StaffDetailHeader({ staff }: StaffDetailHeaderProps) {
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-      {/* Back navigation */}
-      <div className="px-6 pt-5 pb-0">
-        <Link
-          href="/operator/staff-management"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 transition-colors group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-          Back to Staff Management
-        </Link>
-      </div>
-
       {/* Profile section */}
       <div className="p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">

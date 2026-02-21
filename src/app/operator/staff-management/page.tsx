@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Users, Car, UserCheck } from 'lucide-react';
-import { Header } from '@/components/operator/header';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { StaffStatsCards } from '@/components/operator/staff/StaffStatsCards';
 import { StaffFilters } from '@/components/operator/staff/StaffFilters';
 import { DriversTable } from '@/components/operator/staff/DriversTable';
@@ -25,6 +25,15 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
 ];
 
 export default function StaffManagementPage() {
+  useSetPageMetadata({
+    title: 'Staff Management',
+    description: 'View drivers and conductors employed by your organization',
+    activeItem: 'staff',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Staff Management' }],
+    padding: 0,
+  });
+
   const [activeTab,    setActiveTab]    = useState<TabId>('all');
   const [searchTerm,   setSearchTerm]   = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -88,13 +97,7 @@ export default function StaffManagementPage() {
   }), [allStaff]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header
-        pageTitle="Staff Management"
-        pageDescription="View drivers and conductors employed by your organization"
-      />
-
-      <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6">
         {/* Stats cards */}
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -211,7 +214,6 @@ export default function StaffManagementPage() {
           Staff records are managed by BusMate administration. This view is read-only.
           Contact support if you need to update staff information.
         </p>
-      </div>
     </div>
   );
 }

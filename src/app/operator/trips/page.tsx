@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/operator/header';
+import { useSetPageMetadata } from '@/context/PageContext';
 import Pagination from '@/components/shared/Pagination';
 import {
   OperatorTripStatsCards,
@@ -25,6 +25,15 @@ import type {
 const PAGE_SIZE = 10;
 
 export default function OperatorTripsPage() {
+  useSetPageMetadata({
+    title: 'My Trips',
+    description: 'View all trips operated by your fleet',
+    activeItem: 'trips',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Trips' }],
+    padding: 0,
+  });
+
   const router = useRouter();
 
   // ── Data state ───────────────────────────────────────────────────────────
@@ -118,13 +127,7 @@ export default function OperatorTripsPage() {
   const totalPages = Math.ceil(filteredTotal / PAGE_SIZE);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <Header
-        pageTitle="My Trips"
-        pageDescription="View all trips operated by your fleet"
-      />
-
-      <main className="flex-1 p-6 space-y-6">
+    <main className="flex-1 p-6 space-y-6">
         {/* Stats Cards */}
         {stats && <OperatorTripStatsCards stats={stats} />}
 
@@ -218,7 +221,6 @@ export default function OperatorTripsPage() {
             {filteredTotal !== 1 ? 's' : ''}
           </p>
         )}
-      </main>
-    </div>
+    </main>
   );
 }

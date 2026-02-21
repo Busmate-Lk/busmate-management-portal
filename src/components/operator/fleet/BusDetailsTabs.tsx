@@ -59,7 +59,7 @@ export function BusDetailsTabs({ bus, onRefresh }: BusDetailsTabsProps) {
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex items-center justify-between border-b border-gray-200 mb-6 overflow-x-auto">
+      <div className="flex items-center justify-between border-b border-gray-200 mb-6">
         <nav className="flex -mb-px gap-0">
           {tabs.map(tab => (
             <button
@@ -85,15 +85,6 @@ export function BusDetailsTabs({ bus, onRefresh }: BusDetailsTabsProps) {
             </button>
           ))}
         </nav>
-
-        <button
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="ml-4 mb-1 flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-500 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 shrink-0"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
       </div>
 
       {/* Content */}

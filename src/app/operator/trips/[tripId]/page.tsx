@@ -3,12 +3,25 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, AlertCircle, Loader2 } from 'lucide-react';
-import { Header } from '@/components/operator/header';
+import { useSetPageMetadata, usePageContext } from '@/context/PageContext';
 import { TripOverviewCard, TripTabsSection } from '@/components/operator/trips/trip-details';
 import { getOperatorTripById } from '@/data/operator/trips';
 import type { OperatorTrip } from '@/data/operator/trips';
 
 export default function OperatorTripDetailPage() {
+  useSetPageMetadata({
+    title: 'Trip Details',
+    description: 'Loading trip information…',
+    activeItem: 'trips',
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: 'Trips', href: '/operator/trips' },
+      { label: 'Trip Details' },
+    ],
+    padding: 0,
+  });
+
+  const { setMetadata } = usePageContext();
   const params = useParams();
   const router = useRouter();
   const tripId = params?.tripId as string;
@@ -46,6 +59,20 @@ export default function OperatorTripDetailPage() {
     return cleanup;
   }, [loadTrip]);
 
+  // Update header when trip data is loaded
+  useEffect(() => {
+    if (trip) {
+      setMetadata({
+        title: `Trip ${trip.tripNumber}`,
+        description: `${trip.route?.name ?? 'Route details'} — ${trip.tripDate}`,
+        breadcrumbs: [
+          { label: 'Trips', href: '/operator/trips' },
+          { label: `Trip ${trip.tripNumber}` },
+        ],
+      });
+    }
+  }, [trip, setMetadata]);
+
   const handleBack = () => {
     router.push('/operator/trips');
   };
@@ -53,76 +80,49 @@ export default function OperatorTripDetailPage() {
   // ── Loading ──────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50">
-        <Header
-          pageTitle="Trip Details"
-          pageDescription="Loading trip information…"
-        />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="flex flex-col items-center gap-4 text-gray-500">
-            <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
-            <p className="font-medium">Loading trip details…</p>
-          </div>
-        </main>
-      </div>
+      <main className="flex-1 flex items-center justify-center h-64">
+        <div className="flex flex-col items-center gap-4 text-gray-500">
+          <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+          <p className="font-medium">Loading trip details…</p>
+        </div>
+      </main>
     );
   }
 
   // ── Error / Not Found ────────────────────────────────────────────────────
   if (error || !trip) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50">
-        <Header
-          pageTitle="Trip Details"
-          pageDescription="Trip not found"
-        />
-        <main className="flex-1 p-6">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Trips
-          </button>
-
-          <div className="bg-white rounded-xl border border-red-200 shadow-sm p-10 flex flex-col items-center text-center gap-4 max-w-lg mx-auto mt-12">
-            <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center">
-              <AlertCircle className="w-7 h-7 text-red-500" />
-            </div>
-            <h2 className="text-lg font-semibold text-gray-900">Trip Not Found</h2>
-            <p className="text-sm text-gray-500">
-              {error ?? 'The requested trip could not be loaded. It may have been removed or the ID is incorrect.'}
-            </p>
-            <button
-              onClick={handleBack}
-              className="mt-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              Back to Trips
-            </button>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  // ── Trip detail ──────────────────────────────────────────────────────────
-  return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <Header
-        pageTitle={`Trip ${trip.tripNumber}`}
-        pageDescription={`${trip.route?.name ?? 'Route details'} — ${trip.tripDate}`}
-      />
-
-      <main className="flex-1 p-6 space-y-6">
-        {/* Back navigation */}
+      <main className="flex-1 p-6">
         <button
           onClick={handleBack}
-          className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors font-medium"
+          className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Trips
         </button>
 
+        <div className="bg-white rounded-xl border border-red-200 shadow-sm p-10 flex flex-col items-center text-center gap-4 max-w-lg mx-auto mt-12">
+          <div className="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center">
+            <AlertCircle className="w-7 h-7 text-red-500" />
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900">Trip Not Found</h2>
+          <p className="text-sm text-gray-500">
+            {error ?? 'The requested trip could not be loaded. It may have been removed or the ID is incorrect.'}
+          </p>
+          <button
+            onClick={handleBack}
+            className="mt-2 px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+          >
+            Back to Trips
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  // ── Trip detail ──────────────────────────────────────────────────────────
+  return (
+    <main className="flex-1 p-6 space-y-6">
         {/* Read-only notice */}
         <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-700">
           <svg
@@ -155,7 +155,6 @@ export default function OperatorTripDetailPage() {
           staff={trip.staff ?? null}
           permit={trip.permit ?? null}
         />
-      </main>
-    </div>
+    </main>
   );
 }

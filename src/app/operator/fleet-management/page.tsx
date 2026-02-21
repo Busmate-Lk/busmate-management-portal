@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Header } from '@/components/operator/header';
+import { useSetPageMetadata } from '@/context/PageContext';
 import {
   FleetStatsCards,
   FleetFilters,
@@ -21,6 +21,15 @@ import {
 
 export default function FleetManagementPage() {
   const router = useRouter();
+
+  useSetPageMetadata({
+    title: 'Fleet Management',
+    description: 'View details of all buses in your fleet. Contact NTC to register or update bus information.',
+    activeItem: 'fleetmanagement',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Fleet Management' }],
+    padding: 0,
+  });
 
   // ── Data state ────────────────────────────────────────────────────────────
   const [buses,      setBuses]      = useState<OperatorBus[]>([]);
@@ -137,20 +146,7 @@ export default function FleetManagementPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header
-        pageTitle="Fleet Management"
-        pageDescription="View and monitor your bus fleet"
-      />
-
-      <div className="p-6 space-y-6">
-        {/* Page header */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Fleet Management</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            View details of all buses in your fleet. Contact NTC to register or update bus information.
-          </p>
-        </div>
+    <div className="p-6 space-y-6">
 
         {/* Stats */}
         <FleetStatsCards stats={stats} loading={statsLoading} />
@@ -223,7 +219,6 @@ export default function FleetManagementPage() {
         <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-700">
           <strong>Read-only view:</strong> Fleet registration and modifications are managed by the National Transport Commission (NTC).
           Please contact NTC for any changes to your fleet.
-        </div>
       </div>
     </div>
   );

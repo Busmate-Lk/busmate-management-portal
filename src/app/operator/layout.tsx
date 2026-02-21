@@ -1,41 +1,24 @@
-"use client"
-import { useState } from "react";
-import { Sidebar } from "@/components/shared/sidebar";
-import { usePathname } from "next/navigation";
+import type React from "react"
+import type { Metadata } from "next"
+import { Toaster } from "@/components/ui/toaster"
+import { OperatorLayoutClient } from "./layout-client"
 
-export default function OperatorLayout({ children }: { children: React.ReactNode }) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const sidebarWidth = isCollapsed ? 80 : 272; // px
-  const pathname = usePathname();
+export const metadata: Metadata = {
+  title: "BUSMATE LK Operator Portal",
+  description: "Fleet operator dashboard for BUSMATE LK transportation system",
+}
 
-  // Map the current pathname to the corresponding active item
-  const activeItem = (() => {
-    if (pathname.startsWith("/operator/dashboard")) return "dashboard";
-    if (pathname.startsWith("/operator/fleet-management")) return "fleetmanagement";
-    if (pathname.startsWith("/operator/trips")) return "trips";
-    if (pathname.startsWith("/operator/staff-management")) return "staff";
-    if (pathname.startsWith("/operator/passenger-service-permits")) return "passenger-service-permits";
-    if (pathname.startsWith("/operator/revenue-management")) return "revenue";
-    return undefined;
-  })();
-
+export default function OperatorRootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <div>
-      <Sidebar 
-        isCollapsed={isCollapsed} 
-        setIsCollapsed={setIsCollapsed} 
-        activeItem={activeItem}
-        role="operator"
-      />
-      <div
-        style={{
-          marginLeft: sidebarWidth,
-          transition: "margin-left 0.3s",
-        }}
-        className="min-h-screen bg-gray-50"
-      >
+    <>
+      <OperatorLayoutClient>
         {children}
-      </div>
-    </div>
-  );
+      </OperatorLayoutClient>
+      <Toaster />
+    </>
+  )
 }

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Header } from '@/components/operator/header';
+import { useSetPageMetadata, usePageContext } from '@/context/PageContext';
 import { StaffDetailHeader }      from '@/components/operator/staff/StaffDetailHeader';
 import { StaffContactCard }       from '@/components/operator/staff/StaffContactCard';
 import { StaffCredentialsCard }   from '@/components/operator/staff/StaffCredentialsCard';
@@ -15,6 +15,19 @@ import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
 
 export default function StaffDetailPage() {
+  useSetPageMetadata({
+    title: 'Staff Profile',
+    description: 'Staff member details',
+    activeItem: 'staff',
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: 'Staff Management', href: '/operator/staff-management' },
+      { label: 'Staff Profile' },
+    ],
+    padding: 0,
+  });
+
+  const { setMetadata } = usePageContext();
   const params  = useParams();
   const staffId = params?.staffId as string;
 
@@ -36,35 +49,45 @@ export default function StaffDetailPage() {
     return () => { mounted = false; };
   }, [staffId]);
 
+  // Update header when staff data is loaded
+  useEffect(() => {
+    if (staff) {
+      const isDriver = staff.role === 'DRIVER';
+      setMetadata({
+        // title: staff.fullName,
+        title: 'Staff Profile Details',
+        description: `${isDriver ? 'Driver' : 'Conductor'} Profile`,
+        breadcrumbs: [
+          { label: 'Staff Management', href: '/operator/staff-management' },
+          { label: staff.fullName },
+        ],
+      });
+    }
+  }, [staff, setMetadata]);
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header pageTitle="Staff Profile" pageDescription="Loading…" />
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-          <span className="ml-3 text-gray-500">Loading staff profile…</span>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <span className="ml-3 text-gray-500">Loading staff profile…</span>
       </div>
     );
   }
 
   if (notFound || !staff) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header pageTitle="Not Found" pageDescription="Staff member not found" />
-        <div className="p-6 max-w-md mx-auto text-center mt-12">
-          <AlertTriangle className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">Staff Member Not Found</h2>
-          <p className="text-gray-500 mb-6">
-            The staff member you&apos;re looking for could not be found.
-          </p>
-          <Link
-            href="/operator/staffManagement"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-          >
-            Back to Staff Management
-          </Link>
-        </div>
+      <div className="p-6 max-w-md mx-auto text-center mt-12">
+        <AlertTriangle className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Staff Member Not Found</h2>
+        <p className="text-gray-500 mb-6">
+          The staff member you&apos;re looking for could not be found.
+        </p>
+        <Link
+          href="/operator/staff-management"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+        >
+          Back to Staff Management
+        </Link>
       </div>
     );
   }
@@ -72,13 +95,7 @@ export default function StaffDetailPage() {
   const isDriver = staff.role === 'DRIVER';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header
-        pageTitle="Staff Profile"
-        pageDescription={`${staff.fullName} – ${isDriver ? 'Driver' : 'Conductor'}`}
-      />
-
-      <div className="p-6 space-y-6 mx-auto">
+    <div className="p-6 space-y-6 mx-auto">
         {/* Profile header */}
         <StaffDetailHeader staff={staff} />
 
@@ -105,7 +122,6 @@ export default function StaffDetailPage() {
         <p className="text-xs text-gray-400 text-center">
           This profile is read-only. Staff records are managed by BusMate administration.
         </p>
-      </div>
     </div>
   );
 }

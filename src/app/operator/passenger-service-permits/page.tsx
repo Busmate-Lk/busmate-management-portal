@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RefreshCw, AlertCircle, ChevronRight, FileText } from 'lucide-react';
-import { Header } from '@/components/operator/header';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { PermitStatsCards } from '@/components/operator/permits/PermitStatsCards';
 import { PermitFilters } from '@/components/operator/permits/PermitFilters';
 import { PermitsTable } from '@/components/operator/permits/PermitsTable';
@@ -38,6 +38,15 @@ interface SortState {
 // ─── Main content component (uses useSearchParams so must be wrapped in Suspense) ─
 
 function ServicePermitsContent() {
+  useSetPageMetadata({
+    title: 'Service Permits',
+    description: 'View your passenger service permits issued by the Ministry of Transport',
+    activeItem: 'passenger-service-permits',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Service Permits' }],
+    padding: 0,
+  });
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -157,17 +166,7 @@ function ServicePermitsContent() {
 
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header pageTitle="Service Permits" pageDescription="View your passenger service permits issued by the Ministry of Transport" />
-
-      <main className="px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-1 text-sm text-gray-500" aria-label="Breadcrumb">
-          <span>Operator Portal</span>
-          <ChevronRight className="w-4 h-4" />
-          <span className="font-medium text-gray-900">Service Permits</span>
-        </nav>
-
+    <main className="px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Statistics */}
         <PermitStatsCards stats={statistics} loading={loading && !initialized} />
 
@@ -227,8 +226,7 @@ function ServicePermitsContent() {
             </p>
           </div>
         )}
-      </main>
-    </div>
+    </main>
   );
 }
 
@@ -238,7 +236,7 @@ export default function ServicePermitsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="flex items-center justify-center h-64">
           <div className="flex items-center gap-2 text-gray-500">
             <RefreshCw className="w-5 h-5 animate-spin" />
             <span>Loading…</span>
