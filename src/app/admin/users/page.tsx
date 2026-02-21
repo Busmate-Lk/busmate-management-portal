@@ -1,20 +1,21 @@
 "use client"
 
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { UserStats, UserFilters, UserTable } from "@/components/admin/users"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 import Link from "next/link"
 
 export default function UsersPage() {
+  // Set page metadata
+  useSetPageMetadata({
+    title: "User Management",
+    description: "Manage users, permissions, and account settings across the platform",
+    activeItem: "users"
+  })
+
   return (
-    <Layout
-      activeItem="users"
-      pageTitle="User Management"
-      pageDescription="Manage users, permissions, and account settings across the platform"
-      role="admin"
-    >
-      <div className="space-y-6">
+    <div className="space-y-6">
         <UserStats />
 
         {/* Add User Button */}
@@ -27,9 +28,8 @@ export default function UsersPage() {
           </Button>
         </div>
 
-        <UserFilters />
-        <UserTable />
-      </div>
-    </Layout>
+      <UserFilters />
+      <UserTable />
+    </div>
   )
 }

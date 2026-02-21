@@ -1,19 +1,20 @@
 "use client"
 
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { StatsCards, QuickActions, ActivityFeed } from "@/components/admin/dashboard"
 import { UserGrowthTrendsChart } from "@/components/admin/dashboard/user-growth-trends-chart"
 
 export default function AdminDashboardPage() {
+  // Set page metadata
+  useSetPageMetadata({
+    title: "System Dashboard",
+    description: "Monitor system performance, user activity, and key metrics",
+    activeItem: "dashboard"
+  })
+
   return (
-    <Layout
-      activeItem="dashboard"
-      pageTitle="System Dashboard"
-      pageDescription="Monitor system performance, user activity, and key metrics"
-      role="admin"
-    >
-      <div className="space-y-6">
-        <StatsCards />
+    <div className="space-y-6">
+      <StatsCards />
         
         {/* User Growth Chart */}
         <div className="bg-white rounded-lg shadow-lg bg-gradient-to-br from-purple-50 to-white p-6">
@@ -33,7 +34,6 @@ export default function AdminDashboardPage() {
             <ActivityFeed />
           </div>
         </div>
-      </div>
-    </Layout>
+    </div>
   )
 }

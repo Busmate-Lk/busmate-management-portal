@@ -1,21 +1,20 @@
 "use client"
 
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { AddMotForm } from "@/components/admin/users"
 
 export default function AddMotPage() {
-  return (
-    <Layout
-      activeItem="users"
-      pageTitle="Add MOT User"
-      pageDescription="Create a new MOT officer account"
-      role="admin"
-      breadcrumbs={[
-        { label: "Users", href: "/admin/users" },
-        { label: "Add MOT User" },
-      ]}
-    >
-      <AddMotForm />
-    </Layout>
-  )
+  // Set page metadata with breadcrumbs
+  useSetPageMetadata({
+    title: "Add MOT User",
+    description: "Create a new MOT officer account",
+    activeItem: "users",
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: "Users", href: "/admin/users" },
+      { label: "Add MOT User" },
+    ]
+  })
+
+  return <AddMotForm />
 }

@@ -1,17 +1,15 @@
 "use client"
 
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { UserActivityLogs } from "@/components/admin/logs"
 
 export default function UserActivityLogsPage() {
-  return (
-    <Layout
-      activeItem="logs"
-      pageTitle="User Activity Logs"
-      pageDescription="Track and monitor all user actions across the platform"
-      role="admin"
-    >
-      <UserActivityLogs />
-    </Layout>
-  )
+  // Set page metadata
+  useSetPageMetadata({
+    title: "User Activity Logs",
+    description: "Track and monitor all user actions across the platform",
+    activeItem: "logs"
+  })
+
+  return <UserActivityLogs />
 }

@@ -1,17 +1,15 @@
 "use client"
 
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { ApiHealth } from "@/components/admin/monitoring"
 
 export default function ApiHealthPage() {
-  return (
-    <Layout
-      activeItem="monitoring"
-      pageTitle="API Health"
-      pageDescription="Monitor API endpoints status and performance"
-      role="admin"
-    >
-      <ApiHealth />
-    </Layout>
-  )
+  // Set page metadata
+  useSetPageMetadata({
+    title: "API Health",
+    description: "Monitor API endpoints status and performance",
+    activeItem: "monitoring"
+  })
+
+  return <ApiHealth />
 }

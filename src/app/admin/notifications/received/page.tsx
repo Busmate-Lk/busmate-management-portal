@@ -1,17 +1,15 @@
 "use client"
 
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { MessageHistory } from "@/components/admin/broadcast"
 
 export default function ReceivedNotificationsPage() {
-  return (
-    <Layout
-      activeItem="notifications"
-      pageTitle="Received Notifications"
-      pageDescription="View notifications received from system and other administrators"
-      role="admin"
-    >
-      <MessageHistory />
-    </Layout>
-  )
+  // Set page metadata
+  useSetPageMetadata({
+    title: "Received Notifications",
+    description: "View notifications received from system and other administrators",
+    activeItem: "notifications"
+  })
+
+  return <MessageHistory />
 }

@@ -1,25 +1,24 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { NotificationDetail } from "@/components/admin/notifications"
 
 export default function NotificationDetailPage() {
   const params = useParams()
   const notificationId = params.id as string
 
-  return (
-    <Layout
-      activeItem="notifications"
-      pageTitle="Notification Details"
-      pageDescription="View notification content and details"
-      role="admin"
-      breadcrumbs={[
-        { label: "Notifications", href: "/admin/notifications" },
-        { label: "Details" },
-      ]}
-    >
-      <NotificationDetail notificationId={notificationId} />
-    </Layout>
-  )
+  // Set page metadata with breadcrumbs
+  useSetPageMetadata({
+    title: "Notification Details",
+    description: "View notification content and details",
+    activeItem: "notifications",
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: "Notifications", href: "/admin/notifications" },
+      { label: "Details" },
+    ]
+  })
+
+  return <NotificationDetail notificationId={notificationId} />
 }

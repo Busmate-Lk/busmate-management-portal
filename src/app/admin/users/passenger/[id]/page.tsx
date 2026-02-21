@@ -1,25 +1,24 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { PassengerProfile } from "@/components/admin/profile"
 
 export default function PassengerProfilePage() {
   const params = useParams()
   const userId = params.id as string
 
-  return (
-    <Layout
-      activeItem="users"
-      pageTitle="Passenger Profile"
-      pageDescription="View and manage passenger account details"
-      role="admin"
-      breadcrumbs={[
-        { label: "Users", href: "/admin/users" },
-        { label: "Passenger Profile" },
-      ]}
-    >
-      <PassengerProfile userId={userId} />
-    </Layout>
-  )
+  // Set page metadata with breadcrumbs
+  useSetPageMetadata({
+    title: "Passenger Profile",
+    description: "View and manage passenger account details",
+    activeItem: "users",
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: "Users", href: "/admin/users" },
+      { label: "Passenger Profile" },
+    ]
+  })
+
+  return <PassengerProfile userId={userId} />
 }

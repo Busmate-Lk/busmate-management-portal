@@ -1,17 +1,15 @@
 "use client"
 
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { MicroserviceUptime } from "@/components/admin/monitoring"
 
 export default function MicroserviceUptimePage() {
-  return (
-    <Layout
-      activeItem="monitoring"
-      pageTitle="Microservice Uptime"
-      pageDescription="Monitor microservice health and uptime statistics"
-      role="admin"
-    >
-      <MicroserviceUptime />
-    </Layout>
-  )
+  // Set page metadata
+  useSetPageMetadata({
+    title: "Microservice Uptime",
+    description: "Monitor microservice health and uptime statistics",
+    activeItem: "monitoring"
+  })
+
+  return <MicroserviceUptime />
 }

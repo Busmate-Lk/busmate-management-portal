@@ -1,17 +1,15 @@
 "use client"
 
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { AdminProfile } from "@/components/admin/profile"
 
 export default function ProfilePage() {
-  return (
-    <Layout
-      activeItem="dashboard"
-      pageTitle="Admin Profile"
-      pageDescription="Manage your admin account settings, preferences, and security options"
-      role="admin"
-    >
-      <AdminProfile />
-    </Layout>
-  )
+  // Set page metadata
+  useSetPageMetadata({
+    title: "Admin Profile",
+    description: "Manage your admin account settings, preferences, and security options",
+    activeItem: "dashboard"
+  })
+
+  return <AdminProfile />
 }

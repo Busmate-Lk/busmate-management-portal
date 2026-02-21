@@ -1,21 +1,20 @@
 "use client"
 
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { BackupRecovery } from "@/components/admin/settings"
 
 export default function BackupPage() {
-  return (
-    <Layout
-      activeItem="settings"
-      pageTitle="Backup & Recovery"
-      pageDescription="Manage system backups and restore points"
-      role="admin"
-      breadcrumbs={[
-        { label: "Settings", href: "/admin/settings" },
-        { label: "Backup & Recovery" },
-      ]}
-    >
-      <BackupRecovery />
-    </Layout>
-  )
+  // Set page metadata with breadcrumbs
+  useSetPageMetadata({
+    title: "Backup & Recovery",
+    description: "Manage system backups and restore points",
+    activeItem: "settings",
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: "Settings", href: "/admin/settings" },
+      { label: "Backup & Recovery" },
+    ]
+  })
+
+  return <BackupRecovery />
 }

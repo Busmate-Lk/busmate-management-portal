@@ -1,21 +1,20 @@
 "use client"
 
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { ComposeMessage } from "@/components/admin/broadcast"
 
 export default function ComposeNotificationPage() {
-  return (
-    <Layout
-      activeItem="notifications"
-      pageTitle="Compose Notification"
-      pageDescription="Create and send notifications to users"
-      role="admin"
-      breadcrumbs={[
-        { label: "Notifications", href: "/admin/notifications" },
-        { label: "Compose" },
-      ]}
-    >
-      <ComposeMessage />
-    </Layout>
-  )
+  // Set page metadata with breadcrumbs
+  useSetPageMetadata({
+    title: "Compose Notification",
+    description: "Create and send notifications to users",
+    activeItem: "notifications",
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: "Notifications", href: "/admin/notifications" },
+      { label: "Compose" },
+    ]
+  })
+
+  return <ComposeMessage />
 }

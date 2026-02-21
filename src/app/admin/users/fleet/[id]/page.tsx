@@ -1,25 +1,24 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { FleetProfile } from "@/components/admin/profile"
 
 export default function FleetProfilePage() {
   const params = useParams()
   const fleetId = params.id as string
 
-  return (
-    <Layout
-      activeItem="users"
-      pageTitle="Fleet Operator Profile"
-      pageDescription="View and manage fleet operator account details"
-      role="admin"
-      breadcrumbs={[
-        { label: "Users", href: "/admin/users" },
-        { label: "Fleet Operator Profile" },
-      ]}
-    >
-      <FleetProfile fleetId={fleetId} />
-    </Layout>
-  )
+  // Set page metadata with breadcrumbs
+  useSetPageMetadata({
+    title: "Fleet Operator Profile",
+    description: "View and manage fleet operator account details",
+    activeItem: "users",
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: "Users", href: "/admin/users" },
+      { label: "Fleet Operator Profile" },
+    ]
+  })
+
+  return <FleetProfile fleetId={fleetId} />
 }

@@ -1,21 +1,20 @@
 "use client"
 
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { AnalyticsReports } from "@/components/admin/analytics"
 
 export default function ReportsPage() {
-  return (
-    <Layout
-      activeItem="analytics"
-      pageTitle="Analytics Reports"
-      pageDescription="View and generate system analytics reports"
-      role="admin"
-      breadcrumbs={[
-        { label: "Analytics", href: "/admin/analytics" },
-        { label: "Reports" },
-      ]}
-    >
-      <AnalyticsReports />
-    </Layout>
-  )
+  // Set page metadata with breadcrumbs
+  useSetPageMetadata({
+    title: "Analytics Reports",
+    description: "View and generate system analytics reports",
+    activeItem: "analytics",
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: "Analytics", href: "/admin/analytics" },
+      { label: "Reports" },
+    ]
+  })
+
+  return <AnalyticsReports />
 }

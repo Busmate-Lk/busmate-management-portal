@@ -1,17 +1,15 @@
 "use client"
 
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata } from "@/context/PageMetadata"
 import { ResourceUsage } from "@/components/admin/monitoring"
 
 export default function ResourceUsagePage() {
-  return (
-    <Layout
-      activeItem="monitoring"
-      pageTitle="Resource Usage"
-      pageDescription="Monitor server resource utilization and trends"
-      role="admin"
-    >
-      <ResourceUsage />
-    </Layout>
-  )
+  // Set page metadata
+  useSetPageMetadata({
+    title: "Resource Usage",
+    description: "Monitor server resource utilization and trends",
+    activeItem: "monitoring"
+  })
+
+  return <ResourceUsage />
 }
