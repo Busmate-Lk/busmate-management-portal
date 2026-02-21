@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSetPageMetadata } from '@/context/PageMetadata';
+import { useSetPageMetadata } from '@/context/PageContext';
 import {
   LogStatsCards,
   LogTrendChart,

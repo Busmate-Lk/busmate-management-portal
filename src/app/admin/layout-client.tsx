@@ -3,14 +3,14 @@
 import { useState, type ReactNode } from "react"
 import { Sidebar } from "@/components/shared/sidebar"
 import { AdminContentHeader } from "@/components/admin/AdminContentHeader"
-import { PageMetadataProvider, PageActionsProvider, usePageMetadata } from "@/context/PageMetadata"
+import { PageProvider, usePageContext } from "@/context/PageContext"
 
 /**
  * Inner layout component that consumes page metadata
  */
 function AdminLayoutContent({ children }: { children: ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
-  const { metadata } = usePageMetadata()
+  const { metadata } = usePageContext()
 
   // Get padding value with default
   const padding = metadata.padding ?? 6
@@ -48,21 +48,16 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
  */
 export function AdminLayoutClient({ children }: { children: ReactNode }) {
   return (
-    <PageMetadataProvider
+    <PageProvider
       initialMetadata={{
         title: "Dashboard",
         description: "Monitor system performance, user activity, and key metrics",
         activeItem: "dashboard",
         showBreadcrumbs: false,
-        padding: 6
+        padding: 6,
       }}
     >
-      {/* PageActionsProvider must be INSIDE PageMetadataProvider so
-          usePageActions works, but its state is kept separate so that
-          setting actions never re-renders page components. */}
-      <PageActionsProvider>
-        <AdminLayoutContent>{children}</AdminLayoutContent>
-      </PageActionsProvider>
-    </PageMetadataProvider>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </PageProvider>
   )
 }

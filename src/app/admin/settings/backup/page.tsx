@@ -1,6 +1,6 @@
 "use client"
 
-import { useSetPageMetadata } from "@/context/PageMetadata"
+import { useSetPageMetadata } from "@/context/PageContext"
 import { BackupSettingsPanel } from "@/components/admin/settings"
 
 export default function BackupPage() {

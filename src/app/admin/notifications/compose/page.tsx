@@ -1,6 +1,6 @@
 "use client"
 
-import { useSetPageMetadata } from "@/context/PageMetadata"
+import { useSetPageMetadata } from "@/context/PageContext"
 import { ComposeNotificationForm } from "@/components/admin/notifications"
 
 export default function ComposeNotificationPage() {

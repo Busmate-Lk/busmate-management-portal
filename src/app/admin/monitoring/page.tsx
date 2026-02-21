@@ -1,6 +1,6 @@
 "use client"
 
-import { useSetPageMetadata, useSetPageActions } from "@/context/PageMetadata"
+import { useSetPageMetadata, useSetPageActions } from "@/context/PageContext"
 import { MonitoringOverview } from "@/components/admin/monitoring"
 import { useSystemMonitoring } from "@/hooks/useSystemMonitoring"
 import { Radio, RefreshCw } from "lucide-react"

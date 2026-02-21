@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSetPageMetadata, useSetPageActions } from '@/context/PageMetadata';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { UserStatsCards, UserFilters, UsersTable, ConfirmDialog } from '@/components/admin/users';
 import {
   getUserStatsData,

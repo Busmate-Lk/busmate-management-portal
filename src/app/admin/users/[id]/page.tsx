@@ -2,7 +2,7 @@
 
 import { useMemo, useCallback, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useSetPageMetadata } from '@/context/PageMetadata';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { UserDetailPanel, ConfirmDialog } from '@/components/admin/users';
 import {
   getUserById,

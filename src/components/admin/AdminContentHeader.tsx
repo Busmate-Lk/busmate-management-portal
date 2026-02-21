@@ -1,8 +1,8 @@
 'use client';
 
 import { Breadcrumb } from '@/components/shared/breadcrumb';
-import type { PageMetadata } from '@/context/PageMetadata';
-import { usePageActionsValue } from '@/context/PageMetadata/PageActionsContext';
+import type { PageMetadata } from '@/context/PageContext';
+import { usePageActionsValue } from '@/context/PageContext';
 
 interface AdminContentHeaderProps {
   metadata: PageMetadata;

@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useSetPageMetadata } from '@/context/PageMetadata';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { LogDetailPanel } from '@/components/admin/logs';
 import { getLogById, getLogType } from '@/data/admin';
 import { FileWarning } from 'lucide-react';

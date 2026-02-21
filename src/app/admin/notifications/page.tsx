@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSetPageMetadata, useSetPageActions } from '@/context/PageMetadata';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import {
   NotificationStatsCards,
   NotificationTrendChart,

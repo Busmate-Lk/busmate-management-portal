@@ -1,6 +1,6 @@
 "use client"
 
-import { useSetPageMetadata } from "@/context/PageMetadata"
+import { useSetPageMetadata } from "@/context/PageContext"
 import { AdminProfile } from "@/components/admin/profile"
 
 export default function ProfilePage() {

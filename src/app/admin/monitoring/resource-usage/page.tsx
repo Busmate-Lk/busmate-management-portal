@@ -1,6 +1,6 @@
 "use client"
 
-import { useSetPageMetadata } from "@/context/PageMetadata"
+import { useSetPageMetadata } from "@/context/PageContext"
 import { ResourceUsagePanel } from "@/components/admin/monitoring"
 import { useSystemMonitoring } from "@/hooks/useSystemMonitoring"
 

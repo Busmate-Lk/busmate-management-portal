@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useSetPageMetadata } from '@/context/PageMetadata';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { NotificationDetailPanel } from '@/components/admin/notifications';
 import { getNotificationById } from '@/data/admin';
 import { ArrowLeft, AlertTriangle } from 'lucide-react';

@@ -1,7 +1,7 @@
 'use client';
 
 import { RefreshCw, Radio } from 'lucide-react';
-import { useSetPageMetadata, useSetPageActions } from '@/context/PageMetadata';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { useDashboard } from '@/hooks/useDashboard';
 import {
   DashboardKPICards,

@@ -1,6 +1,6 @@
 "use client"
 
-import { useSetPageMetadata } from "@/context/PageMetadata"
+import { useSetPageMetadata } from "@/context/PageContext"
 import { SettingsTabLayout } from "@/components/admin/settings"
 
 export default function SettingsPage() {
