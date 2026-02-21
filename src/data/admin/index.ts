@@ -132,19 +132,41 @@ export {
 } from './logs';
 export type { LogStats } from './logs';
 
-// Settings data and functions
+// System Settings data layer (modular, type-safe)
 export {
-  getSystemSettings,
-  updateSystemSettings,
+  // General
+  getGeneralSettings,
+  updateGeneralSettings,
+  // API
+  getApiSettings,
+  updateApiSettings,
+  createApiKey,
+  revokeApiKey,
+  // Maintenance
+  getMaintenanceSettings,
+  updateMaintenanceSettings,
+  toggleMaintenanceMode,
+  getMaintenanceHistory,
+  getSystemStatus,
+  performMaintenanceAction,
+  // Backup
+  getBackupSettings,
+  updateBackupSettings,
   getBackupHistory,
+  getBackupStats,
   createBackup,
   restoreBackup,
   deleteBackup,
-  getAdminProfile,
-  updateAdminProfile,
-  changePassword,
-  enableTwoFactor,
-  disableTwoFactor,
-  setMaintenanceMode,
-  mockData as settingsMockData,
-} from './settings';
+  downloadBackup,
+} from './system-settings';
+export type {
+  GeneralSettings,
+  ApiSettings,
+  ApiKey,
+  MaintenanceSettings,
+  MaintenanceHistoryEntry,
+  SystemStatus,
+  BackupSettings,
+  BackupEntry,
+  BackupStats,
+} from './system-settings';

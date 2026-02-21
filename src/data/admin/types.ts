@@ -176,45 +176,5 @@ export interface ChartData {
   }[];
 }
 
-// Settings types
-export interface SystemSettings {
-  systemName: string;
-  timeZone: string;
-  sessionTimeout: number;
-  passwordExpiry: number;
-  twoFactorEnabled: boolean;
-  lockAfterFailedAttempts: boolean;
-  rateLimitPerHour: number;
-  apiTimeout: number;
-  apiLoggingEnabled: boolean;
-  corsEnabled: boolean;
-  logRetentionDays: number;
-  activityLogRetentionDays: number;
-  emailNotifications: boolean;
-  smsAlerts: boolean;
-  maintenanceMode: boolean;
-}
-
-export interface BackupEntry {
-  id: string;
-  type: 'Full System Backup' | 'Database Backup' | 'Configuration Backup';
-  date: string;
-  size: string;
-  status: 'Completed' | 'Failed' | 'In Progress';
-  duration: string;
-  location: string;
-}
-
-// Profile types
-export interface AdminProfile {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-  phone: string;
-  department: string;
-  joinedDate: string;
-  lastLogin: string;
-  avatar?: string;
-  permissions: string[];
-}
+// NOTE: Settings types (SystemSettings, BackupEntry, AdminProfile) have been moved to system-settings.ts
+// The old settings.ts data file used these types but is now replaced by system-settings.ts
