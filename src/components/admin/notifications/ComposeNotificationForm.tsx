@@ -117,7 +117,7 @@ export function ComposeNotificationForm({ onSuccess }: ComposeNotificationFormPr
   }, []);
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="mx-auto">
       {/* Result Banner */}
       {result && (
         <div

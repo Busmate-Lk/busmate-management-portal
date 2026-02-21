@@ -18,7 +18,7 @@ const ACTIONS = [
     icon: UserPlus,
     label: 'Add User',
     description: 'Create MOT officer or admin',
-    href: '/admin/users',
+    href: '/admin/users/create',
     color: 'blue',
   },
   {
