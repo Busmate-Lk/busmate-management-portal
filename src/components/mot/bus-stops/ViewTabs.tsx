@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Table, Map } from 'lucide-react';
+import { LayoutList, Map } from 'lucide-react';
 
 export type ViewType = 'table' | 'map';
 
@@ -12,87 +12,77 @@ interface ViewTabsProps {
   mapCount?: number;
 }
 
-export function ViewTabs({ 
-  activeView, 
-  onViewChange, 
-  tableCount = 0, 
-  mapCount = 0 
+const TABS = [
+  {
+    id: 'table' as ViewType,
+    label: 'List View',
+    Icon: LayoutList,
+  },
+  {
+    id: 'map' as ViewType,
+    label: 'Map View',
+    Icon: Map,
+  },
+];
+
+export function ViewTabs({
+  activeView,
+  onViewChange,
+  tableCount = 0,
+  mapCount = 0,
 }: ViewTabsProps) {
-  const tabs = [
-    {
-      id: 'table' as ViewType,
-      name: 'Table View',
-      icon: Table,
-      count: tableCount,
-      description: 'Table view with detailed information and pagination'
-    },
-    {
-      id: 'map' as ViewType,
-      name: 'Map View',
-      icon: Map,
-      count: mapCount,
-      description: 'Interactive map showing bus stop locations'
-    }
-  ];
+  const counts: Record<ViewType, number> = {
+    table: tableCount,
+    map: mapCount,
+  };
 
   return (
-    <div className="border-b border-gray-200">
-      <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-        {tabs.map((tab) => {
-          const isActive = activeView === tab.id;
-          const Icon = tab.icon;
-          
+    <div className="flex items-center">
+      {/* Pill container */}
+      <div
+        className="inline-flex items-center gap-1 p-1 bg-gray-100 rounded-xl"
+        role="tablist"
+        aria-label="View switcher"
+      >
+        {TABS.map(({ id, label, Icon }) => {
+          const isActive = activeView === id;
+          const count = counts[id];
+
           return (
             <button
-              key={tab.id}
-              onClick={() => onViewChange(tab.id)}
-              className={`
-                group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors
-                ${isActive
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }
-              `}
-              aria-current={isActive ? 'page' : undefined}
+              key={id}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => onViewChange(id)}
+              className={[
+                'relative inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium',
+                'transition-all duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1',
+                isActive
+                  ? 'bg-white text-blue-700 shadow-sm ring-1 ring-black/[0.06]'
+                  : 'text-gray-500 hover:text-gray-800 hover:bg-white/60',
+              ].join(' ')}
             >
-              <Icon 
-                className={`
-                  -ml-0.5 mr-2 h-5 w-5 transition-colors
-                  ${isActive 
-                    ? 'text-blue-500' 
-                    : 'text-gray-400 group-hover:text-gray-500'
-                  }
-                `}
-                aria-hidden="true" 
+              <Icon
+                className={[
+                  'h-4 w-4 shrink-0 transition-colors duration-200',
+                  isActive ? 'text-blue-600' : 'text-gray-400',
+                ].join(' ')}
+                aria-hidden="true"
               />
-              <span>{tab.name}</span>
-              {tab.count > 0 && (
-                <span 
-                  className={`
-                    ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                    ${isActive
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-gray-100 text-gray-800 group-hover:bg-gray-200'
-                    }
-                  `}
+              <span>{label}</span>
+              {count > 0 && (
+                <span
+                  className={[
+                    'inline-flex items-center justify-center min-w-[1.4rem] h-5 px-1.5 rounded-full text-[11px] font-semibold transition-colors duration-200',
+                    isActive
+                      ? 'bg-blue-100 text-blue-700'
+                      : 'bg-gray-200 text-gray-500 group-hover:bg-gray-300',
+                  ].join(' ')}
                 >
-                  {tab.count.toLocaleString()}
+                  {count.toLocaleString()}
                 </span>
               )}
             </button>
-          );
-        })}
-      </nav>
-      
-      {/* Tab descriptions */}
-      <div className="mt-2 mb-4">
-        {tabs.map((tab) => {
-          if (activeView !== tab.id) return null;
-          
-          return (
-            <p key={tab.id} className="text-sm text-gray-600">
-              {tab.description}
-            </p>
           );
         })}
       </div>
