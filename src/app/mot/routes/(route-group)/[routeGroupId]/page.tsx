@@ -17,14 +17,6 @@ export default function RouteGroupDetailsPage() {
   const params = useParams();
   const routeGroupId = params.routeGroupId as string;
 
-  useSetPageMetadata({
-    title: routeGroup?.name || 'Route Group Details',
-    description: routeGroup?.description || 'Manage route group details and routes',
-    activeItem: 'routes',
-    showBreadcrumbs: true,
-    breadcrumbs: [{ label: 'Routes', href: '/mot/routes' }, { label: routeGroup?.name || 'Route Group' }],
-  });
-
   // State
   const [routeGroup, setRouteGroup] = useState<RouteGroupResponse | null>(null);
   const [routes, setRoutes] = useState<RouteResponse[]>([]);
@@ -34,6 +26,14 @@ export default function RouteGroupDetailsPage() {
   // Delete modal states
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useSetPageMetadata({
+    title: routeGroup?.name || 'Route Group Details',
+    description: routeGroup?.description || 'Manage route group details and routes',
+    activeItem: 'routes',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Routes', href: '/mot/routes' }, { label: routeGroup?.name || 'Route Group' }],
+  });
 
   // Fetch Route Group Details
   const loadRouteGroupDetails = useCallback(async () => {

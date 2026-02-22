@@ -113,56 +113,6 @@ export default function ScheduleDetailsPage() {
     breadcrumbs: [{ label: 'Schedules', href: '/mot/schedules' }, { label: schedule?.name || 'Schedule Details' }],
   });
 
-  useSetPageActions(
-    <div className="flex flex-wrap gap-2">
-      <button
-        onClick={handleRefresh}
-        className="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm"
-      >
-        <RefreshCw className="w-4 h-4 mr-2" />
-        Refresh
-      </button>
-      <button
-        onClick={handleClone}
-        className="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm"
-      >
-        <Copy className="w-4 h-4 mr-2" />
-        Clone
-      </button>
-      {schedule?.status === 'ACTIVE' ? (
-        <button
-          onClick={handleDeactivate}
-          className="inline-flex items-center px-3 py-2 border border-orange-300 text-orange-700 rounded-md hover:bg-orange-50 text-sm"
-        >
-          <Power className="w-4 h-4 mr-2" />
-          Deactivate
-        </button>
-      ) : (
-        <button
-          onClick={handleActivate}
-          className="inline-flex items-center px-3 py-2 border border-green-300 text-green-700 rounded-md hover:bg-green-50 text-sm"
-        >
-          <Power className="w-4 h-4 mr-2" />
-          Activate
-        </button>
-      )}
-      <button
-        onClick={handleEdit}
-        className="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-      >
-        <Edit className="w-4 h-4 mr-2" />
-        Edit
-      </button>
-      <button
-        onClick={handleDelete}
-        className="inline-flex items-center px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
-      >
-        <Trash2 className="w-4 h-4 mr-2" />
-        Delete
-      </button>
-    </div>
-  );
-
   // Handlers
   const handleEdit = () => {
     router.push(`/mot/schedules/${scheduleId}/edit`);
@@ -258,6 +208,56 @@ export default function ScheduleDetailsPage() {
       loadScheduleTrips()
     ]);
   };
+
+  useSetPageActions(
+    <div className="flex flex-wrap gap-2">
+      <button
+        onClick={handleRefresh}
+        className="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm"
+      >
+        <RefreshCw className="w-4 h-4 mr-2" />
+        Refresh
+      </button>
+      <button
+        onClick={handleClone}
+        className="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm"
+      >
+        <Copy className="w-4 h-4 mr-2" />
+        Clone
+      </button>
+      {schedule?.status === 'ACTIVE' ? (
+        <button
+          onClick={handleDeactivate}
+          className="inline-flex items-center px-3 py-2 border border-orange-300 text-orange-700 rounded-md hover:bg-orange-50 text-sm"
+        >
+          <Power className="w-4 h-4 mr-2" />
+          Deactivate
+        </button>
+      ) : (
+        <button
+          onClick={handleActivate}
+          className="inline-flex items-center px-3 py-2 border border-green-300 text-green-700 rounded-md hover:bg-green-50 text-sm"
+        >
+          <Power className="w-4 h-4 mr-2" />
+          Activate
+        </button>
+      )}
+      <button
+        onClick={handleEdit}
+        className="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+      >
+        <Edit className="w-4 h-4 mr-2" />
+        Edit
+      </button>
+      <button
+        onClick={handleDelete}
+        className="inline-flex items-center px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
+      >
+        <Trash2 className="w-4 h-4 mr-2" />
+        Delete
+      </button>
+    </div>
+  );
 
   // Loading state
   if (isLoading) {

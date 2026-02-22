@@ -273,34 +273,6 @@ export default function BusStopDetailsPage({ params }: BusStopDetailsPageProps) 
     breadcrumbs: [{ label: 'Bus Stops', href: '/mot/bus-stops' }, { label: busStop?.name || 'Bus Stop Details' }],
   });
 
-  useSetPageActions(
-    busStop ? (
-      <>
-        <button
-          onClick={() => router.push('/mot/bus-stops')}
-          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Back to Bus Stops
-        </button>
-        <button
-          onClick={() => router.push(`/mot/bus-stops/${busStop.id}/edit`)}
-          className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-        >
-          <Edit className="w-4 h-4 mr-2" />
-          Edit
-        </button>
-        <button
-          onClick={handleDeleteClick}
-          className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
-        >
-          <Trash2 className="w-4 h-4 mr-2" />
-          Delete
-        </button>
-      </>
-    ) : null
-  );
-
   // Load bus stop details
   const loadBusStopDetails = useCallback(async () => {
     if (!busStopId) {
@@ -375,6 +347,34 @@ export default function BusStopDetailsPage({ params }: BusStopDetailsPageProps) 
       setIsDeleting(false);
     }
   }, [busStop, router, toast]);
+
+  useSetPageActions(
+    busStop ? (
+      <>
+        <button
+          onClick={() => router.push('/mot/bus-stops')}
+          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 mr-2" />
+          Back to Bus Stops
+        </button>
+        <button
+          onClick={() => router.push(`/mot/bus-stops/${busStop.id}/edit`)}
+          className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+        >
+          <Edit className="w-4 h-4 mr-2" />
+          Edit
+        </button>
+        <button
+          onClick={handleDeleteClick}
+          className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          Delete
+        </button>
+      </>
+    ) : null
+  );
 
   // Open in Google Maps
   const openInMaps = useCallback(() => {
