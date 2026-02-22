@@ -98,7 +98,7 @@ export function BusStopActionButtons({
       />
 
       {/* Overflow menu — xs screens only */}
-      <OverflowMenu items={overflowItems} />
+      {/* <OverflowMenu items={overflowItems} /> */}
     </ActionButtonsContainer>
   );
 }
