@@ -16,8 +16,8 @@ interface PolicyFiltersProps {
     onPriorityChange: (value: string) => void;
     filterOptions: PolicyFilterOptions;
     totalCount: number;
-    onUploadPolicy: () => void;
-    onExportAll: () => void;
+    onUploadPolicy?: () => void;
+    onExportAll?: () => void;
     onClearAll: () => void;
     loading?: boolean;
 }
@@ -73,23 +73,25 @@ export function PolicyFilters({
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex items-center gap-2 shrink-0">
-                        <button
-                            onClick={onUploadPolicy}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                        >
-                            <Upload className="w-4 h-4" />
-                            Upload Policy
-                        </button>
-                        <button
-                            onClick={onExportAll}
-                            disabled={loading}
-                            className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
-                        >
-                            <Download className="w-4 h-4" />
-                            Export
-                        </button>
-                    </div>
+                    {onUploadPolicy && onExportAll && (
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                onClick={onUploadPolicy}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                            >
+                                <Upload className="w-4 h-4" />
+                                Upload Policy
+                            </button>
+                            <button
+                                onClick={onExportAll}
+                                disabled={loading}
+                                className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            >
+                                <Download className="w-4 h-4" />
+                                Export
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 

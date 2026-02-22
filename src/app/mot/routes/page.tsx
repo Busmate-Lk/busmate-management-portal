@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSetPageMetadata } from '@/context/PageContext';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import RouteAdvancedFilters from '@/components/mot/routes/RouteAdvancedFilters';
 import { RouteStatsCards } from '@/components/mot/routes/RouteStatsCards';
 import { RoutesTable } from '@/components/mot/routes/RoutesTable';
@@ -44,6 +44,7 @@ export default function RoutesPage() {
     showBreadcrumbs: true,
     breadcrumbs: [{ label: 'Routes' }],
   });
+
   const [routes, setRoutes] = useState<RouteResponse[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -429,6 +430,15 @@ export default function RoutesPage() {
     }
   };
 
+  useSetPageActions(
+    <RouteActionButtons
+      onAddRoute={handleAddNewRoute}
+      onImport={handleImport}
+      onExportAll={handleExportAll}
+      isLoading={isLoading}
+    />
+  );
+
   if (isLoading && routes.length === 0) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -459,14 +469,6 @@ export default function RoutesPage() {
 
         {/* Stats Cards */}
         <RouteStatsCards stats={stats} />
-
-        {/* Action Buttons */}
-        <RouteActionButtons
-          onAddRoute={handleAddNewRoute}
-          onImport={handleImport}
-          onExportAll={handleExportAll}
-          isLoading={isLoading}
-        />
 
         {/* Advanced Filters */}
         <RouteAdvancedFilters

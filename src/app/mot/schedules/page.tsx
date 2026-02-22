@@ -12,7 +12,7 @@ import { ScheduleActionButtons } from '@/components/mot/schedules/ScheduleAction
 import { ScheduleStatsCards } from '@/components/mot/schedules/ScheduleStatsCards';
 import { SchedulesTable } from '@/components/mot/schedules/SchedulesTable';
 import Pagination from '@/components/shared/Pagination';
-import { useSetPageMetadata } from '@/context/PageContext';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 
 interface QueryParams {
   page: number;
@@ -44,6 +44,7 @@ export default function SchedulesPage() {
     showBreadcrumbs: true,
     breadcrumbs: [{ label: 'Schedules' }],
   });
+
   const [schedules, setSchedules] = useState<ScheduleResponse[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -406,6 +407,15 @@ export default function SchedulesPage() {
     }
   };
 
+  useSetPageActions(
+    <ScheduleActionButtons
+      onAddSchedule={handleAddNewSchedule}
+      onImportSchedules={handleImportSchedules}
+      onExportAll={handleExportAll}
+      isLoading={isLoading}
+    />
+  );
+
   if (isLoading && schedules.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -426,16 +436,6 @@ export default function SchedulesPage() {
           {/* Statistics Cards */}
           <div className="mb-8">
             <ScheduleStatsCards stats={stats} />
-          </div>
-
-          {/* Action Buttons */}
-          <div className="mb-6">
-            <ScheduleActionButtons
-              onAddSchedule={handleAddNewSchedule}
-              onImportSchedules={handleImportSchedules}
-              onExportAll={handleExportAll}
-              isLoading={isLoading}
-            />
           </div>
 
           {/* Advanced Filters */}

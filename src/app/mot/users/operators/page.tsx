@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSetPageMetadata } from '@/context/PageContext';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { 
   OperatorAdvancedFilters, 
   OperatorActionButtons, 
@@ -375,6 +375,15 @@ export default function OperatorsPage() {
     breadcrumbs: [{ label: 'Operators' }],
   });
 
+  useSetPageActions(
+    <OperatorActionButtons
+      onAddOperator={handleAddNewOperator}
+      onImportOperators={handleImportOperators}
+      onExportAll={handleExportAll}
+      isLoading={isLoading}
+    />
+  );
+
   if (isLoading && operators.length === 0) {
     return (
         <div className="flex items-center justify-center h-64">
@@ -406,16 +415,6 @@ export default function OperatorsPage() {
         {/* Statistics Cards */}
         <div className="mb-6">
           <OperatorStatsCards stats={stats} />
-        </div>
-
-        {/* Action Buttons */}
-        <div className="mb-6">
-          <OperatorActionButtons
-            onAddOperator={handleAddNewOperator}
-            onImportOperators={handleImportOperators}
-            onExportAll={handleExportAll}
-            isLoading={isLoading}
-          />
         </div>
 
         {/* Advanced Filters */}

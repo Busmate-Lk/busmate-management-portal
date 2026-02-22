@@ -5,7 +5,7 @@ import { AnalyticsKeyMetrics } from "@/components/mot/analytics/AnalyticsKeyMetr
 import { AnalyticsTabs } from "@/components/mot/analytics/AnalyticsTabs";
 import { AnalyticsFilters } from "@/components/mot/analytics/AnalyticsFilters";
 import { useState, useEffect } from "react";
-import { useSetPageMetadata } from "@/context/PageContext";
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { PassengerInformation } from "@/components/mot/analytics/PassengerInformation";
 import { BusDetails } from "@/components/mot/analytics/BusDetails";
 import { JourneyDetails } from "@/components/mot/analytics/JourneyDetails";
@@ -90,21 +90,20 @@ export default function AnalyticsPage() {
         alert("Downloading Analytics Report PDF...");
     };
 
+    useSetPageActions(
+        <button
+            onClick={downloadReport}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none inline-flex items-center"
+        >
+            <Download className="mr-2 h-4 w-4" />
+            Download Analytics Report PDF
+        </button>
+    );
+
     return (
         <div className="space-y-6">
 
             {/* <AnalyticsKeyMetrics metrics={keyMetrics} /> */}
-
-            {/* Action Button */}
-            <div className="flex justify-end">
-                <button
-                    onClick={downloadReport}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none inline-flex items-center"
-                >
-                    <Download className="mr-2 h-4 w-4" />
-                    Download Analytics Report PDF
-                </button>
-            </div>
 
             {/* Analytics Tabs */}
             <div className="space-y-6">

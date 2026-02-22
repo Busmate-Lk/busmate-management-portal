@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { RefreshCw, Maximize2 } from 'lucide-react';
 import { useJsApiLoader } from '@react-google-maps/api';
 
 // Import API services
@@ -9,7 +10,7 @@ import { TripManagementService, RouteManagementService } from '../../../../gener
 import { TripResponse } from '../../../../generated/api-clients/route-management';
 
 // Import page context
-import { useSetPageMetadata } from '@/context/PageContext';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 
 // Import our new components
 import { LocationStats } from '@/components/mot/location-tracking/LocationStats';
@@ -485,6 +486,26 @@ export default function LocationTrackingPage() {
         setIsMapFullscreen(!isMapFullscreen);
     }, [isMapFullscreen]);
 
+    useSetPageActions(
+        <div className="flex items-center gap-2 shrink-0">
+            <button
+                onClick={handleManualRefresh}
+                disabled={isLoading}
+                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+            >
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh
+            </button>
+            <button
+                onClick={toggleFullscreen}
+                className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+                <Maximize2 className="h-4 w-4" />
+                Fullscreen
+            </button>
+        </div>
+    );
+
     return (
         <div className="space-y-6">
             {/* Statistics Dashboard */}
@@ -499,8 +520,6 @@ export default function LocationTrackingPage() {
                 onAutoRefreshChange={setAutoRefresh}
                 refreshInterval={refreshInterval}
                 onRefreshIntervalChange={setRefreshInterval}
-                onManualRefresh={handleManualRefresh}
-                onToggleFullscreen={toggleFullscreen}
                 isLoading={isLoading}
                 filteredCount={filteredTrips.length}
                 totalCount={activeTrips.length}

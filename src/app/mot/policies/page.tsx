@@ -3,7 +3,8 @@
 import { useState, useMemo, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import { useSetPageMetadata } from '@/context/PageContext';
+import { Upload, Download } from 'lucide-react';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { PolicyStatsCards } from '@/components/mot/policies/PolicyStatsCards';
 import { PolicyFilters } from '@/components/mot/policies/PolicyFilters';
 import { PoliciesTable } from '@/components/mot/policies/PoliciesTable';
@@ -202,6 +203,25 @@ function PoliciesListContent() {
         setCurrentPage(1);
     }, []);
 
+    useSetPageActions(
+        <div className="flex items-center gap-2 shrink-0">
+            <button
+                onClick={handleUploadPolicy}
+                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+                <Upload className="w-4 h-4" />
+                Upload Policy
+            </button>
+            <button
+                onClick={handleExport}
+                className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+                <Download className="w-4 h-4" />
+                Export
+            </button>
+        </div>
+    );
+
     return (
             <div className="space-y-6">
                 {/* Error Alert */}
@@ -240,8 +260,6 @@ function PoliciesListContent() {
                     onPriorityChange={(v) => { setPriorityFilter(v); setCurrentPage(1); }}
                     filterOptions={filterOptions}
                     totalCount={filteredPolicies.length}
-                    onUploadPolicy={handleUploadPolicy}
-                    onExportAll={handleExport}
                     onClearAll={handleClearFilters}
                 />
 

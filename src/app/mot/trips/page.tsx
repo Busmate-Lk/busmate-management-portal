@@ -19,7 +19,7 @@ import { TripsTable } from '@/components/mot/trips/TripsTable';
 // Import shared UI components
 import Pagination from '@/components/shared/Pagination';
 import { DeleteConfirmationModal } from '@/components/mot/confirmation-modals';
-import { useSetPageMetadata } from '@/context/PageContext';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 
 interface QueryParams {
   page: number;
@@ -615,6 +615,24 @@ export default function TripsPage() {
     }
   };
 
+  useSetPageActions(
+    <TripActionButtons
+      onAddTrip={handleAddNewTrip}
+      onGenerateTrips={handleGenerateTrips}
+      onExportAll={handleExportAll}
+      onBulkAssignPsp={
+        selectedTrips.length > 0 ? handleBulkAssignPsp : undefined
+      }
+      onBulkStart={selectedTrips.length > 0 ? handleBulkStart : undefined}
+      onBulkComplete={
+        selectedTrips.length > 0 ? handleBulkComplete : undefined
+      }
+      onBulkCancel={selectedTrips.length > 0 ? handleBulkCancel : undefined}
+      isLoading={isLoading}
+      selectedCount={selectedTrips.length}
+    />
+  );
+
   if (isLoading && trips.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -665,23 +683,6 @@ export default function TripsPage() {
       <div className="space-y-6">
         {/* Statistics Cards */}
         <TripStatsCards stats={stats} />
-
-        {/* Action Buttons */}
-        <TripActionButtons
-          onAddTrip={handleAddNewTrip}
-          onGenerateTrips={handleGenerateTrips}
-          onExportAll={handleExportAll}
-          onBulkAssignPsp={
-            selectedTrips.length > 0 ? handleBulkAssignPsp : undefined
-          }
-          onBulkStart={selectedTrips.length > 0 ? handleBulkStart : undefined}
-          onBulkComplete={
-            selectedTrips.length > 0 ? handleBulkComplete : undefined
-          }
-          onBulkCancel={selectedTrips.length > 0 ? handleBulkCancel : undefined}
-          isLoading={isLoading}
-          selectedCount={selectedTrips.length}
-        />
 
         {/* Filters */}
         <TripAdvancedFilters

@@ -16,8 +16,8 @@ interface FareFiltersProps {
     onRegionChange: (value: string) => void;
     filterOptions: FareFilterOptions;
     totalCount: number;
-    onUploadFare: () => void;
-    onExportAll: () => void;
+    onUploadFare?: () => void;
+    onExportAll?: () => void;
     onClearAll: () => void;
     loading?: boolean;
 }
@@ -73,23 +73,25 @@ export function FareFilters({
                     </div>
 
                     {/* Action buttons */}
-                    <div className="flex items-center gap-2 shrink-0">
-                        <button
-                            onClick={onUploadFare}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-                        >
-                            <Upload className="w-4 h-4" />
-                            Upload New Fare
-                        </button>
-                        <button
-                            onClick={onExportAll}
-                            disabled={loading}
-                            className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
-                        >
-                            <Download className="w-4 h-4" />
-                            Export
-                        </button>
-                    </div>
+                    {onUploadFare && onExportAll && (
+                        <div className="flex items-center gap-2 shrink-0">
+                            <button
+                                onClick={onUploadFare}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                            >
+                                <Upload className="w-4 h-4" />
+                                Upload New Fare
+                            </button>
+                            <button
+                                onClick={onExportAll}
+                                disabled={loading}
+                                className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            >
+                                <Download className="w-4 h-4" />
+                                Export
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 

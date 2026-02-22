@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSetPageMetadata } from '@/context/PageContext';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import {
   StaffStatsCards,
   StaffActionButtons,
@@ -256,6 +256,13 @@ export default function StaffManagementPage() {
     setStaffToDelete(null);
   };
 
+  useSetPageActions(
+    <StaffActionButtons
+      onAddStaff={handleAddStaff}
+      onExportAll={handleExportAll}
+    />
+  );
+
   return (
       <div className="space-y-6">
         {/* Statistics Cards */}
@@ -269,14 +276,6 @@ export default function StaffManagementPage() {
             activeTab={activeTab}
             onTabChange={handleTabChange}
             counts={tabCounts}
-          />
-        </div>
-
-        {/* Action Buttons */}
-        <div className="mb-6">
-          <StaffActionButtons
-            onAddStaff={handleAddStaff}
-            onExportAll={handleExportAll}
           />
         </div>
 

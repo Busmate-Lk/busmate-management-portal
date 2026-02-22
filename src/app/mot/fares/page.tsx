@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useMemo, useCallback } from 'react';
-import { useSetPageMetadata } from '@/context/PageContext';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { getFares, getFareStatistics, getFareFilterOptions, Fare } from '@/data/mot/fares';
 import { FareStatsCards } from '@/components/mot/fares/FareStatsCards';
 import { FareFilters } from '@/components/mot/fares/FareFilters';
@@ -10,6 +10,7 @@ import { FaresTable } from '@/components/mot/fares/FaresTable';
 import { DeleteFareModal } from '@/components/mot/fares/DeleteFareModal';
 import { usePagination } from '@/components/mot/pagination';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Upload, Download } from 'lucide-react';
 
 export default function FaresPage() {
     const router = useRouter();
@@ -147,6 +148,25 @@ export default function FaresPage() {
         alert('Export feature coming soon');
     }, []);
 
+    useSetPageActions(
+        <div className="flex items-center gap-2 shrink-0">
+            <button
+                onClick={() => router.push('/mot/fares/upload')}
+                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+                <Upload className="w-4 h-4" />
+                Upload New Fare
+            </button>
+            <button
+                onClick={handleExport}
+                className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+                <Download className="w-4 h-4" />
+                Export
+            </button>
+        </div>
+    );
+
     return (
         <div className="space-y-6">
                 {/* Stats Cards */}
@@ -166,8 +186,6 @@ export default function FaresPage() {
                     onRegionChange={setRegionFilter}
                     filterOptions={filterOptions}
                     totalCount={filteredFares.length}
-                    onUploadFare={() => router.push('/mot/fares/upload')}
-                    onExportAll={handleExport}
                     onClearAll={handleClearAll}
                 />
 

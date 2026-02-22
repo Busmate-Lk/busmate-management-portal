@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSetPageMetadata } from '@/context/PageContext';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { BusStatsCards } from '@/components/mot/buses/BusStatsCards';
 import BusAdvancedFilters from '@/components/mot/buses/BusAdvancedFilters';
 import { BusActionButtons } from '@/components/mot/buses/BusActionButtons';
@@ -45,6 +45,8 @@ export default function BusesPage() {
     showBreadcrumbs: true,
     breadcrumbs: [{ label: 'Buses' }],
   });
+
+
   const [buses, setBuses] = useState<BusResponse[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -367,6 +369,15 @@ export default function BusesPage() {
     }
   };
 
+  useSetPageActions(
+    <BusActionButtons
+      onAddBus={handleAddNewBus}
+      onImportBuses={handleImportBuses}
+      onExportAll={handleExportAll}
+      isLoading={isLoading}
+    />
+  );
+
   if (isLoading && buses.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-96">
@@ -382,18 +393,6 @@ export default function BusesPage() {
       <div className="space-y-6">
         {/* Statistics Cards */}
         <BusStatsCards stats={stats} />
-
-        {/* Action Buttons */}
-        <div className="flex justify-between items-center">
-          <div className="flex-1">
-            <BusActionButtons
-              onAddBus={handleAddNewBus}
-              onImportBuses={handleImportBuses}
-              onExportAll={handleExportAll}
-              isLoading={isLoading}
-            />
-          </div>
-        </div>
 
         {/* Advanced Filters */}
         <BusAdvancedFilters

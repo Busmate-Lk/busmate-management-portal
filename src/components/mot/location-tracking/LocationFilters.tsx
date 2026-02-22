@@ -22,8 +22,6 @@ interface LocationFiltersProps {
   onAutoRefreshChange: (enabled: boolean) => void;
   refreshInterval: number;
   onRefreshIntervalChange: (interval: number) => void;
-  onManualRefresh: () => void;
-  onToggleFullscreen: () => void;
   isLoading: boolean;
   filteredCount: number;
   totalCount: number;
@@ -37,8 +35,6 @@ export function LocationFilters({
   onAutoRefreshChange,
   refreshInterval,
   onRefreshIntervalChange,
-  onManualRefresh,
-  onToggleFullscreen,
   isLoading,
   filteredCount,
   totalCount
@@ -97,26 +93,6 @@ export function LocationFilters({
               </option>
             ))}
           </select>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-2">
-          <button
-            onClick={onManualRefresh}
-            disabled={isLoading}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-          >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
-          </button>
-
-          <button
-            onClick={onToggleFullscreen}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200"
-          >
-            <Maximize2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Fullscreen</span>
-          </button>
         </div>
       </div>
 

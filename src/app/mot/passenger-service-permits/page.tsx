@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle } from 'lucide-react';
-import { useSetPageMetadata } from '@/context/PageContext';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { PermitStatsCards } from '@/components/mot/permits/PermitStatsCards';
 import { PermitAdvancedFilters } from '@/components/mot/permits/PermitAdvancedFilters';
 import { PermitActionButtons } from '@/components/mot/permits/PermitActionButtons';
@@ -415,6 +415,15 @@ function PassengerServicePermitsContent() {
     expiryWithin: filters.expiryWithin
   }), [filters]);
 
+  useSetPageActions(
+    <PermitActionButtons
+      onAddPermit={handleAddNew}
+      onImportPermits={handleImport}
+      onExportAll={handleExport}
+      isLoading={loading}
+    />
+  );
+
   // Loading state for initial load
   if (loading && pagination.currentPage === 1 && permits.length === 0) {
     return (
@@ -447,14 +456,6 @@ function PassengerServicePermitsContent() {
 
         {/* Stats Cards */}
         <PermitStatsCards stats={statistics} loading={!statistics} />
-
-        {/* Action Buttons */}
-        <PermitActionButtons
-          onAddPermit={handleAddNew}
-          onImportPermits={handleImport}
-          onExportAll={handleExport}
-          isLoading={loading}
-        />
 
         {/* Advanced Filters */}
         <PermitAdvancedFilters

@@ -15,7 +15,7 @@ import { ViewTabs } from '@/components/mot/bus-stops/ViewTabs';
 import { BusStopPagination } from '@/components/mot/bus-stops/BusStopPagination';
 import { DeleteConfirmationModal } from '@/components/mot/confirmation-modals';
 import { useToast } from '@/hooks/use-toast';
-import { useSetPageMetadata } from '@/context/PageContext';
+import { useSetPageActions, useSetPageMetadata } from '@/context/PageContext';
 
 export type ViewType = 'table' | 'map';
 
@@ -467,6 +467,16 @@ export default function BusStopsPage() {
     accessibility: accessibilityFilter
   };
 
+  useSetPageActions(
+    <>
+      <BusStopActionButtons
+        onAddBusStop={handleAddBusStop}
+        onImportBusStops={handleImportBusStops}
+        isLoading={isLoading}
+      />
+    </>
+  );
+
   if (error) {
     return (
       <div className="p-8">
@@ -491,15 +501,6 @@ export default function BusStopsPage() {
     <div className="space-y-6">
       {/* Statistics Cards */}
       <BusStopStatsCards stats={stats} />
-
-      {/* Action Buttons */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <BusStopActionButtons
-          onAddBusStop={handleAddBusStop}
-          onImportBusStops={handleImportBusStops}
-          isLoading={isLoading}
-        />
-      </div>
 
       {/* Advanced Filters */}
       <BusStopAdvancedFilters
