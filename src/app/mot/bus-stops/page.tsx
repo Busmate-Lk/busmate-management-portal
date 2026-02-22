@@ -528,7 +528,7 @@ export default function BusStopsPage() {
 
       {/* Content based on current view */}
       {currentView === 'table' ? (
-        <div className='bg-white shadow-sm rounded-lg border border-gray-200'>
+        <div className='bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden'>
           <BusStopsTable
             busStops={busStops}
             onView={handleView}

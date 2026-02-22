@@ -18,6 +18,63 @@ interface BusStopPaginationProps {
   loading: boolean;
 }
 
+const PAGE_SIZE_OPTIONS = [5, 10, 25, 50, 100];
+
+// ── Build page number array with ellipsis ─────────────────────────
+
+function buildPageList(current: number, total: number): (number | '…')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i);
+
+  const pages: (number | '…')[] = [];
+
+  // Always show first
+  pages.push(0);
+
+  const rangeStart = Math.max(1, current - 1);
+  const rangeEnd = Math.min(total - 2, current + 1);
+
+  if (rangeStart > 1) pages.push('…');
+  for (let i = rangeStart; i <= rangeEnd; i++) pages.push(i);
+  if (rangeEnd < total - 2) pages.push('…');
+
+  // Always show last
+  pages.push(total - 1);
+
+  return pages;
+}
+
+// ── Nav icon button ───────────────────────────────────────────────
+
+function NavBtn({
+  onClick,
+  disabled,
+  title,
+  children,
+}: {
+  onClick: () => void;
+  disabled: boolean;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      className="
+        inline-flex items-center justify-center w-8 h-8 rounded-lg
+        text-gray-500 hover:text-gray-900 hover:bg-gray-100
+        disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-500
+        transition-all duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+      "
+    >
+      {children}
+    </button>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────
+
 export function BusStopPagination({
   currentPage,
   totalPages,
@@ -27,155 +84,134 @@ export function BusStopPagination({
   onPageSizeChange,
   loading,
 }: BusStopPaginationProps) {
-  const pageSizeOptions = [5, 10, 25, 50, 100];
-
-  const startRecord = currentPage * pageSize + 1;
+  const startRecord = totalElements === 0 ? 0 : currentPage * pageSize + 1;
   const endRecord = Math.min((currentPage + 1) * pageSize, totalElements);
 
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 0; i < totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      const start = Math.max(
-        0,
-        Math.min(currentPage - 2, totalPages - maxVisiblePages)
-      );
-      const end = Math.min(totalPages, start + maxVisiblePages);
-
-      for (let i = start; i < end; i++) {
-        pages.push(i);
-      }
-    }
-
-    return pages;
-  };
-
-  const handlePageChange = (page: number) => {
+  const goTo = (page: number) => {
     if (page >= 0 && page < totalPages && page !== currentPage && !loading) {
       onPageChange(page);
     }
   };
 
-  const handlePageSizeChange = (size: number) => {
-    if (!loading) {
-      onPageSizeChange(size);
-    }
-  };
+  const pageList = buildPageList(currentPage, totalPages);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-      <div className="flex items-center justify-between px-6 py-4">
-        {/* Records Info */}
-        <div className="flex items-center text-sm text-gray-500">
-          <span>
-            Showing {startRecord.toLocaleString()} to{' '}
-            {endRecord.toLocaleString()} of {totalElements.toLocaleString()}{' '}
-            results
-          </span>
-        </div>
+    <div className="border-t border-gray-200 bg-white rounded-b-xl">
+      <div className="flex flex-wrap items-center justify-between gap-y-3 gap-x-4 px-4 py-3">
 
-        {/* Pagination Controls */}
-        <div className="flex items-center space-x-2">
-          {/* Page Size Selector */}
-          <div className="flex items-center space-x-2">
-            <label htmlFor="pageSize" className="text-sm text-gray-500">
-              Show:
+        {/* ── Left: record count + page size ─────────────────────── */}
+        <div className="flex items-center gap-3 text-sm text-gray-500">
+          <span className="whitespace-nowrap">
+            {totalElements === 0
+              ? 'No results'
+              : <>Showing <span className="font-medium text-gray-700">{startRecord.toLocaleString()}–{endRecord.toLocaleString()}</span> of <span className="font-medium text-gray-700">{totalElements.toLocaleString()}</span></>
+            }
+          </span>
+
+          <span className="text-gray-200 select-none">|</span>
+
+          <div className="flex items-center gap-1.5">
+            <label htmlFor="pageSizeSelect" className="text-xs text-gray-400 whitespace-nowrap">
+              Rows
             </label>
             <select
-              id="pageSize"
+              id="pageSizeSelect"
               value={pageSize}
-              onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+              onChange={(e) => { if (!loading) onPageSizeChange(Number(e.target.value)); }}
               disabled={loading}
-              className="border border-gray-300 rounded-md text-sm px-2 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50"
+              className="
+                h-7 px-2 pr-6 rounded-lg border border-gray-200 text-xs font-medium text-gray-700 bg-white
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-400
+                disabled:opacity-50 disabled:cursor-not-allowed
+                appearance-none cursor-pointer
+                bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAiIGhlaWdodD0iNiIgdmlld0JveD0iMCAwIDEwIDYiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTEgMUw1IDVMOSAxIiBzdHJva2U9IiM5Q0EzQUYiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=')]
+                bg-no-repeat bg-[right_8px_center]
+              "
             >
-              {pageSizeOptions.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
+              {PAGE_SIZE_OPTIONS.map((s) => (
+                <option key={s} value={s}>{s}</option>
               ))}
             </select>
           </div>
-
-          {/* Navigation Buttons - Only show if more than 1 page */}
-          {totalPages > 1 && (
-            <div className="flex items-center space-x-1">
-              {/* First Page */}
-              <button
-                onClick={() => handlePageChange(0)}
-                disabled={currentPage === 0 || loading}
-                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="First page"
-              >
-                <ChevronsLeft className="w-4 h-4" />
-              </button>
-
-              {/* Previous Page */}
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 0 || loading}
-                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Previous page"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              {/* Page Numbers */}
-              <div className="flex items-center space-x-1">
-                {getPageNumbers().map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    disabled={loading}
-                    className={`
-                    px-3 py-2 text-sm font-medium rounded-md transition-colors
-                    ${
-                      page === currentPage
-                        ? 'bg-blue-600 text-white'
-                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                    }
-                    disabled:opacity-50 disabled:cursor-not-allowed
-                  `}
-                  >
-                    {page + 1}
-                  </button>
-                ))}
-              </div>
-
-              {/* Next Page */}
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages - 1 || loading}
-                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Next page"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-
-              {/* Last Page */}
-              <button
-                onClick={() => handlePageChange(totalPages - 1)}
-                disabled={currentPage === totalPages - 1 || loading}
-                className="p-2 text-gray-400 hover:text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Last page"
-              >
-                <ChevronsRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
         </div>
+
+        {/* ── Right: pagination buttons ───────────────────────────── */}
+        {totalPages > 1 && (
+          <div className="flex items-center gap-1">
+            {/* First */}
+            <NavBtn onClick={() => goTo(0)} disabled={currentPage === 0 || loading} title="First page">
+              <ChevronsLeft className="w-3.5 h-3.5" />
+            </NavBtn>
+
+            {/* Previous */}
+            <button
+              onClick={() => goTo(currentPage - 1)}
+              disabled={currentPage === 0 || loading}
+              className="
+                inline-flex items-center gap-1 px-2.5 h-8 rounded-lg text-xs font-medium
+                text-gray-600 hover:text-gray-900 hover:bg-gray-100
+                disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent
+                transition-all duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+              "
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              Prev
+            </button>
+
+            {/* Page numbers */}
+            <div className="flex items-center gap-0.5">
+              {pageList.map((item, i) =>
+                item === '…' ? (
+                  <span key={`ellipsis-${i}`} className="w-8 text-center text-xs text-gray-400 select-none">
+                    …
+                  </span>
+                ) : (
+                  <button
+                    key={item}
+                    onClick={() => goTo(item as number)}
+                    disabled={loading}
+                    className={[
+                      'inline-flex items-center justify-center w-8 h-8 rounded-lg text-xs font-medium transition-all duration-100',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+                      item === currentPage
+                        ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
+                        : 'text-gray-700 hover:bg-gray-100',
+                      'disabled:cursor-not-allowed',
+                    ].join(' ')}
+                  >
+                    {(item as number) + 1}
+                  </button>
+                )
+              )}
+            </div>
+
+            {/* Next */}
+            <button
+              onClick={() => goTo(currentPage + 1)}
+              disabled={currentPage === totalPages - 1 || loading}
+              className="
+                inline-flex items-center gap-1 px-2.5 h-8 rounded-lg text-xs font-medium
+                text-gray-600 hover:text-gray-900 hover:bg-gray-100
+                disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent
+                transition-all duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500
+              "
+            >
+              Next
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Last */}
+            <NavBtn onClick={() => goTo(totalPages - 1)} disabled={currentPage === totalPages - 1 || loading} title="Last page">
+              <ChevronsRight className="w-3.5 h-3.5" />
+            </NavBtn>
+          </div>
+        )}
       </div>
 
+      {/* Loading bar */}
       {loading && (
-        <div className="px-6 py-2 bg-blue-50 border-t border-blue-100">
-          <div className="flex items-center justify-center">
-            <div className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-sm text-blue-700">Loading...</span>
-          </div>
+        <div className="h-0.5 w-full overflow-hidden rounded-b-xl">
+          <div className="h-full bg-blue-500 animate-[progress_1.2s_ease-in-out_infinite]" style={{ width: '40%' }} />
         </div>
       )}
     </div>
