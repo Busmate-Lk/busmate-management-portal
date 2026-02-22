@@ -5,11 +5,19 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft, Plus } from 'lucide-react';
 import { ScheduleForm } from '@/components/mot/schedule-form/ScheduleForm';
 import { ScheduleManagementService } from '../../../../../generated/api-clients/route-management';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 
 export default function AddSchedulePage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+
+    useSetPageMetadata({
+        title: 'Add New Schedule',
+        description: 'Create a new schedule template',
+        activeItem: 'schedules',
+        showBreadcrumbs: true,
+        breadcrumbs: [{ label: 'Schedules', href: '/mot/schedules' }, { label: 'Add New' }],
+    });
 
     const handleSubmit = async (scheduleData: any) => {
         setIsLoading(true);
@@ -34,21 +42,11 @@ export default function AddSchedulePage() {
     };
 
     return (
-        <Layout
-            role="mot"
-            activeItem="schedules"
-            pageTitle="Add New Schedule"
-            pageDescription="Create a new schedule template with route stops and timing"
-        >
-                {/* Content */}
-                    {/* <div className="bg-white rounded-lg shadow mx-auto px-4 sm:px-6 lg:px-8 py-8"> */}
-                        <ScheduleForm
-                            mode="create"
-                            onSubmit={handleSubmit}
-                            onCancel={handleCancel}
-                            isLoading={isLoading}
-                        />
-                    {/* </div> */}
-        </Layout>
+        <ScheduleForm
+            mode="create"
+            onSubmit={handleSubmit}
+            onCancel={handleCancel}
+            isLoading={isLoading}
+        />
     );
 }

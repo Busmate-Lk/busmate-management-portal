@@ -1,24 +1,19 @@
-import { TripAssignment } from '@/components/mot/trip-assignment';
-import { Metadata } from 'next';
-import { Layout } from '@/components/shared/layout';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Trip Assignment | BusMate',
-  description: 'Assign weekly schedule instances/trips to passenger service permits',
-};
+import { TripAssignment } from '@/components/mot/trip-assignment';
+import { useSetPageMetadata } from '@/context/PageContext';
 
 export default function TripAssignmentPage() {
+  useSetPageMetadata({
+    title: 'Trip Assignment',
+    description: 'Assign weekly schedule instances/trips to passenger service permits',
+    activeItem: 'trip-assignment',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Trip Assignment' }],
+    padding: 0,
+  });
+
   return (
-    <div className="h-screen bg-gray-50 overflow-hidden">
-    <Layout 
-      activeItem="trip-assignment" 
-      pageTitle="Trip Assignment" 
-      pageDescription="Assign weekly schedule instances/trips to passenger service permits" 
-      role="MOT"
-      initialSidebarCollapsed={true}
-      padding={0}>
       <TripAssignment />
-    </Layout>
-    </div>
   );
 }

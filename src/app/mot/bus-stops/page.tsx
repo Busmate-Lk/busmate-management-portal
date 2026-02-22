@@ -15,7 +15,7 @@ import { ViewTabs } from '@/components/mot/bus-stops/ViewTabs';
 import { BusStopPagination } from '@/components/mot/bus-stops/BusStopPagination';
 import { DeleteConfirmationModal } from '@/components/mot/confirmation-modals';
 import { useToast } from '@/hooks/use-toast';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 
 export type ViewType = 'table' | 'map';
 
@@ -37,6 +37,14 @@ interface FilterOptions {
 export default function BusStopsPage() {
   const router = useRouter();
   const { toast } = useToast();
+
+  useSetPageMetadata({
+    title: 'Bus Stops',
+    description: 'Manage and monitor bus stops across your network',
+    activeItem: 'bus-stops',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Bus Stops' }],
+  });
   
   // View state
   const [currentView, setCurrentView] = useState<ViewType>('table');
@@ -480,12 +488,6 @@ export default function BusStopsPage() {
   }
 
   return (
-    <Layout
-          activeItem="bus-stops"
-          pageTitle="Bus Stops"
-          pageDescription="Manage and monitor bus stops across your network"
-          role="mot"
-        >
     <div className="space-y-6">
       {/* Statistics Cards */}
       <BusStopStatsCards stats={stats} />
@@ -565,6 +567,5 @@ export default function BusStopsPage() {
         isLoading={isDeleting}
       />
     </div>
-    </Layout>
   );
 }

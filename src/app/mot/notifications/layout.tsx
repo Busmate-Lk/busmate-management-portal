@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { Send, Bell } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Layout } from "@/components/shared/layout"
+import { useSetPageMetadata, useSetPageActions } from "@/context/PageContext"
 
 export default function NotificationsLayout({
     children,
@@ -26,18 +26,26 @@ export default function NotificationsLayout({
     }
 
     const isComposePage = pathname.includes('/compose');
-    return (
-        <Layout role="mot" activeItem="notifications" pageTitle="Notification Center" pageDescription="Send messages, manage notifications, and track communication history">
-            {/* Send New Message Button */}
-            {!isComposePage && (
-                <div className="flex justify-end mb-4">
-                    <Button onClick={handleSendMessage} className="bg-blue-600 text-white hover:bg-blue-900 shadow-md">
-                        <Send className="h-4 w-4 mr-2" />
-                        Send New Message
-                    </Button>
-                </div>
-            )}
 
+    useSetPageMetadata({
+        title: 'Notification Center',
+        description: 'Send messages, manage notifications, and track communication history',
+        activeItem: 'notifications',
+        showBreadcrumbs: true,
+        breadcrumbs: [{ label: 'Notifications' }],
+    });
+
+    useSetPageActions(
+        !isComposePage ? (
+            <Button onClick={handleSendMessage} className="bg-blue-600 text-white hover:bg-blue-900 shadow-md">
+                <Send className="h-4 w-4 mr-2" />
+                Send New Message
+            </Button>
+        ) : null
+    );
+
+    return (
+        <>
             {isComposePage ? (
                 <div>{children}</div>
             ) : (
@@ -66,6 +74,6 @@ export default function NotificationsLayout({
                     </div>
                 </Tabs>
             )}
-        </Layout>
+        </>
     )
 }

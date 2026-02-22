@@ -7,10 +7,9 @@ import {
   Edit, 
   Plus, 
   Trash2, 
-  ChevronRight,
   AlertCircle
 } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { OperatorSummary } from '@/components/operator/profile/OperatorSummary';
 import { OperatorTabsSection } from '@/components/operator/profile/OperatorTabsSection';
 import { 
@@ -140,34 +139,65 @@ export default function OperatorDetailsPage() {
     ]);
   };
 
+  useSetPageMetadata({
+    title: operator?.name || 'Operator Details',
+    description: 'Detailed view of operator information',
+    activeItem: 'operators',
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: 'Operators', href: '/mot/users/operators' },
+      { label: operator?.name || 'Operator Details' },
+    ],
+  });
+
+  useSetPageActions(
+    <>
+      <button
+        onClick={handleBack}
+        className="flex items-center gap-2 px-3 py-1.5 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back
+      </button>
+      <button
+        onClick={handleEdit}
+        className="flex items-center gap-2 px-3 py-1.5 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium"
+      >
+        <Edit className="w-4 h-4" />
+        Edit
+      </button>
+      <button
+        onClick={handleAddBus}
+        className="flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+      >
+        <Plus className="w-4 h-4" />
+        Add Bus
+      </button>
+      <button
+        onClick={handleDelete}
+        className="flex items-center gap-2 px-3 py-1.5 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
+      >
+        <Trash2 className="w-4 h-4" />
+        Delete
+      </button>
+    </>
+  );
+
   // Loading state
   if (isLoading) {
     return (
-      <Layout
-        activeItem="operators"
-        pageTitle="Loading..."
-        pageDescription="Loading operator details"
-        role="mot"
-      >
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading operator details...</p>
           </div>
         </div>
-      </Layout>
     );
   }
 
   // Error state
   if (error || !operator) {
     return (
-      <Layout
-        activeItem="operators"
-        pageTitle="Error"
-        pageDescription="Failed to load operator"
-        role="mot"
-      >
         <div className="text-center py-12">
           <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
           <div className="text-red-600 text-lg mb-4">
@@ -180,22 +210,10 @@ export default function OperatorDetailsPage() {
             Go Back
           </button>
         </div>
-      </Layout>
     );
   }
 
   return (
-    <Layout
-      activeItem="operators"
-      pageTitle={operator.name || 'Operator Details'}
-      pageDescription="Detailed view of operator information and related assets"
-      role="mot"
-      breadcrumbs={[
-        { label: 'MOT', href: '/mot' },
-        { label: 'Operators', href: '/mot/users/operators' },
-        { label: operator.name || 'Operator Details' }
-      ]}
-    >
       <div className="space-y-6">
         {/* Error Alert */}
         {error && (
@@ -215,41 +233,6 @@ export default function OperatorDetailsPage() {
             </div>
           </div>
         )}
-
-        {/* Header Section - Actions */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </button>
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <button
-              onClick={handleEdit}
-              className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
-            >
-              <Edit className="w-4 h-4" />
-              Edit Operator
-            </button>
-            <button
-              onClick={handleAddBus}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Add Bus
-            </button>
-            <button
-              onClick={handleDelete}
-              className="flex items-center gap-2 px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </button>
-          </div>
-        </div>
 
         {/* Operator Summary Card */}
         <OperatorSummary operator={operator} buses={buses} />
@@ -280,6 +263,5 @@ export default function OperatorDetailsPage() {
         )}
         */}
       </div>
-    </Layout>
   );
 }

@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -75,6 +75,25 @@ const availableCustomFields = [
 function BusStopsExportPage() {
   const router = useRouter();
   const { toast } = useToast();
+
+  useSetPageMetadata({
+    title: 'Export Bus Stops',
+    description: 'Export bus stops data with customizable filters and options',
+    activeItem: 'bus-stops',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Bus Stops', href: '/mot/bus-stops' }, { label: 'Export' }],
+  });
+
+  useSetPageActions(
+    <Button 
+      variant="outline" 
+      onClick={() => router.push('/mot/bus-stops')}
+      className="flex items-center gap-2"
+    >
+      <ArrowLeft className="h-4 w-4" />
+      Back to Bus Stops
+    </Button>
+  );
 
   // State management
   const [isExporting, setIsExporting] = useState(false);
@@ -245,24 +264,9 @@ function BusStopsExportPage() {
     exportFilters.searchText.length > 0;
 
   return (
-    <Layout
-      activeItem="bus-stops"
-      pageTitle="Export Bus Stops"
-      pageDescription="Export bus stops data with customizable filters and options"
-      role="mot"
-    >
       <div className="mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <Button 
-            variant="outline" 
-            onClick={() => router.push('/mot/bus-stops')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Bus Stops
-          </Button>
-          
+        <div className="flex items-center justify-end">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="flex items-center gap-1">
               <FileText className="h-3 w-3" />
@@ -590,7 +594,6 @@ function BusStopsExportPage() {
           </div>
         </div>
       </div>
-    </Layout>
   );
 }
 

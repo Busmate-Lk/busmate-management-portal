@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, X, AlertCircle, ChevronRight } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { ArrowLeft, Save, X, AlertCircle } from 'lucide-react';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { BusForm } from '@/components/mot/buses/bus-form';
 import { 
   BusManagementService, 
@@ -15,6 +15,14 @@ import {
 
 export default function AddBusPage() {
   const router = useRouter();
+
+  useSetPageMetadata({
+    title: 'Add New Bus',
+    description: 'Register a new bus in the fleet management system',
+    activeItem: 'buses',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Buses', href: '/mot/buses' }, { label: 'Add New' }],
+  });
   
   // State
   const [operators, setOperators] = useState<OperatorResponse[]>([]);
@@ -71,49 +79,22 @@ export default function AddBusPage() {
     }
   };
 
-  return (
-    <Layout
-      activeItem="buses"
-      pageTitle="Add New Bus"
-      pageDescription="Register a new bus in the fleet management system"
-      role="mot"
+  useSetPageActions(
+    <button
+      onClick={() => {
+        if (window.confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+          router.back();
+        }
+      }}
+      className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
     >
-      <div className="space-y-6">
-        {/* Breadcrumbs */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <button 
-            onClick={() => router.push('/mot')}
-            className="hover:text-blue-600 transition-colors"
-          >
-            Home
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <button 
-            onClick={() => router.push('/mot/buses')}
-            className="hover:text-blue-600 transition-colors"
-          >
-            Bus Management
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">Add New Bus</span>
-        </div>
+      <X className="w-4 h-4" />
+      Cancel
+    </button>
+  );
 
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Add New Bus</h1>
-            <p className="text-gray-600 mt-1">
-              Fill in the details below to register a new bus in the system
-            </p>
-          </div>
-          <button
-            onClick={handleCancel}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <X className="w-4 h-4" />
-            Cancel
-          </button>
-        </div>
+  return (
+      <div className="space-y-6">
 
         {/* Error Alert */}
         {error && (
@@ -156,6 +137,5 @@ export default function AddBusPage() {
           </div>
         </div>
       </div>
-    </Layout>
   );
 }

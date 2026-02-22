@@ -2,10 +2,10 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useMemo, useCallback } from 'react';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { getFareById, FareFormData } from '@/data/mot/fares';
 import { FareForm } from '@/components/mot/fares/FareForm';
-import { ChevronRight, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 export default function EditFarePage() {
     const router = useRouter();
@@ -16,6 +16,14 @@ export default function EditFarePage() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useSetPageMetadata({
+        title: fare ? `Edit Fare ${fare.id}` : 'Fare Not Found',
+        description: fare ? `Editing fare structure for ${fare.route}` : '',
+        activeItem: 'fares',
+        showBreadcrumbs: true,
+        breadcrumbs: [{ label: 'Fares', href: '/mot/fares' }, { label: fare?.id || 'Fare', href: `/mot/fares/${fareId}` }, { label: 'Edit' }],
+    });
 
     const initialData: Partial<FareFormData> | undefined = useMemo(() => {
         if (!fare) return undefined;
@@ -62,8 +70,7 @@ export default function EditFarePage() {
 
     if (!fare) {
         return (
-            <Layout activeItem="fares" pageTitle="Fare Not Found" pageDescription="" role="mot">
-                <div className="text-center py-12">
+            <div className="text-center py-12">
                     <h2 className="text-2xl font-bold text-gray-900 mb-2">Fare Not Found</h2>
                     <p className="text-gray-600 mb-6">
                         The fare structure with ID &quot;{fareId}&quot; could not be found.
@@ -74,39 +81,12 @@ export default function EditFarePage() {
                     >
                         Back to Fares
                     </button>
-                </div>
-            </Layout>
+            </div>
         );
     }
 
     return (
-        <Layout activeItem="fares" pageTitle={`Edit Fare ${fare.id}`} pageDescription={`Editing fare structure for ${fare.route}`} role="mot">
-            <div className="space-y-6">
-                {/* Breadcrumbs */}
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <button onClick={() => router.push('/mot')} className="hover:text-blue-600 transition-colors">
-                        Home
-                    </button>
-                    <ChevronRight className="w-4 h-4" />
-                    <button onClick={() => router.push('/mot/fares')} className="hover:text-blue-600 transition-colors">
-                        Fare Structures
-                    </button>
-                    <ChevronRight className="w-4 h-4" />
-                    <button onClick={() => router.push(`/mot/fares/${fareId}`)} className="hover:text-blue-600 transition-colors">
-                        {fare.id}
-                    </button>
-                    <ChevronRight className="w-4 h-4" />
-                    <span className="text-gray-900 font-medium">Edit</span>
-                </div>
-
-                {/* Header */}
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Edit Fare Structure</h1>
-                    <p className="text-gray-600 mt-1">
-                        Update fare structure {fare.id} for {fare.route}
-                    </p>
-                </div>
-
+        <div className="space-y-6">
                 {/* Error Alert */}
                 {error && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -144,6 +124,5 @@ export default function EditFarePage() {
                     </div>
                 </div>
             </div>
-        </Layout>
     );
 }

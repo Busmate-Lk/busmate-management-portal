@@ -2,7 +2,7 @@
 
 import React, { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { CSVEditor } from '@/components/tools/csv-editor';
 import { BUS_STOP_VALIDATION_RULES } from '@/components/tools/csv-editor';
 import { CSVData } from '@/components/tools/csv-editor/types';
@@ -12,6 +12,14 @@ import { BusStopManagementService } from '../../../../../generated/api-clients/r
 function BusStopsImportPage() {
     const router = useRouter();
     const { toast } = useToast();
+
+    useSetPageMetadata({
+        title: 'Import Bus Stops',
+        description: 'Import bus stops in bulk using a CSV file. Download a template to see the expected format.',
+        activeItem: 'bus-stops',
+        showBreadcrumbs: true,
+        breadcrumbs: [{ label: 'Bus Stops', href: '/mot/bus-stops' }, { label: 'Import' }],
+    });
 
     // Handle bus stop template download
     const handleTemplateDownload = useCallback(async (format: string) => {
@@ -105,14 +113,8 @@ function BusStopsImportPage() {
     };
 
     return (
-        <Layout
-            activeItem="bus-stops"
-            pageTitle="Import Bus Stops"
-            pageDescription="Import bus stops in bulk using a CSV file. Download a template to see the expected format."
-            role="mot"
-        >
-            <div className="p-0 mx-auto">
-                <CSVEditor
+        <div className="p-0 mx-auto">
+            <CSVEditor
                     onImport={handleImport}
                     onImportComplete={handleImportComplete}
                     onImportError={handleImportError}
@@ -123,9 +125,8 @@ function BusStopsImportPage() {
                     maxFileSize={5 * 1024 * 1024} // 5MB
                     title="Upload Bus Stops CSV Data"
                     description="Upload your bus stops CSV file or paste CSV data directly. Make sure to include at least one name field (name, name_sinhala, or name_tamil) and location coordinates."
-                />
-            </div>
-        </Layout>
+            />
+        </div>
     );
 }
 

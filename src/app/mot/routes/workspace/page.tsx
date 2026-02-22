@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import RouteFormMode from '@/components/mot/routes/workspace/form-mode/RouteFormMode';
 import RouteTextualMode from '@/components/mot/routes/workspace/textual-mode/RouteTextualMode';
 import RouteAIStudio from '@/components/mot/routes/workspace/ai-studio/RouteAIStudio';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { RouteWorkspaceProvider } from '@/context/RouteWorkspace/RouteWorkspaceProvider';
 import { useRouteWorkspace } from '@/context/RouteWorkspace/useRouteWorkspace';
 import { Toaster } from '@/components/ui/toaster';
@@ -20,6 +20,20 @@ function RouteWorkspaceContent() {
     const { getRouteGroupData, mode, isLoading, loadError, loadRouteGroup, routeGroupId } = useRouteWorkspace();
     const searchParams = useSearchParams();
     const { toast } = useToast();
+
+    const pageTitle = mode === 'edit' ? 'Edit Route Group' : 'Create Route Group';
+    const pageDescription = mode === 'edit'
+        ? 'Update an existing route group and its routes'
+        : 'Create a new bus route group with routes';
+
+    useSetPageMetadata({
+        title: pageTitle,
+        description: pageDescription,
+        activeItem: 'routes',
+        showBreadcrumbs: true,
+        breadcrumbs: [{ label: 'Routes', href: '/mot/routes' }, { label: 'Workspace' }],
+        padding: 0,
+    });
 
     // Load route group if ID is in URL params
     useEffect(() => {
@@ -45,65 +59,35 @@ function RouteWorkspaceContent() {
     // Show loading state
     if (isLoading) {
         return (
-            <Layout
-                activeItem="routes"
-                pageTitle="Routes Workspace"
-                pageDescription="Loading route group..."
-                role="mot"
-                initialSidebarCollapsed={true}
-                padding={0}
-            >
-                <div className="flex items-center justify-center h-96">
-                    <div className="flex flex-col items-center gap-4">
-                        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                        <p className="text-gray-600">Loading route group data...</p>
-                    </div>
+            <div className="flex items-center justify-center h-96">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                    <p className="text-gray-600">Loading route group data...</p>
                 </div>
-            </Layout>
+            </div>
         );
     }
 
     // Show error state
     if (loadError) {
         return (
-            <Layout
-                activeItem="routes"
-                pageTitle="Routes Workspace"
-                pageDescription="Error loading route group"
-                role="mot"
-                initialSidebarCollapsed={true}
-                padding={0}
-            >
-                <div className="flex items-center justify-center h-96">
-                    <div className="flex flex-col items-center gap-4 text-center">
-                        <div className="text-red-600 text-lg font-semibold">Failed to load route group</div>
-                        <p className="text-gray-600">{loadError}</p>
-                        <a
-                            href="/mot/routes/workspace"
-                            className="text-blue-600 hover:underline"
-                        >
-                            Create a new route group instead
-                        </a>
-                    </div>
+            <div className="flex items-center justify-center h-96">
+                <div className="flex flex-col items-center gap-4 text-center">
+                    <div className="text-red-600 text-lg font-semibold">Failed to load route group</div>
+                    <p className="text-gray-600">{loadError}</p>
+                    <a
+                        href="/mot/routes/workspace"
+                        className="text-blue-600 hover:underline"
+                    >
+                        Create a new route group instead
+                    </a>
                 </div>
-            </Layout>
+            </div>
         );
     }
 
-    const pageTitle = mode === 'edit' ? 'Edit Route Group' : 'Create Route Group';
-    const pageDescription = mode === 'edit'
-        ? 'Update an existing route group and its routes'
-        : 'Create a new bus route group with routes';
-
     return (
-        <Layout
-            activeItem="routes"
-            pageTitle={pageTitle}
-            pageDescription={pageDescription}
-            role="mot"
-            initialSidebarCollapsed={true}
-            padding={0}
-        >
+        <>
             <div className="min-h-screen bg-slate-50">
                 {/* Tab Bar */}
                 <div className="flex bg-white border-b border-slate-200 px-4 py-2 sticky top-20 z-10 justify-between items-center shadow-sm">
@@ -154,7 +138,7 @@ function RouteWorkspaceContent() {
                 </div>
             </div>
             <RouteSubmissionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-        </Layout>
+        </>
     );
 }
 

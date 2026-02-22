@@ -2,15 +2,22 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronRight } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { RouteForm, type RouteGroupFormData } from '@/components/mot/routes/route-form/RouteForm';
 import { RouteManagementService } from '../../../../../../generated/api-clients/route-management';
 import type { RouteGroupRequest } from '../../../../../../generated/api-clients/route-management';
 
 export default function AddNewRouteGroupPage() {
   const router = useRouter();
-  
+
+  useSetPageMetadata({
+    title: 'Add New Route Group',
+    description: 'Create a new route group',
+    activeItem: 'routes',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Routes', href: '/mot/routes' }, { label: 'Add New' }],
+  });
+
   // State
   const [isLoading, setIsLoading] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
@@ -141,32 +148,7 @@ export default function AddNewRouteGroupPage() {
   };
 
   return (
-    <Layout
-      activeItem="routes"
-      pageTitle="Add New Route Group"
-      pageDescription="Create a new route group with outbound and inbound routes"
-      role="mot"
-    >
       <div className="space-y-6">
-        {/* Header Section - Breadcrumbs */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <button 
-            onClick={() => router.push('/mot')}
-            className="hover:text-blue-600 transition-colors"
-          >
-            Home
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <button 
-            onClick={() => router.push('/mot/routes')}
-            className="hover:text-blue-600 transition-colors"
-          >
-            Route Management
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">Add New Route Group</span>
-        </div>
-
         {/* Route Form */}
         <RouteForm
           mode="create"
@@ -181,6 +163,5 @@ export default function AddNewRouteGroupPage() {
           onValidationErrorsChange={setValidationErrors}
         />
       </div>
-    </Layout>
   );
 }

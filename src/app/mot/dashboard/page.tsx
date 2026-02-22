@@ -33,7 +33,7 @@ import {
 import { SystemAlerts } from '@/components/mot/dashboard/SystemAlerts';
 import { LiveStats } from '@/components/mot/dashboard/LiveStats';
 import { QuickActions } from '@/components/mot/dashboard/QuickActions';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 
 interface DashboardData {
   kpis: DashboardKPI[];
@@ -42,6 +42,14 @@ interface DashboardData {
 }
 
 export default function AdminDashboardPage() {
+  useSetPageMetadata({
+    title: 'MOT Admin Dashboard',
+    description: 'Comprehensive overview of the transport management system',
+    activeItem: 'dashboard',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Dashboard' }],
+  });
+
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     kpis: kpiMetrics,
     alerts: systemAlerts,
@@ -235,7 +243,7 @@ export default function AdminDashboardPage() {
 
   if (error && useRealApi) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <div className="max-w-md mx-auto text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-red-900 mb-2">
@@ -263,13 +271,7 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <Layout
-          activeItem="dashboard"
-          pageTitle="MOT Admin Dashboard"
-          pageDescription="Comprehensive overview of the transport management system"
-          role="mot"
-        >
-    <div className="min-h-screen bg-gray-50">
+    <div className="space-y-6">
       {/* Header */}
       {/* <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -383,6 +385,5 @@ export default function AdminDashboardPage() {
         </div>
       </div>
     </div>
-    </Layout>
   );
 }    

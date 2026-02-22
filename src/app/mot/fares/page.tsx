@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useMemo, useCallback } from 'react';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { getFares, getFareStatistics, getFareFilterOptions, Fare } from '@/data/mot/fares';
 import { FareStatsCards } from '@/components/mot/fares/FareStatsCards';
 import { FareFilters } from '@/components/mot/fares/FareFilters';
@@ -13,6 +13,14 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function FaresPage() {
     const router = useRouter();
+
+    useSetPageMetadata({
+        title: 'Fare Structures',
+        description: 'Manage bus fare structures across all routes and operators',
+        activeItem: 'fares',
+        showBreadcrumbs: true,
+        breadcrumbs: [{ label: 'Fares' }],
+    });
 
     // Data
     const allFares = useMemo(() => getFares(), []);
@@ -140,13 +148,7 @@ export default function FaresPage() {
     }, []);
 
     return (
-        <Layout
-            activeItem="fares"
-            pageTitle="Fare Structures"
-            pageDescription="Manage bus fare structures across all routes and operators"
-            role="mot"
-        >
-            <div className="space-y-6">
+        <div className="space-y-6">
                 {/* Stats Cards */}
                 <FareStatsCards stats={stats} />
 
@@ -222,7 +224,6 @@ export default function FaresPage() {
                         </div>
                     )}
                 </div>
-            </div>
 
             {/* Delete Modal */}
             {fareToDelete && (
@@ -232,6 +233,6 @@ export default function FaresPage() {
                     onCancel={() => setFareToDelete(null)}
                 />
             )}
-        </Layout>
+        </div>
     );
 }

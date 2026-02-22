@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { BusStatsCards } from '@/components/mot/buses/BusStatsCards';
 import BusAdvancedFilters from '@/components/mot/buses/BusAdvancedFilters';
 import { BusActionButtons } from '@/components/mot/buses/BusActionButtons';
@@ -37,6 +37,14 @@ interface FilterOptions {
 
 export default function BusesPage() {
   const router = useRouter();
+
+  useSetPageMetadata({
+    title: 'Buses Management',
+    description: 'Manage and monitor bus fleet across all operators',
+    activeItem: 'buses',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Buses' }],
+  });
   const [buses, setBuses] = useState<BusResponse[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -361,29 +369,16 @@ export default function BusesPage() {
 
   if (isLoading && buses.length === 0) {
     return (
-      <Layout
-        activeItem="buses"
-        pageTitle="Buses Management"
-        pageDescription="Manage and monitor bus fleet across all operators"
-        role="mot"
-      >
-        <div className="flex items-center justify-center min-h-96">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading buses...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading buses...</p>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   return (
-    <Layout
-      activeItem="buses"
-      pageTitle="Buses Management"
-      pageDescription="Manage and monitor bus fleet across all operators"
-      role="mot"
-    >
       <div className="space-y-6">
         {/* Statistics Cards */}
         <BusStatsCards stats={stats} />
@@ -476,7 +471,7 @@ export default function BusesPage() {
             </div>
           </div>
         )}
-      </div>
+      
 
       {/* Delete Modal */}
       {showDeleteModal && busToDelete && (
@@ -488,6 +483,6 @@ export default function BusesPage() {
           isDeleting={isDeleting}
         />
       )}
-    </Layout>
+    </div>
   );
 }

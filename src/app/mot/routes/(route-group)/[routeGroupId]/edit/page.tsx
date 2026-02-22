@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ChevronRight } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { RouteForm, type RouteGroupFormData } from '@/components/mot/routes/route-form/RouteForm';
 import { RouteManagementService } from '../../../../../../../generated/api-clients/route-management';
 import type { RouteGroupRequest, RouteGroupResponse } from '../../../../../../../generated/api-clients/route-management';
@@ -12,7 +11,15 @@ export default function EditRouteGroupPage() {
   const router = useRouter();
   const params = useParams();
   const routeGroupId = params.routeGroupId as string;
-  
+
+  useSetPageMetadata({
+    title: 'Edit Route Group',
+    description: 'Update route group details',
+    activeItem: 'routes',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Routes', href: '/mot/routes' }, { label: 'Edit' }],
+  });
+
   // State
   const [routeGroup, setRouteGroup] = useState<RouteGroupResponse | null>(null);
   const [originalFormData, setOriginalFormData] = useState<RouteGroupFormData | null>(null);
@@ -320,78 +327,32 @@ export default function EditRouteGroupPage() {
   // Loading state
   if (isLoadingData) {
     return (
-      <Layout
-        activeItem="routes"
-        pageTitle="Loading..."
-        pageDescription="Loading route group data"
-        role="mot"
-      >
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading route group data...</p>
-          </div>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading route group data...</p>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   // Error state
   if (error && !routeGroup) {
     return (
-      <Layout
-        activeItem="routes"
-        pageTitle="Error"
-        pageDescription="Failed to load route group"
-        role="mot"
-      >
-        <div className="text-center py-12">
-          <div className="text-red-600 text-lg mb-4">{error}</div>
-          <button
-            onClick={() => router.push('/mot/routes')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
-            Back to Route Groups
-          </button>
-        </div>
-      </Layout>
+      <div className="text-center py-12">
+        <div className="text-red-600 text-lg mb-4">{error}</div>
+        <button
+          onClick={() => router.push('/mot/routes')}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+        >
+          Back to Route Groups
+        </button>
+      </div>
     );
   }
 
   return (
-    <Layout
-      activeItem="routes"
-      pageTitle={`Edit ${routeGroup?.name || 'Route Group'}`}
-      pageDescription="Update route group information and routes"
-      role="mot"
-    >
       <div className="space-y-6">
-        {/* Header Section - Breadcrumbs */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <button 
-            onClick={() => router.push('/mot')}
-            className="hover:text-blue-600 transition-colors"
-          >
-            Home
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <button 
-            onClick={() => router.push('/mot/routes')}
-            className="hover:text-blue-600 transition-colors"
-          >
-            Route Management
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <button 
-            onClick={() => router.push(`/mot/routes/${routeGroupId}`)}
-            className="hover:text-blue-600 transition-colors"
-          >
-            {routeGroup?.name || 'Route Group'}
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">Edit</span>
-        </div>
-
         {/* Route Form */}
         {routeGroup && (
           <RouteForm
@@ -409,6 +370,5 @@ export default function EditRouteGroupPage() {
           />
         )}
       </div>
-    </Layout>
   );
 }

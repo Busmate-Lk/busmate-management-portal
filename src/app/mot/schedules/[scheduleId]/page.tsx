@@ -7,7 +7,6 @@ import {
   Edit, 
   Plus, 
   Trash2, 
-  ChevronRight,
   AlertCircle,
   Power,
   Copy,
@@ -18,7 +17,7 @@ import {
   Activity,
   RefreshCw
 } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { ScheduleOverview, ScheduleTabsSection } from '@/components/mot/schedule-details';
 import { 
   ScheduleManagementService,
@@ -105,6 +104,64 @@ export default function ScheduleDetailsPage() {
     loadScheduleDetails();
     loadScheduleTrips();
   }, [loadScheduleDetails, loadScheduleTrips]);
+
+  useSetPageMetadata({
+    title: `Schedule: ${schedule?.name || 'Details'}`,
+    description: 'Manage schedule details and trips',
+    activeItem: 'schedules',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Schedules', href: '/mot/schedules' }, { label: schedule?.name || 'Schedule Details' }],
+  });
+
+  useSetPageActions(
+    <div className="flex flex-wrap gap-2">
+      <button
+        onClick={handleRefresh}
+        className="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm"
+      >
+        <RefreshCw className="w-4 h-4 mr-2" />
+        Refresh
+      </button>
+      <button
+        onClick={handleClone}
+        className="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm"
+      >
+        <Copy className="w-4 h-4 mr-2" />
+        Clone
+      </button>
+      {schedule?.status === 'ACTIVE' ? (
+        <button
+          onClick={handleDeactivate}
+          className="inline-flex items-center px-3 py-2 border border-orange-300 text-orange-700 rounded-md hover:bg-orange-50 text-sm"
+        >
+          <Power className="w-4 h-4 mr-2" />
+          Deactivate
+        </button>
+      ) : (
+        <button
+          onClick={handleActivate}
+          className="inline-flex items-center px-3 py-2 border border-green-300 text-green-700 rounded-md hover:bg-green-50 text-sm"
+        >
+          <Power className="w-4 h-4 mr-2" />
+          Activate
+        </button>
+      )}
+      <button
+        onClick={handleEdit}
+        className="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+      >
+        <Edit className="w-4 h-4 mr-2" />
+        Edit
+      </button>
+      <button
+        onClick={handleDelete}
+        className="inline-flex items-center px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
+      >
+        <Trash2 className="w-4 h-4 mr-2" />
+        Delete
+      </button>
+    </div>
+  );
 
   // Handlers
   const handleEdit = () => {
@@ -205,125 +262,32 @@ export default function ScheduleDetailsPage() {
   // Loading state
   if (isLoading) {
     return (
-      <Layout
-        role="mot"
-        activeItem="schedules"
-        pageTitle="Schedule Details"
-        pageDescription="Loading schedule information..."
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
     );
   }
 
   // Error state
   if (error || !schedule) {
     return (
-      <Layout
-        role="mot"
-        activeItem="schedules"
-        pageTitle="Schedule Details"
-        pageDescription="Error loading schedule"
-      >
-        <div className="text-center py-12">
-          <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Schedule Not Found</h3>
-          <p className="text-gray-500 mb-6">{error || 'The requested schedule could not be found.'}</p>
-          <button
-            onClick={handleBack}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Schedules
-          </button>
-        </div>
-      </Layout>
+      <div className="text-center py-12">
+        <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Schedule Not Found</h3>
+        <p className="text-gray-500 mb-6">{error || 'The requested schedule could not be found.'}</p>
+        <button
+          onClick={handleBack}
+          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Schedules
+        </button>
+      </div>
     );
   }
 
   return (
-    <Layout
-      role="mot"
-      activeItem="schedules"
-      pageTitle={`Schedule: ${schedule.name || 'Unnamed Schedule'}`}
-      pageDescription={`Manage schedule details, timetables, and operations`}
-      breadcrumbs={[
-        { label: 'MOT', href: '/mot' },
-        { label: 'Schedules', href: '/mot/schedules' },
-        { label: schedule.name || 'Schedule Details' }
-      ]}
-    >
       <div className="space-y-6">
-        {/* Header with Navigation and Actions */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-          {/* Navigation */}
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <button
-              onClick={handleBack}
-              className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
-            >
-              <ArrowLeft className="w-4 h-4 mr-1" />
-              Schedules
-            </button>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-gray-900 font-medium">{schedule.name || 'Unnamed Schedule'}</span>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={handleRefresh}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
-            </button>
-
-            <button
-              onClick={handleClone}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm"
-            >
-              <Copy className="w-4 h-4 mr-2" />
-              Clone
-            </button>
-
-            {schedule.status === 'ACTIVE' ? (
-              <button
-                onClick={handleDeactivate}
-                className="inline-flex items-center px-3 py-2 border border-orange-300 text-orange-700 rounded-md hover:bg-orange-50 text-sm"
-              >
-                <Power className="w-4 h-4 mr-2" />
-                Deactivate
-              </button>
-            ) : (
-              <button
-                onClick={handleActivate}
-                className="inline-flex items-center px-3 py-2 border border-green-300 text-green-700 rounded-md hover:bg-green-50 text-sm"
-              >
-                <Power className="w-4 h-4 mr-2" />
-                Activate
-              </button>
-            )}
-
-            <button
-              onClick={handleEdit}
-              className="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Edit
-            </button>
-
-            <button
-              onClick={handleDelete}
-              className="inline-flex items-center px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
-            </button>
-          </div>
-        </div>
 
         {/* Schedule Overview */}
         <ScheduleOverview 
@@ -362,6 +326,5 @@ export default function ScheduleDetailsPage() {
           isLoading={isDeleting}
         />
       </div>
-    </Layout>
   );
 }

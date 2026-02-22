@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { PolicyStatsCards } from '@/components/mot/policies/PolicyStatsCards';
 import { PolicyFilters } from '@/components/mot/policies/PolicyFilters';
 import { PoliciesTable } from '@/components/mot/policies/PoliciesTable';
@@ -19,6 +19,14 @@ import {
 function PoliciesListContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+
+    useSetPageMetadata({
+        title: 'Policy Management',
+        description: 'Manage and monitor transport policies',
+        activeItem: 'policies',
+        showBreadcrumbs: true,
+        breadcrumbs: [{ label: 'Policies' }],
+    });
 
     // Load data from sample data (swap to API calls when backend is ready)
     const allPolicies = useMemo(() => getPolicies(), []);
@@ -195,12 +203,6 @@ function PoliciesListContent() {
     }, []);
 
     return (
-        <Layout
-            activeItem="policies"
-            pageTitle="Policy Management"
-            pageDescription="Manage and monitor transport policies and guidelines"
-            role="mot"
-        >
             <div className="space-y-6">
                 {/* Error Alert */}
                 {error && (
@@ -311,7 +313,6 @@ function PoliciesListContent() {
                     isDeleting={isDeleting}
                 />
             </div>
-        </Layout>
     );
 }
 
@@ -319,12 +320,10 @@ export default function PoliciesPage() {
     return (
         <Suspense
             fallback={
-                <Layout>
-                    <div className="flex items-center justify-center py-12">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-                        <span className="ml-2 text-gray-600">Loading policies...</span>
-                    </div>
-                </Layout>
+                <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+                    <span className="ml-2 text-gray-600">Loading policies...</span>
+                </div>
             }
         >
             <PoliciesListContent />

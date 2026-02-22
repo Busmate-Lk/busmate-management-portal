@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 import {
   StaffStatsCards,
   StaffActionButtons,
@@ -24,6 +24,14 @@ type TabValue = 'all' | StaffType;
 
 export default function StaffManagementPage() {
   const router = useRouter();
+
+  useSetPageMetadata({
+    title: 'Staff Management',
+    description: 'Manage timekeepers, inspectors, and other staff',
+    activeItem: 'staff',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Staff Management' }],
+  });
 
   // Load sample data
   const allStaff = useMemo(() => getStaffMembers(), []);
@@ -249,12 +257,6 @@ export default function StaffManagementPage() {
   };
 
   return (
-    <Layout
-      activeItem="staff"
-      pageTitle="Staff Management"
-      pageDescription="Manage timekeepers, inspectors, and other staff members"
-      role="mot"
-    >
       <div className="space-y-6">
         {/* Statistics Cards */}
         <div className="mb-6">
@@ -355,6 +357,5 @@ export default function StaffManagementPage() {
           isDeleting={isDeleting}
         />
       </div>
-    </Layout>
   );
 }

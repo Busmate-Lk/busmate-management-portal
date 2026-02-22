@@ -6,11 +6,10 @@ import {
   ArrowLeft, 
   Edit, 
   Trash2, 
-  ChevronRight,
   AlertCircle,
   RefreshCw
 } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { PermitSummary } from '@/components/mot/passenger-service-permits/PermitSummary';
 import { PermitTabsSection } from '@/components/mot/passenger-service-permits/PermitTabsSection';
 import { 
@@ -29,6 +28,14 @@ export default function PermitDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const permitId = params.permitId as string;
+
+  useSetPageMetadata({
+    title: permit?.permitNumber || 'Permit Details',
+    description: 'Detailed view of permit information',
+    activeItem: 'passenger-service-permits',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Permits', href: '/mot/passenger-service-permits' }, { label: permit?.permitNumber || 'Permit Details' }],
+  });
 
   // State
   const [permit, setPermit] = useState<PassengerServicePermitResponse | null>(null);
@@ -194,59 +201,72 @@ export default function PermitDetailsPage() {
     }
   };
 
+  useSetPageActions(
+    <div className="flex items-center gap-3 flex-wrap">
+      <button
+        onClick={handleBack}
+        className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back
+      </button>
+      <button
+        onClick={handleRefresh}
+        className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+      >
+        <RefreshCw className="w-4 h-4" />
+        Refresh
+      </button>
+      <button
+        onClick={handleEdit}
+        className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+      >
+        <Edit className="w-4 h-4" />
+        Edit Permit
+      </button>
+      <button
+        onClick={handleDelete}
+        className="flex items-center gap-2 px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
+      >
+        <Trash2 className="w-4 h-4" />
+        Delete
+      </button>
+    </div>
+  );
+
   // Loading state
   if (isLoading) {
     return (
-      <Layout
-        activeItem="passenger-service-permits"
-        pageTitle="Loading..."
-        pageDescription="Loading permit details"
-        role="mot"
-      >
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading permit details...</p>
-          </div>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading permit details...</p>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   // Error state
   if (error || !permit) {
     return (
-      <Layout
-        activeItem="passenger-service-permits"
-        pageTitle="Error"
-        pageDescription="Failed to load permit"
-        role="mot"
-      >
-        <div className="text-center py-12">
-          <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <div className="text-red-600 text-lg mb-4">
-            {error || 'Permit not found'}
-          </div>
-          <button
-            onClick={handleBack}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
-            Go Back
-          </button>
+      <div className="text-center py-12">
+        <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
+        <div className="text-red-600 text-lg mb-4">
+          {error || 'Permit not found'}
         </div>
-      </Layout>
+        <button
+          onClick={handleBack}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+        >
+          Go Back
+        </button>
+      </div>
     );
   }
 
   return (
-    <Layout
-      activeItem="passenger-service-permits"
-      pageTitle={permit.permitNumber || 'Permit Details'}
-      pageDescription="Detailed view of passenger service permit and related information"
-      role="mot"
-    >
-      <div className="space-y-6">
-        {/* Error Alert */}
+    <div className="space-y-6">
+      {/* Error Alert */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-start">
@@ -264,62 +284,6 @@ export default function PermitDetailsPage() {
             </div>
           </div>
         )}
-
-        {/* Header Section - Breadcrumbs + Actions */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          {/* Breadcrumbs */}
-          <div className="flex items-center space-x-2 text-sm text-gray-600">
-            <button 
-              onClick={() => router.push('/mot')}
-              className="hover:text-blue-600 transition-colors"
-            >
-              Home
-            </button>
-            <ChevronRight className="w-4 h-4" />
-            <button 
-              onClick={() => router.push('/mot/passenger-service-permits')}
-              className="hover:text-blue-600 transition-colors"
-            >
-              Passenger Service Permits
-            </button>
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-gray-900 font-medium">
-              {permit.permitNumber || 'Permit Details'}
-            </span>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </button>
-            <button
-              onClick={handleRefresh}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Refresh
-            </button>
-            <button
-              onClick={handleEdit}
-              className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
-            >
-              <Edit className="w-4 h-4" />
-              Edit Permit
-            </button>
-            <button
-              onClick={handleDelete}
-              className="flex items-center gap-2 px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </button>
-          </div>
-        </div>
 
         {/* Permit Summary Card */}
         <PermitSummary 
@@ -352,7 +316,6 @@ export default function PermitDetailsPage() {
           assignedBuses={assignedBuses}
           isDeleting={isDeleting}
         />
-      </div>
-    </Layout>
+    </div>
   );
 }

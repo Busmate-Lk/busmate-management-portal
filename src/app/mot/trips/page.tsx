@@ -19,7 +19,7 @@ import { TripsTable } from '@/components/mot/trips/TripsTable';
 // Import shared UI components
 import Pagination from '@/components/shared/Pagination';
 import { DeleteConfirmationModal } from '@/components/mot/confirmation-modals';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 
 interface QueryParams {
   page: number;
@@ -69,6 +69,15 @@ interface FilterOptions {
 
 export default function TripsPage() {
   const router = useRouter();
+
+  useSetPageMetadata({
+    title: 'Trips',
+    description: 'Manage and monitor bus trips, assignments, and schedules',
+    activeItem: 'trips',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Trips' }],
+  });
+
   const [trips, setTrips] = useState<TripResponse[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -653,12 +662,6 @@ export default function TripsPage() {
   }
 
   return (
-    <Layout
-      activeItem="trips"
-      pageTitle="Trips"
-      pageDescription="Manage and monitor bus trips, assignments, and schedules"
-      role="mot"
-    >
       <div className="space-y-6">
         {/* Statistics Cards */}
         <TripStatsCards stats={stats} />
@@ -803,6 +806,5 @@ export default function TripsPage() {
           </div>
         )}
       </div>
-    </Layout>
   );
 }

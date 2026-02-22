@@ -2,14 +2,8 @@
 
 import { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { 
-  Plus, 
-  RefreshCw, 
-  Download, 
-  AlertCircle,
-  ChevronRight
-} from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { AlertCircle } from 'lucide-react';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { PermitStatsCards } from '@/components/mot/permits/PermitStatsCards';
 import { PermitAdvancedFilters } from '@/components/mot/permits/PermitAdvancedFilters';
 import { PermitActionButtons } from '@/components/mot/permits/PermitActionButtons';
@@ -45,6 +39,14 @@ interface SortState {
 function PassengerServicePermitsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  useSetPageMetadata({
+    title: 'Passenger Service Permits Management',
+    description: 'Manage and monitor passenger service permits for all operators',
+    activeItem: 'passenger-service-permits',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Permits' }],
+  });
   
   // Data states
   const [permits, setPermits] = useState<PassengerServicePermitResponse[]>([]);
@@ -416,26 +418,13 @@ function PassengerServicePermitsContent() {
   // Loading state for initial load
   if (loading && pagination.currentPage === 1 && permits.length === 0) {
     return (
-      <Layout
-        activeItem="passenger-service-permits"
-        pageTitle="Passenger Service Permits"
-        pageDescription="Manage passenger service permits"
-        role="mot"
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
     );
   }
 
   return (
-    <Layout
-      activeItem="passenger-service-permits"
-      pageTitle="Passenger Service Permits Management"
-      pageDescription="Manage and monitor passenger service permits for all operators"
-      role="mot"
-    >
       <div className="space-y-6">
         {/* Error Alert */}
         {error && (
@@ -455,20 +444,6 @@ function PassengerServicePermitsContent() {
             </div>
           </div>
         )}
-
-        {/* Breadcrumbs */}
-        {/* <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <button 
-            onClick={() => router.push('/mot')}
-            className="hover:text-blue-600 transition-colors"
-          >
-            Home
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">
-            Passenger Service Permits Management
-          </span>
-        </div> */}
 
         {/* Stats Cards */}
         <PermitStatsCards stats={statistics} loading={!statistics} />
@@ -609,21 +584,18 @@ function PassengerServicePermitsContent() {
           isDeleting={isDeleting}
         />
       </div>
-    </Layout>
   );
 }
 
 export default function PassengerServicePermitsPage() {
   return (
     <Suspense fallback={
-      <Layout>
-        <div className="container mx-auto px-4 py-6 space-y-6">
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600">Loading permits...</span>
-          </div>
+      <div className="container mx-auto px-4 py-6 space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-gray-600">Loading permits...</span>
         </div>
-      </Layout>
+      </div>
     }>
       <PassengerServicePermitsContent />
     </Suspense>

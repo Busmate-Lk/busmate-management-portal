@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 import RouteAdvancedFilters from '@/components/mot/routes/RouteAdvancedFilters';
 import { RouteStatsCards } from '@/components/mot/routes/RouteStatsCards';
 import { RoutesTable } from '@/components/mot/routes/RoutesTable';
@@ -36,6 +36,14 @@ interface FilterOptions {
 
 export default function RoutesPage() {
   const router = useRouter();
+
+  useSetPageMetadata({
+    title: 'Routes',
+    description: 'Manage bus routes with advanced filtering and search capabilities',
+    activeItem: 'routes',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Routes' }],
+  });
   const [routes, setRoutes] = useState<RouteResponse[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -423,29 +431,16 @@ export default function RoutesPage() {
 
   if (isLoading && routes.length === 0) {
     return (
-      <Layout
-        activeItem="routes"
-        pageTitle="Loading..."
-        pageDescription="Loading routes"
-        role="mot"
-      >
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading routes...</p>
-          </div>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading routes...</p>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   return (
-    <Layout
-      activeItem="routes"
-      pageTitle="Routes"
-      pageDescription="Manage bus routes with advanced filtering and search capabilities"
-      role="mot"
-    >
       <div className="space-y-6">
         {/* Error Alert */}
         {error && (
@@ -544,6 +539,5 @@ export default function RoutesPage() {
           isDeleting={isDeleting}
         />
       </div>
-    </Layout>
   );
 }

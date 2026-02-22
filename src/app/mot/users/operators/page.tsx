@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { 
   OperatorAdvancedFilters, 
   OperatorActionButtons, 
@@ -367,28 +367,23 @@ export default function OperatorsPage() {
     }));
   }, [filteredOperators]);
 
+  useSetPageMetadata({
+    title: 'Operators',
+    description: 'Manage bus operators and their details',
+    activeItem: 'operators',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Operators' }],
+  });
+
   if (isLoading && operators.length === 0) {
     return (
-      <Layout
-        activeItem="operators"
-        pageTitle="Operators"
-        pageDescription="Manage bus operators with advanced filtering and search capabilities"
-        role="mot"
-      >
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-      </Layout>
     );
   }
 
   return (
-    <Layout
-      activeItem="operators"
-      pageTitle="Operators"
-      pageDescription="Manage bus operators with advanced filtering and search capabilities"
-      role="mot"
-    >
       <div className="space-y-6">
         {/* Error Alert */}
         {error && (
@@ -493,6 +488,5 @@ export default function OperatorsPage() {
           busCount={0} // TODO: Calculate bus count if needed
         />
       </div>
-    </Layout>
   );
 }

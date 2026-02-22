@@ -2,7 +2,7 @@
 
 import React, { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { CSVEditor } from '@/components/tools/csv-editor';
 import { ROUTE_VALIDATION_RULES } from '@/components/tools/csv-editor';
 import { CSVData } from '@/components/tools/csv-editor/types';
@@ -12,6 +12,14 @@ import { RouteManagementService } from '../../../../../generated/api-clients/rou
 function RoutesImportPage() {
     const router = useRouter();
     const { toast } = useToast();
+
+    useSetPageMetadata({
+        title: 'Import Routes',
+        description: 'Import routes data in bulk',
+        activeItem: 'routes',
+        showBreadcrumbs: true,
+        breadcrumbs: [{ label: 'Routes', href: '/mot/routes' }, { label: 'Import' }],
+    });
 
     // Handle route template download
     const handleTemplateDownload = useCallback(async (format: string) => {
@@ -138,12 +146,6 @@ function RoutesImportPage() {
     };
 
     return (
-        <Layout
-            activeItem="routes"
-            pageTitle="Import Routes"
-            pageDescription="Import routes data in bulk using a CSV file. Download a template to see the expected format."
-            role="mot"
-        >
             <div className="p-0 mx-auto">
                 <CSVEditor
                     onImport={handleImport}
@@ -158,7 +160,6 @@ function RoutesImportPage() {
                     description="Upload your unified routes CSV file containing route groups, routes, and route stops data. Make sure to include required fields: route_group_name, route_name, stop_name_english, and stop_order."
                 />
             </div>
-        </Layout>
     );
 }
 

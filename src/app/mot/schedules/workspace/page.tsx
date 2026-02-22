@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { Toaster } from '@/components/ui/toaster';
 import { useToast } from '@/hooks/use-toast';
 import ScheduleFormMode from '@/components/mot/schedules/workspace/form-mode/ScheduleFormMode';
@@ -15,6 +15,15 @@ function ScheduleWorkspaceContent() {
     const [activeTab, setActiveTab] = useState<'form' | 'textual' | 'ai-studio'>('form');
     const { mode, validateAllSchedules, submitAllSchedules, resetToCreateMode, data, setSelectedRoute, isLoading } = useScheduleWorkspace();
     const { toast } = useToast();
+
+    useSetPageMetadata({
+        title: 'Schedules Workspace',
+        description: 'Create and manage bus schedules',
+        activeItem: 'schedules',
+        showBreadcrumbs: true,
+        breadcrumbs: [{ label: 'Schedules', href: '/mot/schedules' }, { label: 'Workspace' }],
+        padding: 0,
+    });
     const { schedules } = data;
     const searchParams = useSearchParams();
 
@@ -82,14 +91,6 @@ function ScheduleWorkspaceContent() {
     };
 
     return (
-        <Layout
-            activeItem="schedules"
-            pageTitle="Schedules Workspace"
-            pageDescription="Create and manage bus schedules"
-            role="mot"
-            initialSidebarCollapsed={true}
-            padding={0}
-        >
             <div className="min-h-screen bg-slate-50">
                 {/* Tab Bar */}
                 <div className="flex bg-white border-b border-slate-200 px-4 py-2 sticky top-20 z-10 justify-between items-center shadow-sm">
@@ -144,7 +145,6 @@ function ScheduleWorkspaceContent() {
                     {activeTab === 'ai-studio' && <ScheduleAIStudio />}
                 </div>
             </div>
-        </Layout>
     );
 }
 

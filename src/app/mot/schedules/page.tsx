@@ -12,7 +12,7 @@ import { ScheduleActionButtons } from '@/components/mot/schedules/ScheduleAction
 import { ScheduleStatsCards } from '@/components/mot/schedules/ScheduleStatsCards';
 import { SchedulesTable } from '@/components/mot/schedules/SchedulesTable';
 import Pagination from '@/components/shared/Pagination';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 
 interface QueryParams {
   page: number;
@@ -36,6 +36,14 @@ interface FilterOptions {
 
 export default function SchedulesPage() {
   const router = useRouter();
+
+  useSetPageMetadata({
+    title: 'Schedules',
+    description: 'Manage route schedules with advanced filtering and search capabilities',
+    activeItem: 'schedules',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Schedules' }],
+  });
   const [schedules, setSchedules] = useState<ScheduleResponse[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -414,12 +422,6 @@ export default function SchedulesPage() {
   }
 
   return (
-    <Layout
-      activeItem="schedules"
-      pageTitle="Schedules"
-      pageDescription="Manage route schedules with advanced filtering and search capabilities"
-      role="mot"
-    >
       <div className="space-y-6">
           {/* Statistics Cards */}
           <div className="mb-8">
@@ -551,6 +553,5 @@ export default function SchedulesPage() {
           </div>
         )}
       </div>
-    </Layout>
   );
 }

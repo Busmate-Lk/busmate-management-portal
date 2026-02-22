@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Edit, Loader2, AlertTriangle } from 'lucide-react';
 import { ScheduleForm } from '@/components/mot/schedule-form/ScheduleForm';
 import { ScheduleManagementService, ScheduleResponse } from '../../../../../../generated/api-clients/route-management';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata } from '@/context/PageContext';
 
 export default function EditSchedulePage() {
     const router = useRouter();
@@ -16,6 +16,14 @@ export default function EditSchedulePage() {
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingSchedule, setIsLoadingSchedule] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    useSetPageMetadata({
+        title: 'Edit Schedule',
+        description: `Modify schedule: ${schedule?.name || ''}`,
+        activeItem: 'schedules',
+        showBreadcrumbs: true,
+        breadcrumbs: [{ label: 'Schedules', href: '/mot/schedules' }, { label: 'Edit' }],
+    });
 
     // Load existing schedule data
     useEffect(() => {
@@ -62,75 +70,53 @@ export default function EditSchedulePage() {
 
     if (isLoadingSchedule) {
         return (
-            <Layout
-                role="mot"
-                activeItem="schedules"
-                pageTitle="Edit Schedule"
-                pageDescription="Modify schedule: {schedule.name}"
-            >
-                <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                    <div className="text-center">
-                        <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
-                        <p className="text-gray-600">Loading schedule data...</p>
-                    </div>
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+                    <p className="text-gray-600">Loading schedule data...</p>
                 </div>
-            </Layout>
+            </div>
         );
     }
 
     if (error || !schedule) {
         return (
-            <Layout
-                role="mot"
-                activeItem="schedules"
-                pageTitle="Edit Schedule"
-                pageDescription="Modify schedule: {schedule.name}"
-            >
-                <div className="min-h-screen bg-gray-50">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        <div className="bg-white rounded-lg shadow p-6">
-                            <div className="text-center">
-                                <div className="text-red-600 mb-4">
-                                    <AlertTriangle className="w-12 h-12 mx-auto" />
-                                </div>
-                                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                                    Failed to Load Schedule
-                                </h3>
-                                <p className="text-gray-500 mb-4">
-                                    {error || 'The requested schedule could not be found.'}
-                                </p>
-                                <button
-                                    onClick={handleCancel}
-                                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                                >
-                                    <ArrowLeft className="w-4 h-4 mr-2" />
-                                    Back to Schedules
-                                </button>
+            <div className="min-h-screen bg-gray-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                    <div className="bg-white rounded-lg shadow p-6">
+                        <div className="text-center">
+                            <div className="text-red-600 mb-4">
+                                <AlertTriangle className="w-12 h-12 mx-auto" />
                             </div>
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                Failed to Load Schedule
+                            </h3>
+                            <p className="text-gray-500 mb-4">
+                                {error || 'The requested schedule could not be found.'}
+                            </p>
+                            <button
+                                onClick={handleCancel}
+                                className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                            >
+                                <ArrowLeft className="w-4 h-4 mr-2" />
+                                Back to Schedules
+                            </button>
                         </div>
                     </div>
                 </div>
-            </Layout>
+            </div>
         );
     }
 
     return (
-        <Layout
-            role="mot"
-            activeItem="schedules"
-            pageTitle="Edit Schedule"
-            pageDescription="Modify schedule: {schedule.name}"
-        >
-            {/* Content */}
-            <div className="bg-white rounded-lg shadow">
-                <ScheduleForm
-                    mode="edit"
-                    initialData={schedule}
-                    onSubmit={handleSubmit}
-                    onCancel={handleCancel}
-                    isLoading={isLoading}
-                />
-            </div>
-        </Layout>
+        <div className="bg-white rounded-lg shadow">
+            <ScheduleForm
+                mode="edit"
+                initialData={schedule}
+                onSubmit={handleSubmit}
+                onCancel={handleCancel}
+                isLoading={isLoading}
+            />
+        </div>
     );
 }

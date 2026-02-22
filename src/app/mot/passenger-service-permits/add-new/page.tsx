@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, X, AlertCircle, ChevronRight } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { X, AlertCircle } from 'lucide-react';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { PermitForm } from '@/components/mot/passenger-service-permits/permit-form';
 import { 
   PermitManagementService, 
@@ -16,6 +16,14 @@ import {
 
 export default function AddPermitPage() {
   const router = useRouter();
+
+  useSetPageMetadata({
+    title: 'Add New Passenger Service Permit',
+    description: 'Create a new passenger service permit',
+    activeItem: 'passenger-service-permits',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Permits', href: '/mot/passenger-service-permits' }, { label: 'Add New' }],
+  });
   
   // State
   const [operators, setOperators] = useState<OperatorResponse[]>([]);
@@ -81,49 +89,18 @@ export default function AddPermitPage() {
     }
   };
 
-  return (
-    <Layout
-      activeItem="passenger-service-permits"
-      pageTitle="Add New Passenger Service Permit"
-      pageDescription="Create a new passenger service permit for an operator"
-      role="mot"
+  useSetPageActions(
+    <button
+      onClick={handleCancel}
+      className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
     >
-      <div className="space-y-6">
-        {/* Breadcrumbs */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <button 
-            onClick={() => router.push('/mot')}
-            className="hover:text-blue-600 transition-colors"
-          >
-            Home
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <button 
-            onClick={() => router.push('/mot/passenger-service-permits')}
-            className="hover:text-blue-600 transition-colors"
-          >
-            Passenger Service Permits
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">Add New Permit</span>
-        </div>
+      <X className="w-4 h-4" />
+      Cancel
+    </button>
+  );
 
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Add New Passenger Service Permit</h1>
-            <p className="text-gray-600 mt-1">
-              Fill in the details below to create a new passenger service permit
-            </p>
-          </div>
-          <button
-            onClick={handleCancel}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <X className="w-4 h-4" />
-            Cancel
-          </button>
-        </div>
+  return (
+    <div className="space-y-6">
 
         {/* Error Alert */}
         {error && (
@@ -216,7 +193,6 @@ export default function AddPermitPage() {
             </div>
           </div>
         </div>
-      </div>
-    </Layout>
+    </div>
   );
 }

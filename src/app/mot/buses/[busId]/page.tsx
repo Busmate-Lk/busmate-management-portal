@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { ArrowLeft, Edit, Trash2, AlertCircle, RefreshCw, ChevronRight } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { BusSummary } from '@/components/mot/buses/BusSummary';
 import { BusTabsSection } from '@/components/mot/buses/BusTabsSection';
 import DeleteBusModal from '@/components/mot/buses/DeleteBusModal';
@@ -32,6 +32,33 @@ export default function BusDetailsPage() {
   // Delete modal states - Updated
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useSetPageMetadata({
+    title: bus?.plateNumber || bus?.ntcRegistrationNumber || 'Bus Details',
+    description: 'Detailed view of bus information and related data',
+    activeItem: 'buses',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Buses', href: '/mot/buses' }, { label: bus?.plateNumber || bus?.ntcRegistrationNumber || 'Bus Details' }],
+  });
+
+  useSetPageActions(
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => router.push(`/mot/buses/${busId}/edit`)}
+        className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
+      >
+        <Edit className="w-4 h-4 mr-2" />
+        Edit Bus
+      </button>
+      <button
+        onClick={() => setShowDeleteModal(true)}
+        className="flex items-center gap-2 px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
+      >
+        <Trash2 className="w-4 h-4" />
+        Delete
+      </button>
+    </div>
+  );
 
   // Load bus details
   const loadBusDetails = useCallback(async () => {
@@ -134,28 +161,15 @@ export default function BusDetailsPage() {
   // Loading state
   if (isLoading) {
     return (
-      <Layout
-        activeItem="buses"
-        pageTitle="Loading..."
-        pageDescription="Loading bus details"
-        role="mot"
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
     );
   }
 
   // Error state
   if (error || !bus) {
     return (
-      <Layout
-        activeItem="buses"
-        pageTitle="Error"
-        pageDescription="Failed to load bus details"
-        role="mot"
-      >
         <div className="max-w-md mx-auto text-center py-12">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
@@ -180,42 +194,11 @@ export default function BusDetailsPage() {
             </button>
           </div>
         </div>
-      </Layout>
     );
   }
 
   return (
-    <Layout
-      activeItem="buses"
-      pageTitle={bus.plateNumber || bus.ntcRegistrationNumber || 'Bus Details'}
-      pageDescription="Detailed view of bus information and related data"
-      role="mot"
-      breadcrumbs={[
-        { label: 'MOT', href: '/mot' },
-        { label: 'Buses', href: '/mot/buses' },
-        { label: bus.plateNumber || bus.ntcRegistrationNumber || 'Bus Details' }
-      ]}
-    >
       <div className="space-y-6">
-        {/* Header with Navigation and Actions */}
-        <div className="flex items-center justify-end gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleEdit}
-              className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Edit Bus
-            </button>
-            <button
-              onClick={handleDelete}
-              className="flex items-center gap-2 px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-              Delete
-            </button>
-          </div>
-        </div>
 
         {/* Error Alert */}
         {error && (
@@ -258,6 +241,5 @@ export default function BusDetailsPage() {
           tripCount={trips.length}
         />
       </div>
-    </Layout>
   );
 }

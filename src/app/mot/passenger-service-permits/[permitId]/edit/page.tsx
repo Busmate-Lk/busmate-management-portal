@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, X, AlertCircle, ChevronRight } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { ArrowLeft, X, AlertCircle } from 'lucide-react';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { PermitForm } from '@/components/mot/passenger-service-permits/permit-form';
 import { 
   PermitManagementService, 
@@ -29,6 +29,14 @@ export default function EditPermitPage() {
   const [error, setError] = useState<string | null>(null);
   const [operatorsLoading, setOperatorsLoading] = useState(true);
   const [routeGroupsLoading, setRouteGroupsLoading] = useState(true);
+
+  useSetPageMetadata({
+    title: `Edit ${permit?.permitNumber || 'Permit'}`,
+    description: 'Update passenger service permit details',
+    activeItem: 'passenger-service-permits',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Permits', href: '/mot/passenger-service-permits' }, { label: permit?.permitNumber || 'Permit', href: '/mot/passenger-service-permits/' + permitId }, { label: 'Edit' }],
+  });
 
   // Load permit details and form data
   const loadData = useCallback(async () => {
@@ -91,116 +99,61 @@ export default function EditPermitPage() {
     }
   };
 
+  useSetPageActions(
+    <button
+      onClick={handleCancel}
+      className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+    >
+      <X className="w-4 h-4" />
+      Cancel
+    </button>
+  );
+
   // Loading state
   if (isLoading) {
     return (
-      <Layout
-        activeItem="passenger-service-permits"
-        pageTitle="Loading..."
-        pageDescription="Loading permit details for editing"
-        role="mot"
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading permit details...</p>
-          </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading permit details...</p>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   // Error state
   if (error && !permit) {
     return (
-      <Layout
-        activeItem="passenger-service-permits"
-        pageTitle="Error"
-        pageDescription="Failed to load permit details"
-        role="mot"
-      >
-        <div className="max-w-md mx-auto text-center py-12">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Failed to Load Permit Details
-          </h2>
-          <p className="text-gray-600 mb-6">
-            The permit you're trying to edit doesn't exist or there was an error loading the details.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => router.back()}
-              className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Go Back
-            </button>
-            <button
-              onClick={() => router.push('/mot/passenger-service-permits')}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              View All Permits
-            </button>
-          </div>
+      <div className="max-w-md mx-auto text-center py-12">
+        <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Failed to Load Permit Details
+        </h2>
+        <p className="text-gray-600 mb-6">
+          The permit you're trying to edit doesn't exist or there was an error loading the details.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Go Back
+          </button>
+          <button
+            onClick={() => router.push('/mot/passenger-service-permits')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            View All Permits
+          </button>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   return (
-    <Layout
-      activeItem="passenger-service-permits"
-      pageTitle={`Edit ${permit?.permitNumber || 'Permit'}`}
-      pageDescription="Update passenger service permit details"
-      role="mot"
-    >
-      <div className="space-y-6">
-        {/* Breadcrumbs */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <button 
-            onClick={() => router.push('/mot')}
-            className="hover:text-blue-600 transition-colors"
-          >
-            Home
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <button 
-            onClick={() => router.push('/mot/passenger-service-permits')}
-            className="hover:text-blue-600 transition-colors"
-          >
-            Passenger Service Permits
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <button 
-            onClick={() => router.push(`/mot/passenger-service-permits/${permitId}`)}
-            className="hover:text-blue-600 transition-colors"
-          >
-            {permit?.permitNumber || 'Permit Details'}
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">Edit</span>
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Edit Permit: {permit?.permitNumber}
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Update the passenger service permit details
-            </p>
-          </div>
-          <button
-            onClick={handleCancel}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <X className="w-4 h-4" />
-            Cancel
-          </button>
-        </div>
-
-        {/* Error Alert */}
+    <div className="space-y-6">
+      {/* Error Alert */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <div className="flex items-start">
@@ -289,7 +242,6 @@ export default function EditPermitPage() {
             <p>• Any changes will be logged and may require approval based on your organization's policies.</p>
           </div>
         </div>
-      </div>
-    </Layout>
+    </div>
   );
 }

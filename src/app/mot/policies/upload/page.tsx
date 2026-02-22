@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useCallback } from 'react';
-import { ChevronRight, AlertCircle } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { AlertCircle } from 'lucide-react';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { PolicyForm, PolicyFormData } from '@/components/mot/policies/PolicyForm';
 
 export default function UploadPolicyPage() {
@@ -41,41 +41,16 @@ export default function UploadPolicyPage() {
         }
     }, [router]);
 
+    useSetPageMetadata({
+        title: 'Upload New Policy',
+        description: 'Create and publish a new policy document',
+        activeItem: 'policies',
+        showBreadcrumbs: true,
+        breadcrumbs: [{ label: 'Policies', href: '/mot/policies' }, { label: 'Upload' }],
+    });
+
     return (
-        <Layout
-            activeItem="policies"
-            pageTitle="Upload New Policy"
-            pageDescription="Create and publish a new policy document"
-            role="mot"
-        >
             <div className="space-y-6">
-                {/* Breadcrumbs */}
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <button
-                        onClick={() => router.push('/mot')}
-                        className="hover:text-blue-600 transition-colors"
-                    >
-                        Home
-                    </button>
-                    <ChevronRight className="w-4 h-4" />
-                    <button
-                        onClick={() => router.push('/mot/policies')}
-                        className="hover:text-blue-600 transition-colors"
-                    >
-                        Policies
-                    </button>
-                    <ChevronRight className="w-4 h-4" />
-                    <span className="text-gray-900 font-medium">Upload New Policy</span>
-                </div>
-
-                {/* Header */}
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Upload New Policy</h1>
-                    <p className="text-gray-600 mt-1">
-                        Fill in the details below to create a new policy document
-                    </p>
-                </div>
-
                 {/* Error Alert */}
                 {error && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -141,6 +116,5 @@ export default function UploadPolicyPage() {
                     </div>
                 </div>
             </div>
-        </Layout>
     );
 }

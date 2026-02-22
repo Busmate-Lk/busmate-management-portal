@@ -20,7 +20,7 @@ import {
   Maximize2,
   RotateCcw,
 } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { StopResponse, BusStopManagementService } from '../../../../../generated/api-clients/route-management';
 import { useToast } from '@/hooks/use-toast';
 import DeleteBusStopModal from '@/components/mot/bus-stops/DeleteBusStopModal';
@@ -264,6 +264,43 @@ export default function BusStopDetailsPage({ params }: BusStopDetailsPageProps) 
   // Toast for notifications
   const { toast } = useToast();
 
+  // Page metadata and actions (must be called unconditionally - React rules of hooks)
+  useSetPageMetadata({
+    title: `${busStop?.name || 'Bus Stop'} - Details`,
+    description: 'View detailed information about this bus stop',
+    activeItem: 'bus-stops',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Bus Stops', href: '/mot/bus-stops' }, { label: busStop?.name || 'Bus Stop Details' }],
+  });
+
+  useSetPageActions(
+    busStop ? (
+      <>
+        <button
+          onClick={() => router.push('/mot/bus-stops')}
+          className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5 mr-2" />
+          Back to Bus Stops
+        </button>
+        <button
+          onClick={() => router.push(`/mot/bus-stops/${busStop.id}/edit`)}
+          className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+        >
+          <Edit className="w-4 h-4 mr-2" />
+          Edit
+        </button>
+        <button
+          onClick={handleDeleteClick}
+          className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+        >
+          <Trash2 className="w-4 h-4 mr-2" />
+          Delete
+        </button>
+      </>
+    ) : null
+  );
+
   // Load bus stop details
   const loadBusStopDetails = useCallback(async () => {
     if (!busStopId) {
@@ -369,56 +406,42 @@ export default function BusStopDetailsPage({ params }: BusStopDetailsPageProps) 
   // Loading state
   if (loading) {
     return (
-      <Layout
-        activeItem="bus-stops"
-        pageTitle="Bus Stop Details"
-        pageDescription="View detailed information about this bus stop"
-        role="mot"
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
     );
   }
 
   // Error state
   if (error || !busStop) {
     return (
-      <Layout
-        activeItem="bus-stops"
-        pageTitle="Bus Stop Details"
-        pageDescription="View detailed information about this bus stop"
-        role="mot"
-      >
-        <div className="mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <div className="flex items-start">
-              <AlertCircle className="w-6 h-6 text-red-400 mt-0.5 mr-3 shrink-0" />
-              <div className="flex-1">
-                <h3 className="text-lg font-medium text-red-800">Error Loading Bus Stop</h3>
-                <p className="text-red-700 mt-1">{error || 'Bus stop not found'}</p>
-                <div className="flex gap-3 mt-4">
-                  <button
-                    onClick={loadBusStopDetails}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    <RefreshCw className="w-4 h-4 mr-2 inline" />
-                    Try Again
-                  </button>
-                  <button
-                    onClick={() => router.push('/mot/bus-stops')}
-                    className="px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2 inline" />
-                    Back to Bus Stops
-                  </button>
-                </div>
+      <div className="mx-auto">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <div className="flex items-start">
+            <AlertCircle className="w-6 h-6 text-red-400 mt-0.5 mr-3 shrink-0" />
+            <div className="flex-1">
+              <h3 className="text-lg font-medium text-red-800">Error Loading Bus Stop</h3>
+              <p className="text-red-700 mt-1">{error || 'Bus stop not found'}</p>
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={loadBusStopDetails}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2 inline" />
+                  Try Again
+                </button>
+                <button
+                  onClick={() => router.push('/mot/bus-stops')}
+                  className="px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2 inline" />
+                  Back to Bus Stops
+                </button>
               </div>
             </div>
           </div>
         </div>
-      </Layout>
+      </div>
     );
   }
 
@@ -443,58 +466,7 @@ export default function BusStopDetailsPage({ params }: BusStopDetailsPageProps) 
   const hasCoordinates = busStop.location?.latitude && busStop.location?.longitude;
 
   return (
-    <Layout
-      activeItem="bus-stops"
-      pageTitle={`${busStop.name || 'Bus Stop'} - Details`}
-      pageDescription="View detailed information about this bus stop"
-      role="mot"
-      breadcrumbs={[
-        { label: 'MOT', href: '/mot/dashboard' },
-        { label: 'Bus Stops', href: '/mot/bus-stops' },
-        { label: busStop.name || 'Bus Stop Details' }
-      ]}
-    >
       <div className="mx-auto px-4 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex flex-col items-start gap-2">
-            <button
-              onClick={() => router.push('/mot/bus-stops')}
-              className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to Bus Stops
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {busStop.name || 'Unnamed Bus Stop'}
-              </h1>
-              <p className="text-gray-600 mt-1">
-                {busStop.location?.city && busStop.location?.state
-                  ? `${busStop.location.city}, ${busStop.location.state}`
-                  : 'Location information not available'}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.push(`/mot/bus-stops/${busStop.id}/edit`)}
-              className="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Edit
-            </button>
-            <button
-              onClick={handleDeleteClick}
-              className="flex items-center bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
-            </button>
-          </div>
-        </div>
-
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Main Information */}
@@ -941,6 +913,5 @@ export default function BusStopDetailsPage({ params }: BusStopDetailsPageProps) 
           isDeleting={isDeleting}
         />
       </div>
-    </Layout>
   );
 }

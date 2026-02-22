@@ -2,8 +2,8 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useCallback } from 'react';
-import { ChevronRight, AlertCircle, ArrowLeft } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
+import { useSetPageMetadata } from '@/context/PageContext';
 import { PolicyForm, PolicyFormData } from '@/components/mot/policies/PolicyForm';
 import { getPolicyById } from '@/data/mot/policies';
 
@@ -44,83 +44,48 @@ export default function EditPolicyPage() {
         }
     }, [router, policyId]);
 
+    useSetPageMetadata({
+        title: `Edit: ${policy?.title || 'Policy'}`,
+        description: 'Update policy document details',
+        activeItem: 'policies',
+        showBreadcrumbs: true,
+        breadcrumbs: [
+            { label: 'Policies', href: '/mot/policies' },
+            { label: policy?.title || 'Policy', href: `/mot/policies/${policyId}` },
+            { label: 'Edit' },
+        ],
+    });
+
     // Not found state
     if (!policy) {
         return (
-            <Layout
-                activeItem="policies"
-                pageTitle="Error"
-                pageDescription="Policy not found"
-                role="mot"
-            >
-                <div className="max-w-md mx-auto text-center py-12">
-                    <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">Policy Not Found</h2>
-                    <p className="text-gray-600 mb-6">
-                        The policy you&apos;re trying to edit doesn&apos;t exist.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <button
-                            onClick={() => router.back()}
-                            className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Go Back
-                        </button>
-                        <button
-                            onClick={() => router.push('/mot/policies')}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                        >
-                            View All Policies
-                        </button>
-                    </div>
+            <div className="max-w-md mx-auto text-center py-12">
+                <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">Policy Not Found</h2>
+                <p className="text-gray-600 mb-6">
+                    The policy you&apos;re trying to edit doesn&apos;t exist.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                        onClick={() => router.back()}
+                        className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Go Back
+                    </button>
+                    <button
+                        onClick={() => router.push('/mot/policies')}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        View All Policies
+                    </button>
                 </div>
-            </Layout>
+            </div>
         );
     }
 
     return (
-        <Layout
-            activeItem="policies"
-            pageTitle={`Edit: ${policy.title}`}
-            pageDescription="Update policy document details"
-            role="mot"
-        >
             <div className="space-y-6">
-                {/* Breadcrumbs */}
-                <div className="flex items-center space-x-2 text-sm text-gray-600">
-                    <button
-                        onClick={() => router.push('/mot')}
-                        className="hover:text-blue-600 transition-colors"
-                    >
-                        Home
-                    </button>
-                    <ChevronRight className="w-4 h-4" />
-                    <button
-                        onClick={() => router.push('/mot/policies')}
-                        className="hover:text-blue-600 transition-colors"
-                    >
-                        Policies
-                    </button>
-                    <ChevronRight className="w-4 h-4" />
-                    <button
-                        onClick={() => router.push(`/mot/policies/${policyId}`)}
-                        className="hover:text-blue-600 transition-colors"
-                    >
-                        {policy.title}
-                    </button>
-                    <ChevronRight className="w-4 h-4" />
-                    <span className="text-gray-900 font-medium">Edit</span>
-                </div>
-
-                {/* Header */}
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Edit Policy</h1>
-                    <p className="text-gray-600 mt-1">
-                        Update the details for &quot;{policy.title}&quot;
-                    </p>
-                </div>
-
                 {/* Error Alert */}
                 {error && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -179,6 +144,5 @@ export default function EditPolicyPage() {
                     </div>
                 </div>
             </div>
-        </Layout>
     );
 }

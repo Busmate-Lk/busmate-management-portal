@@ -8,8 +8,8 @@ import { QueryService, TripService, DeviceService, OpenAPI } from '../../../../g
 import { TripManagementService, RouteManagementService } from '../../../../generated/api-clients/route-management';
 import { TripResponse } from '../../../../generated/api-clients/route-management';
 
-// Import layout
-import { Layout } from '@/components/shared/layout';
+// Import page context
+import { useSetPageMetadata } from '@/context/PageContext';
 
 // Import our new components
 import { LocationStats } from '@/components/mot/location-tracking/LocationStats';
@@ -66,6 +66,14 @@ const defaultCenter = {
 };
 
 export default function LocationTrackingPage() {
+    useSetPageMetadata({
+        title: 'Location Tracking',
+        description: 'Real-time bus location monitoring and trip tracking',
+        activeItem: 'location-tracking',
+        showBreadcrumbs: true,
+        breadcrumbs: [{ label: 'Location Tracking' }],
+    });
+
     // Google Maps API loader
     const { isLoaded } = useJsApiLoader({
         id: 'google-map-script',
@@ -478,72 +486,70 @@ export default function LocationTrackingPage() {
     }, [isMapFullscreen]);
 
     return (
-        <Layout activeItem="location-tracking" pageTitle="Location Tracking" pageDescription="Real-time bus location monitoring and trip tracking" role="mot">
-            <div className="space-y-6">
-                {/* Statistics Dashboard */}
-                <LocationStats stats={stats} lastUpdate={lastUpdate} />
+        <div className="space-y-6">
+            {/* Statistics Dashboard */}
+            <LocationStats stats={stats} lastUpdate={lastUpdate} />
 
-                {/* Filters */}
-                <LocationFilters
-                    filters={filters}
-                    onFiltersChange={setFilters}
-                    filterOptions={filterOptions}
-                    autoRefresh={autoRefresh}
-                    onAutoRefreshChange={setAutoRefresh}
-                    refreshInterval={refreshInterval}
-                    onRefreshIntervalChange={setRefreshInterval}
-                    onManualRefresh={handleManualRefresh}
-                    onToggleFullscreen={toggleFullscreen}
-                    isLoading={isLoading}
-                    filteredCount={filteredTrips.length}
-                    totalCount={activeTrips.length}
-                />
+            {/* Filters */}
+            <LocationFilters
+                filters={filters}
+                onFiltersChange={setFilters}
+                filterOptions={filterOptions}
+                autoRefresh={autoRefresh}
+                onAutoRefreshChange={setAutoRefresh}
+                refreshInterval={refreshInterval}
+                onRefreshIntervalChange={setRefreshInterval}
+                onManualRefresh={handleManualRefresh}
+                onToggleFullscreen={toggleFullscreen}
+                isLoading={isLoading}
+                filteredCount={filteredTrips.length}
+                totalCount={activeTrips.length}
+            />
 
-                {/* Main Content */}
-                <div className={`${isMapFullscreen ? 'fixed inset-0 z-50 bg-white' : 'grid grid-cols-1 lg:grid-cols-4 gap-6'}`}>
-                    {/* Map */}
-                    <div className={`${isMapFullscreen ? 'h-full' : 'lg:col-span-3 h-96 lg:h-[600px]'} bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden`}>
-                        <LocationMap
-                            activeTrips={filteredTrips}
-                            selectedTrip={selectedTrip}
-                            onTripSelect={handleTripSelect}
-                            mapCenter={mapCenter}
-                            mapZoom={mapZoom}
-                            onMapCenterChange={handleMapCenterChange}
-                            onMapZoomChange={handleMapZoomChange}
-                            isLoaded={isLoaded}
-                        />
-                    </div>
-
-                    {/* Trips List Sidebar */}
-                    {!isMapFullscreen && (
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-fit max-h-[600px] overflow-hidden">
-                            <TripsList
-                                trips={filteredTrips}
-                                selectedTrip={selectedTrip}
-                                onTripSelect={handleTripSelect}
-                                onTripFocus={handleTripFocus}
-                                isLoading={isLoading}
-                                error={error}
-                            />
-                        </div>
-                    )}
+            {/* Main Content */}
+            <div className={`${isMapFullscreen ? 'fixed inset-0 z-50 bg-white' : 'grid grid-cols-1 lg:grid-cols-4 gap-6'}`}>
+                {/* Map */}
+                <div className={`${isMapFullscreen ? 'h-full' : 'lg:col-span-3 h-96 lg:h-[600px]'} bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden`}>
+                    <LocationMap
+                        activeTrips={filteredTrips}
+                        selectedTrip={selectedTrip}
+                        onTripSelect={handleTripSelect}
+                        mapCenter={mapCenter}
+                        mapZoom={mapZoom}
+                        onMapCenterChange={handleMapCenterChange}
+                        onMapZoomChange={handleMapZoomChange}
+                        isLoaded={isLoaded}
+                    />
                 </div>
 
-                {/* Development Info */}
-                {process.env.NODE_ENV === 'development' && (
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                        <h3 className="text-sm font-medium text-yellow-800 mb-2">Development Info</h3>
-                        <div className="text-xs text-yellow-700 space-y-1">
-                            <p>• Total trips loaded: {activeTrips.length}</p>
-                            <p>• Filtered trips: {filteredTrips.length}</p>
-                            <p>• Google Maps loaded: {isLoaded ? 'Yes' : 'Loading...'}</p>
-                            <p>• Auto refresh: {autoRefresh ? `Every ${refreshInterval}s` : 'Disabled'}</p>
-                            <p>• Last update: {lastUpdate?.toLocaleTimeString() || 'Never'}</p>
-                        </div>
+                {/* Trips List Sidebar */}
+                {!isMapFullscreen && (
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-fit max-h-[600px] overflow-hidden">
+                        <TripsList
+                            trips={filteredTrips}
+                            selectedTrip={selectedTrip}
+                            onTripSelect={handleTripSelect}
+                            onTripFocus={handleTripFocus}
+                            isLoading={isLoading}
+                            error={error}
+                        />
                     </div>
                 )}
             </div>
-        </Layout>
+
+            {/* Development Info */}
+            {process.env.NODE_ENV === 'development' && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <h3 className="text-sm font-medium text-yellow-800 mb-2">Development Info</h3>
+                    <div className="text-xs text-yellow-700 space-y-1">
+                        <p>• Total trips loaded: {activeTrips.length}</p>
+                        <p>• Filtered trips: {filteredTrips.length}</p>
+                        <p>• Google Maps loaded: {isLoaded ? 'Yes' : 'Loading...'}</p>
+                        <p>• Auto refresh: {autoRefresh ? `Every ${refreshInterval}s` : 'Disabled'}</p>
+                        <p>• Last update: {lastUpdate?.toLocaleTimeString() || 'Never'}</p>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }

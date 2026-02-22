@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ArrowLeft, Save, X, AlertCircle, ChevronRight } from 'lucide-react';
-import { Layout } from '@/components/shared/layout';
+import { ArrowLeft, Save, X, AlertCircle } from 'lucide-react';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { BusForm } from '@/components/mot/buses/bus-form';
 import { 
   BusManagementService, 
@@ -25,6 +25,28 @@ export default function EditBusPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [operatorsLoading, setOperatorsLoading] = useState(true);
+
+  useSetPageMetadata({
+    title: `Edit ${bus?.plateNumber || bus?.ntcRegistrationNumber || 'Bus'}`,
+    description: 'Update bus registration and operational details',
+    activeItem: 'buses',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Buses', href: '/mot/buses' }, { label: bus?.plateNumber || bus?.ntcRegistrationNumber || 'Bus Details', href: '/mot/buses/' + busId }, { label: 'Edit' }],
+  });
+
+  useSetPageActions(
+    <button
+      onClick={() => {
+        if (window.confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
+          router.push(`/mot/buses/${busId}`);
+        }
+      }}
+      className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+    >
+      <X className="w-4 h-4" />
+      Cancel
+    </button>
+  );
 
   // Load bus details and operators
   const loadData = useCallback(async () => {
@@ -87,28 +109,15 @@ export default function EditBusPage() {
   // Loading state
   if (isLoading) {
     return (
-      <Layout
-        activeItem="buses"
-        pageTitle="Loading..."
-        pageDescription="Loading bus details for editing"
-        role="mot"
-      >
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </Layout>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
     );
   }
 
   // Error state
   if (error && !bus) {
     return (
-      <Layout
-        activeItem="buses"
-        pageTitle="Error"
-        pageDescription="Failed to load bus details"
-        role="mot"
-      >
         <div className="max-w-md mx-auto text-center py-12">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
@@ -133,62 +142,11 @@ export default function EditBusPage() {
             </button>
           </div>
         </div>
-      </Layout>
     );
   }
 
   return (
-    <Layout
-      activeItem="buses"
-      pageTitle={`Edit ${bus?.plateNumber || bus?.ntcRegistrationNumber || 'Bus'}`}
-      pageDescription="Update bus registration and operational details"
-      role="mot"
-    >
       <div className="space-y-6">
-        {/* Breadcrumbs */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600">
-          <button 
-            onClick={() => router.push('/mot')}
-            className="hover:text-blue-600 transition-colors"
-          >
-            Home
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <button 
-            onClick={() => router.push('/mot/buses')}
-            className="hover:text-blue-600 transition-colors"
-          >
-            Bus Management
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <button 
-            onClick={() => router.push(`/mot/buses/${busId}`)}
-            className="hover:text-blue-600 transition-colors"
-          >
-            {bus?.plateNumber || bus?.ntcRegistrationNumber || 'Bus Details'}
-          </button>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-gray-900 font-medium">Edit</span>
-        </div>
-
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Edit Bus: {bus?.plateNumber || bus?.ntcRegistrationNumber}
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Update the bus registration and operational details
-            </p>
-          </div>
-          <button
-            onClick={handleCancel}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <X className="w-4 h-4" />
-            Cancel
-          </button>
-        </div>
 
         {/* Error Alert */}
         {error && (
@@ -234,6 +192,5 @@ export default function EditBusPage() {
           </div>
         </div>
       </div>
-    </Layout>
   );
 }
