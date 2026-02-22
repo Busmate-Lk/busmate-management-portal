@@ -484,6 +484,7 @@ export default function BusStopsPage() {
         loading={filterOptionsLoading}
         totalCount={stats.totalStops.count}
         filteredCount={pagination.totalElements}
+        loadedCount={busStops.length}
         onClearAll={handleClearAllFilters}
         onSearch={handleSearch}
       />
@@ -492,8 +493,6 @@ export default function BusStopsPage() {
       <ViewTabs
         activeView={currentView}
         onViewChange={handleViewChange}
-        tableCount={pagination.totalElements}
-        mapCount={pagination.totalElements}
       />
 
       {/* Content based on current view */}
