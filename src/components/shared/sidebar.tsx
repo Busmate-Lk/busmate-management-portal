@@ -104,12 +104,6 @@ export function Sidebar({
       href: '/mot/trips',
     },
     {
-      icon: Truck,
-      label: 'Trip Assignment',
-      active: activeItem === 'trip-assignment',
-      href: '/mot/trip-assignment',
-    },
-    {
       icon: Users,
       label: 'Operator Management',
       active: activeItem === 'operators',
