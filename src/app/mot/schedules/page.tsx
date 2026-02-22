@@ -1,17 +1,17 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { Calendar, FileText, Clock } from 'lucide-react';
+import { AlertCircle, Trash2 } from 'lucide-react';
 import { ScheduleResponse } from '../../../../generated/api-clients/route-management/models/ScheduleResponse';
 import { ScheduleManagementService } from '../../../../generated/api-clients/route-management/services/ScheduleManagementService';
 import { RouteManagementService } from '../../../../generated/api-clients/route-management/services/RouteManagementService';
-import ScheduleAdvancedFilters from '@/components/mot/schedules/ScheduleAdvancedFilters';
+import { ScheduleAdvancedFilters } from '@/components/mot/schedules/ScheduleAdvancedFilters';
 import { ScheduleActionButtons } from '@/components/mot/schedules/ScheduleActionButtons';
 import { ScheduleStatsCards } from '@/components/mot/schedules/ScheduleStatsCards';
 import { SchedulesTable } from '@/components/mot/schedules/SchedulesTable';
-import Pagination from '@/components/shared/Pagination';
+import { DataPagination } from '@/components/shared/DataPagination';
 import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 
 interface QueryParams {
@@ -21,7 +21,6 @@ interface QueryParams {
   sortDir: 'asc' | 'desc';
   search: string;
   routeId?: string;
-  routeGroupId?: string;
   scheduleType?: 'REGULAR' | 'SPECIAL';
   status?: 'PENDING' | 'ACTIVE' | 'INACTIVE' | 'CANCELLED';
   effectiveStartDate?: string;
@@ -45,26 +44,28 @@ export default function SchedulesPage() {
     breadcrumbs: [{ label: 'Schedules' }],
   });
 
+  // ── Data state ──────────────────────────────────────────────────
   const [schedules, setSchedules] = useState<ScheduleResponse[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [filterOptionsLoading, setFilterOptionsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filter states
+  // ── Filter state ─────────────────────────────────────────────────
+  const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [scheduleTypeFilter, setScheduleTypeFilter] = useState('all');
   const [routeFilter, setRouteFilter] = useState('all');
   const [effectiveStartDate, setEffectiveStartDate] = useState('');
   const [effectiveEndDate, setEffectiveEndDate] = useState('');
 
-  // Filter options from API
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     statuses: [],
     scheduleTypes: [],
-    routes: []
+    routes: [],
   });
-  const [filterOptionsLoading, setFilterOptionsLoading] = useState(true);
 
+  // ── Query params ─────────────────────────────────────────────────
   const [queryParams, setQueryParams] = useState<QueryParams>({
     page: 0,
     size: 10,
@@ -73,7 +74,7 @@ export default function SchedulesPage() {
     search: '',
   });
 
-  // Pagination state
+  // ── Pagination state ─────────────────────────────────────────────
   const [pagination, setPagination] = useState({
     currentPage: 0,
     totalPages: 0,
@@ -81,17 +82,17 @@ export default function SchedulesPage() {
     pageSize: 10,
   });
 
-  // Statistics state
+  // ── Stats state ──────────────────────────────────────────────────
   const [stats, setStats] = useState({
-    totalSchedules: { count: 0 },
-    activeSchedules: { count: 0 },
-    inactiveSchedules: { count: 0 },
+    totalSchedules:   { count: 0 },
+    activeSchedules:  { count: 0 },
+    inactiveSchedules:{ count: 0 },
     regularSchedules: { count: 0 },
     specialSchedules: { count: 0 },
-    totalRoutes: { count: 0 }
+    totalRoutes:      { count: 0 },
   });
 
-  // State for delete modal
+  // ── Delete modal ─────────────────────────────────────────────────
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [scheduleToDelete, setScheduleToDelete] = useState<ScheduleResponse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -122,21 +123,23 @@ export default function SchedulesPage() {
     }
   }, []);
 
-  // Load statistics
+  // ── Load statistics ──────────────────────────────────────────────
   const loadStatistics = useCallback(async () => {
     try {
-      const statsResponse = await ScheduleManagementService.getScheduleStatistics();
-
+      setStatsLoading(true);
+      const s = await ScheduleManagementService.getScheduleStatistics();
       setStats({
-        totalSchedules: { count: statsResponse.totalSchedules || 0 },
-        activeSchedules: { count: statsResponse.activeSchedules || 0 },
-        inactiveSchedules: { count: statsResponse.inactiveSchedules || 0 },
-        regularSchedules: { count: statsResponse.regularSchedules || 0 },
-        specialSchedules: { count: statsResponse.specialSchedules || 0 },
-        totalRoutes: { count: statsResponse.totalRoutes || 0 }
+        totalSchedules:   { count: s.totalSchedules   || 0 },
+        activeSchedules:  { count: s.activeSchedules  || 0 },
+        inactiveSchedules:{ count: s.inactiveSchedules|| 0 },
+        regularSchedules: { count: s.regularSchedules || 0 },
+        specialSchedules: { count: s.specialSchedules || 0 },
+        totalRoutes:      { count: s.totalRoutes      || 0 },
       });
     } catch (err) {
       console.error('Error loading statistics:', err);
+    } finally {
+      setStatsLoading(false);
     }
   }, []);
 
@@ -152,10 +155,10 @@ export default function SchedulesPage() {
         queryParams.sortBy,
         queryParams.sortDir,
         queryParams.routeId,
-        queryParams.routeGroupId,
+        undefined,
         queryParams.scheduleType,
         queryParams.status,
-        queryParams.search
+        queryParams.search,
       );
 
       setSchedules(response.content || []);
@@ -189,224 +192,112 @@ export default function SchedulesPage() {
     loadSchedules();
   }, [loadSchedules]);
 
-  // Update query params with filters (optimized to prevent unnecessary updates)
-  const updateQueryParams = useCallback((updates: Partial<QueryParams>) => {
-    setQueryParams(prev => {
-      const newParams = { ...prev, ...updates };
-
-      // Handle explicit undefined values (for clearing filters)
-      Object.keys(updates).forEach(key => {
-        if (updates[key as keyof QueryParams] === undefined) {
-          delete newParams[key as keyof QueryParams];
-        }
-      });
-
-      // Convert current filter states to API parameters (only if not explicitly overridden)
-      if (!('status' in updates)) {
-        if (statusFilter !== 'all') {
-          newParams.status = statusFilter as 'PENDING' | 'ACTIVE' | 'INACTIVE' | 'CANCELLED';
-        } else {
-          delete newParams.status;
-        }
-      }
-
-      if (!('scheduleType' in updates)) {
-        if (scheduleTypeFilter !== 'all') {
-          newParams.scheduleType = scheduleTypeFilter as 'REGULAR' | 'SPECIAL';
-        } else {
-          delete newParams.scheduleType;
-        }
-      }
-
-      if (!('routeId' in updates)) {
-        if (routeFilter !== 'all') {
-          newParams.routeId = routeFilter;
-        } else {
-          delete newParams.routeId;
-        }
-      }
-
-      if (!('effectiveStartDate' in updates)) {
-        if (effectiveStartDate) {
-          newParams.effectiveStartDate = effectiveStartDate;
-        } else {
-          delete newParams.effectiveStartDate;
-        }
-      }
-
-      if (!('effectiveEndDate' in updates)) {
-        if (effectiveEndDate) {
-          newParams.effectiveEndDate = effectiveEndDate;
-        } else {
-          delete newParams.effectiveEndDate;
-        }
-      }
-
-      // Only update if something actually changed
-      const hasChanges = Object.keys(newParams).some(key => {
-        const typedKey = key as keyof QueryParams;
-        return newParams[typedKey] !== prev[typedKey];
-      }) || Object.keys(prev).some(key => {
-        const typedKey = key as keyof QueryParams;
-        return prev[typedKey] !== newParams[typedKey];
-      });
-
-      return hasChanges ? newParams : prev;
-    });
-  }, [statusFilter, scheduleTypeFilter, routeFilter, effectiveStartDate, effectiveEndDate]);
-
-  // Apply filters when they change (with debounce for better UX)
+  // ── Filter change effects ───────────────────────────────────────────
   useEffect(() => {
     const timer = setTimeout(() => {
-      updateQueryParams({ page: 0 });
-    }, 300); // Short debounce for filter changes
-
+      setQueryParams((prev) => {
+        const next = { ...prev, page: 0, search: searchTerm };
+        if (statusFilter !== 'all') next.status = statusFilter as any; else delete next.status;
+        if (scheduleTypeFilter !== 'all') next.scheduleType = scheduleTypeFilter as any; else delete next.scheduleType;
+        if (routeFilter !== 'all') next.routeId = routeFilter; else delete next.routeId;
+        if (effectiveStartDate) next.effectiveStartDate = effectiveStartDate; else delete next.effectiveStartDate;
+        if (effectiveEndDate) next.effectiveEndDate = effectiveEndDate; else delete next.effectiveEndDate;
+        return next;
+      });
+    }, 300);
     return () => clearTimeout(timer);
-  }, [statusFilter, scheduleTypeFilter, routeFilter, effectiveStartDate, effectiveEndDate, updateQueryParams]);
+  }, [statusFilter, scheduleTypeFilter, routeFilter, effectiveStartDate, effectiveEndDate, searchTerm]);
 
-  const handleSearch = (searchTerm: string) => {
-    setSearchTerm(searchTerm);
-    updateQueryParams({ search: searchTerm, page: 0 });
+  // ── Event handlers ──────────────────────────────────────────────
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    setQueryParams((prev) => ({ ...prev, search: term, page: 0 }));
   };
 
   const handleSort = (sortBy: string, sortDir: 'asc' | 'desc') => {
-    updateQueryParams({ sortBy, sortDir, page: 0 });
+    setQueryParams((prev) => ({ ...prev, sortBy, sortDir, page: 0 }));
   };
 
   const handlePageChange = (page: number) => {
-    updateQueryParams({ page });
+    setQueryParams((prev) => ({ ...prev, page }));
   };
 
   const handlePageSizeChange = (size: number) => {
-    updateQueryParams({ size, page: 0 });
+    setQueryParams((prev) => ({ ...prev, size, page: 0 }));
   };
 
   const handleClearAllFilters = useCallback(() => {
-    // Clear all filter states
     setSearchTerm('');
     setStatusFilter('all');
     setScheduleTypeFilter('all');
     setRouteFilter('all');
     setEffectiveStartDate('');
     setEffectiveEndDate('');
-    
-    // Immediately update query params to clear all filters and trigger new API call
-    setQueryParams(prev => {
-      const newParams = {
-        ...prev,
-        search: '',
-        page: 0
-      };
-      
-      // Remove all filter-related parameters
-      delete newParams.status;
-      delete newParams.scheduleType;
-      delete newParams.routeId;
-      delete newParams.routeGroupId;
-      delete newParams.effectiveStartDate;
-      delete newParams.effectiveEndDate;
-      
-      return newParams;
-    });
+    setQueryParams((prev) => ({
+      page: 0,
+      size: prev.size,
+      sortBy: prev.sortBy,
+      sortDir: prev.sortDir,
+      search: '',
+    }));
   }, []);
 
-  const handleAddNewSchedule = () => {
-    router.push('/mot/schedules/add-new');
-  };
-
-  const handleImportSchedules = () => {
-    router.push('/mot/schedules/import');
-  };
+  const handleAddNewSchedule  = () => router.push('/mot/schedules/add-new');
+  const handleImportSchedules = () => router.push('/mot/schedules/import');
 
   const handleExportAll = async () => {
     try {
-      // Get all schedules for export
-      const allSchedules = await ScheduleManagementService.getAllSchedules();
-
-      if (!allSchedules || allSchedules.length === 0) {
-        toast.error('No schedules to export');
-        return;
-      }
-
-      // Create CSV content
+      const all = await ScheduleManagementService.getAllSchedules();
+      if (!all || all.length === 0) { toast.error('No schedules to export'); return; }
       const headers = ['Name', 'Route', 'Type', 'Status', 'Effective Start', 'Effective End', 'Created At'];
-      const csvContent = [
-        headers.join(','),
-        ...allSchedules.map(schedule => [
-          `"${schedule.name || ''}"`,
-          `"${schedule.routeName || ''}"`,
-          `"${schedule.scheduleType || ''}"`,
-          `"${schedule.status || ''}"`,
-          `"${schedule.effectiveStartDate || ''}"`,
-          `"${schedule.effectiveEndDate || ''}"`,
-          `"${schedule.createdAt || ''}"`
-        ].join(','))
-      ].join('\n');
-
-      // Download file
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `schedules_export_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast.success(`Exported ${allSchedules.length} schedules successfully`);
-    } catch (error) {
-      console.error('Export error:', error);
+      const rows = all.map((s) =>
+        [s.name, s.routeName, s.scheduleType, s.status, s.effectiveStartDate, s.effectiveEndDate, s.createdAt]
+          .map((v) => `"${v || ''}"`).join(',')
+      );
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = `schedules_export_${new Date().toISOString().split('T')[0]}.csv`;
+      a.style.visibility = 'hidden';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${all.length} schedules successfully`);
+    } catch {
       toast.error('Failed to export schedules');
     }
   };
 
-  const handleView = (scheduleId: string) => {
-    router.push(`/mot/schedules/${scheduleId}`);
+  const handleView        = (id: string) => router.push(`/mot/schedules/${id}`);
+  const handleEdit        = (id: string) => router.push(`/mot/schedules/${id}/edit`);
+  const handleAssignBuses = (id: string) => router.push(`/mot/schedules/${id}/assign-buses`);
+
+  const handleDelete = (id: string) => {
+    const s = schedules.find((x) => x.id === id);
+    if (s) { setScheduleToDelete(s); setShowDeleteModal(true); }
   };
 
-  const handleEdit = (scheduleId: string) => {
-    router.push(`/mot/schedules/${scheduleId}/edit`);
-  };
-
-  const handleAssignBuses = (scheduleId: string, routeName: string) => {
-    router.push(`/mot/schedules/${scheduleId}/assign-buses`);
-  };
-
-  const handleDelete = (scheduleId: string, scheduleName: string) => {
-    const schedule = schedules.find(s => s.id === scheduleId);
-    if (schedule) {
-      setScheduleToDelete(schedule);
-      setShowDeleteModal(true);
-    }
-  };
-
-  const handleDeleteCancel = () => {
-    setShowDeleteModal(false);
-    setScheduleToDelete(null);
-  };
+  const handleDeleteCancel = () => { setShowDeleteModal(false); setScheduleToDelete(null); };
 
   const handleDeleteConfirm = async () => {
     if (!scheduleToDelete?.id) return;
-
     try {
       setIsDeleting(true);
       await ScheduleManagementService.deleteSchedule(scheduleToDelete.id);
-
       toast.success(`Schedule "${scheduleToDelete.name}" deleted successfully`);
-
-      // Reload data
       await Promise.all([loadSchedules(), loadStatistics()]);
-
       handleDeleteCancel();
-    } catch (error) {
-      console.error('Delete error:', error);
+    } catch {
       toast.error('Failed to delete schedule');
     } finally {
       setIsDeleting(false);
     }
   };
 
+  // ── Page actions ───────────────────────────────────────────────
   useSetPageActions(
     <ScheduleActionButtons
       onAddSchedule={handleAddNewSchedule}
@@ -416,142 +307,116 @@ export default function SchedulesPage() {
     />
   );
 
-  if (isLoading && schedules.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading schedules...</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  // ── Render ────────────────────────────────────────────────────
   return (
-      <div className="space-y-6">
-          {/* Statistics Cards */}
-          <div className="mb-8">
-            <ScheduleStatsCards stats={stats} />
-          </div>
+    <div className="space-y-6">
+      {/* Stats */}
+      <ScheduleStatsCards stats={stats} loading={statsLoading} />
 
-          {/* Advanced Filters */}
-          <div className="mb-6">
-            <ScheduleAdvancedFilters
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              statusFilter={statusFilter}
-              setStatusFilter={setStatusFilter}
-              scheduleTypeFilter={scheduleTypeFilter}
-              setScheduleTypeFilter={setScheduleTypeFilter}
-              routeFilter={routeFilter}
-              setRouteFilter={setRouteFilter}
-              effectiveStartDate={effectiveStartDate}
-              setEffectiveStartDate={setEffectiveStartDate}
-              effectiveEndDate={effectiveEndDate}
-              setEffectiveEndDate={setEffectiveEndDate}
-              filterOptions={filterOptions}
-              loading={filterOptionsLoading}
-              totalCount={pagination.totalElements}
-              filteredCount={schedules.length}
-              onSearch={handleSearch}
-              onClearAll={handleClearAllFilters}
-            />
-          </div>
+      {/* Search & Filters */}
+      <ScheduleAdvancedFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        scheduleTypeFilter={scheduleTypeFilter}
+        setScheduleTypeFilter={setScheduleTypeFilter}
+        routeFilter={routeFilter}
+        setRouteFilter={setRouteFilter}
+        effectiveStartDate={effectiveStartDate}
+        setEffectiveStartDate={setEffectiveStartDate}
+        effectiveEndDate={effectiveEndDate}
+        setEffectiveEndDate={setEffectiveEndDate}
+        filterOptions={filterOptions}
+        loading={filterOptionsLoading}
+        totalCount={pagination.totalElements}
+        filteredCount={schedules.length}
+        onSearch={handleSearch}
+        onClearAll={handleClearAllFilters}
+      />
 
-          {/* Schedules Table */}
-          <div className="bg-white rounded-lg shadow">
-            <SchedulesTable
-              schedules={schedules}
-              onView={handleView}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onAssignBuses={handleAssignBuses}
-              onSort={handleSort}
-              activeFilters={{
-                search: searchTerm,
-                status: statusFilter !== 'all' ? statusFilter : undefined,
-                scheduleType: scheduleTypeFilter !== 'all' ? scheduleTypeFilter : undefined,
-                route: routeFilter !== 'all' ? routeFilter : undefined,
-                effectiveStartDate,
-                effectiveEndDate
-              }}
+      {/* Error */}
+      {error && (
+        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          {error}
+        </div>
+      )}
+
+      {/* Table + Pagination */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <SchedulesTable
+          schedules={schedules}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onAssignBuses={handleAssignBuses}
+          onSort={handleSort}
+          activeFilters={{
+            search:            searchTerm,
+            status:            statusFilter !== 'all' ? statusFilter : undefined,
+            scheduleType:      scheduleTypeFilter !== 'all' ? scheduleTypeFilter : undefined,
+            route:             routeFilter !== 'all' ? routeFilter : undefined,
+            effectiveStartDate,
+            effectiveEndDate,
+          }}
+          loading={isLoading}
+          currentSort={{ field: queryParams.sortBy, direction: queryParams.sortDir }}
+        />
+
+        {pagination.totalElements > 0 && (
+          <div className="border-t border-gray-100">
+            <DataPagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              totalElements={pagination.totalElements}
+              pageSize={pagination.pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
               loading={isLoading}
-              currentSort={{ field: queryParams.sortBy, direction: queryParams.sortDir }}
+              pageSizeOptions={[5, 10, 25, 50, 100]}
             />
-
-          {/* Pagination */}
-          {pagination.totalElements > 0 && (
-            <div className="bg-white shadow px-2 py-0">
-              <Pagination
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                totalElements={pagination.totalElements}
-                pageSize={pagination.pageSize}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-                loading={isLoading}
-              />
-            </div>
-          )}
-          </div>
-
-          {/* Error Display */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <div className="flex items-center">
-                <FileText className="w-5 h-5 text-red-600 mr-2" />
-                <p className="text-red-800">{error}</p>
-              </div>
-            </div>
-          )}
-        
-
-        {/* Delete Confirmation Modal */}
-        {showDeleteModal && scheduleToDelete && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-              <div className="flex items-center mb-4">
-                <div className="shrink-0">
-                  <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                    <Clock className="w-6 h-6 text-red-600" />
-                  </div>
-                </div>
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900">Delete Schedule</h3>
-                  <p className="text-sm text-gray-500">This action cannot be undone</p>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <p className="text-sm text-gray-700">
-                  Are you sure you want to delete schedule "{scheduleToDelete.name}"?
-                  This will permanently remove the schedule and all associated data.
-                </p>
-              </div>
-
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={handleDeleteCancel}
-                  disabled={isDeleting}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteConfirm}
-                  disabled={isDeleting}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50"
-                >
-                  {isDeleting ? 'Deleting...' : 'Delete Schedule'}
-                </button>
-              </div>
-            </div>
           </div>
         )}
       </div>
+
+      {/* Delete modal */}
+      {showDeleteModal && scheduleToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white shadow-xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-gray-900">Delete Schedule</h3>
+                <p className="text-xs text-gray-500">This action cannot be undone.</p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-700 mb-6">
+              Are you sure you want to delete{' '}
+              <span className="font-medium text-gray-900">&quot;{scheduleToDelete.name}&quot;</span>?
+              All associated data will be permanently removed.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={handleDeleteCancel}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Schedule'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
