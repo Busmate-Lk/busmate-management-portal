@@ -325,39 +325,9 @@ export default function BusStopsPage() {
     }
   };
 
-  // Get filtered bus stops for map view
-  const filteredMapBusStops = useMemo(() => {
-    if (currentView !== 'map') return [];
-    
-    let filtered = allBusStops;
-
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter(stop =>
-        stop.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        stop.location?.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        stop.location?.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        stop.location?.state?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Apply state filter
-    if (stateFilter !== 'all') {
-      filtered = filtered.filter(stop => stop.location?.state === stateFilter);
-    }
-
-    // Apply accessibility filter
-    if (accessibilityFilter !== 'all') {
-      const isAccessible = accessibilityFilter === 'accessible';
-      filtered = filtered.filter(stop => stop.isAccessible === isAccessible);
-    }
-
-    return filtered;
-  }, [currentView, allBusStops, searchTerm, stateFilter, accessibilityFilter]);
-
-  // Get filtered and paginated bus stops for table view
+  // Get filtered and paginated bus stops — shared between table AND map views
   const filteredTableData = useMemo(() => {
-    if (currentView !== 'table') return { data: [], totalElements: 0, totalPages: 0 };
+    if (!allBusStops.length) return { data: [], totalElements: 0, totalPages: 0 };
     
     const needsClientSideFiltering = queryParams.search || stateFilter !== 'all' || accessibilityFilter !== 'all';
     
@@ -444,17 +414,17 @@ export default function BusStopsPage() {
       totalElements,
       totalPages
     };
-  }, [currentView, allBusStops, searchTerm, stateFilter, accessibilityFilter, queryParams, stats.totalStops.count]);
+  }, [allBusStops, searchTerm, stateFilter, accessibilityFilter, queryParams, stats.totalStops.count]);
 
-  // Update busStops and pagination based on current view
-  const busStops = currentView === 'table' ? filteredTableData.data : [];
+  // Both table and map use the same paginated slice
+  const busStops = filteredTableData.data;
   
   const pagination = useMemo(() => ({
     currentPage: queryParams.page,
-    totalPages: currentView === 'table' ? filteredTableData.totalPages : 0,
-    totalElements: currentView === 'table' ? filteredTableData.totalElements : 0,
+    totalPages: filteredTableData.totalPages,
+    totalElements: filteredTableData.totalElements,
     pageSize: queryParams.size,
-  }), [queryParams.page, queryParams.size, currentView, filteredTableData]);
+  }), [queryParams.page, queryParams.size, filteredTableData]);
 
   const currentSort = {
     field: queryParams.sortBy,
@@ -513,7 +483,7 @@ export default function BusStopsPage() {
         filterOptions={filterOptions}
         loading={filterOptionsLoading}
         totalCount={stats.totalStops.count}
-        filteredCount={currentView === 'table' ? pagination.totalElements : filteredMapBusStops.length}
+        filteredCount={pagination.totalElements}
         onClearAll={handleClearAllFilters}
         onSearch={handleSearch}
       />
@@ -523,7 +493,7 @@ export default function BusStopsPage() {
         activeView={currentView}
         onViewChange={handleViewChange}
         tableCount={pagination.totalElements}
-        mapCount={filteredMapBusStops.length}
+        mapCount={pagination.totalElements}
       />
 
       {/* Content based on current view */}
@@ -551,11 +521,25 @@ export default function BusStopsPage() {
           />
         </div>
       ) : (
-        <BusStopsMapView
-          busStops={filteredMapBusStops}
-          loading={isLoading}
-          onDelete={(stop: StopResponse) => handleDeleteClick(stop.id!, stop.name || 'Unknown')}
-        />
+        <div className="space-y-3">
+          <BusStopsMapView
+            busStops={busStops}
+            loading={isLoading}
+            onDelete={(stop: StopResponse) => handleDeleteClick(stop.id!, stop.name || 'Unknown')}
+          />
+          {/* Shared pagination — keeps map and table in sync */}
+          <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+            <BusStopPagination
+              currentPage={pagination.currentPage}
+              totalPages={pagination.totalPages}
+              totalElements={pagination.totalElements}
+              pageSize={pagination.pageSize}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+              loading={isLoading}
+            />
+          </div>
+        </div>
       )}
 
       {/* Delete Confirmation Modal */}

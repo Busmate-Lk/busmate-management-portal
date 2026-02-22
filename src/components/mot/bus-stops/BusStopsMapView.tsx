@@ -2,18 +2,16 @@
 
 import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  MapPin, 
-  Eye, 
-  Edit, 
-  Trash2, 
-  ZoomIn, 
-  ZoomOut, 
+import {
+  ZoomIn,
+  ZoomOut,
   RotateCcw,
   Locate,
-  AlertTriangle
+  AlertTriangle,
 } from 'lucide-react';
 import type { StopResponse } from '../../../../generated/api-clients/route-management';
+
+/* ─── Props ─────────────────────────────────────────────────────────────── */
 
 interface BusStopsMapViewProps {
   busStops: StopResponse[];
@@ -21,462 +19,477 @@ interface BusStopsMapViewProps {
   onDelete?: (busStop: StopResponse) => void;
 }
 
-// Custom marker colors for accessibility status
-const ACCESSIBLE_MARKER_COLOR = '#10B981'; // Green
-const NOT_ACCESSIBLE_MARKER_COLOR = '#EF4444'; // Red
-const DEFAULT_MARKER_COLOR = '#6B7280'; // Gray
+/* ─── Constants ─────────────────────────────────────────────────────────── */
 
-// Map configuration
-const DEFAULT_CENTER = { lat: 7.8731, lng: 80.7718 }; // Sri Lanka center
-const DEFAULT_ZOOM = 8;
-const CLUSTER_ZOOM = 12;
+const MARKER_COLORS = {
+  accessible:    { fill: '#10B981', stroke: '#059669' },
+  nonAccessible: { fill: '#EF4444', stroke: '#DC2626' },
+  unknown:       { fill: '#6B7280', stroke: '#4B5563' },
+} as const;
+
+const DEFAULT_CENTER  = { lat: 7.8731, lng: 80.7718 }; // Sri Lanka
+const DEFAULT_ZOOM    = 8;
+const MAX_DETAIL_ZOOM = 14;
+
+const LEGEND_ITEMS = [
+  { color: '#10B981', label: 'Accessible' },
+  { color: '#EF4444', label: 'Not Accessible' },
+  { color: '#6B7280', label: 'Unknown' },
+];
+
+/* ─── Helpers ────────────────────────────────────────────────────────────── */
+
+/** Build a data-URI for a teardrop SVG pin marker */
+function pinSvgUri(fill: string, stroke: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="36" viewBox="0 0 28 36">
+    <path d="M14 0C6.268 0 0 6.268 0 14c0 9.333 14 22 14 22S28 23.333 28 14C28 6.268 21.732 0 14 0z"
+          fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>
+    <circle cx="14" cy="14" r="5.5" fill="white" opacity="0.92"/>
+  </svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+/** Build an enlarged SVG pin for the active / selected marker */
+function pinActiveSvgUri(fill: string, stroke: string): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 34 44">
+    <path d="M17 0C7.611 0 0 7.611 0 17c0 11.375 17 27 17 27S34 28.375 34 17C34 7.611 26.389 0 17 0z"
+          fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>
+    <circle cx="17" cy="17" r="6.5" fill="white" opacity="0.92"/>
+  </svg>`;
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
+/** Collapse location fields into a single readable string */
+function formatLocation(location: StopResponse['location']): string {
+  if (!location) return 'No address';
+  return [location.address, location.city, location.state].filter(Boolean).join(', ') || 'No address';
+}
+
+/** Build the HTML string rendered inside a Google Maps InfoWindow */
+function buildInfoWindowContent(stop: StopResponse): string {
+  const loc  = stop.location;
+  const addr = formatLocation(loc);
+  const lat  = loc?.latitude  != null ? Number(loc.latitude).toFixed(5)  : '—';
+  const lng  = loc?.longitude != null ? Number(loc.longitude).toFixed(5) : '—';
+
+  const badge =
+    stop.isAccessible === true
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#dcfce7;color:#15803d;
+              padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;">✓&nbsp;Accessible</span>`
+      : stop.isAccessible === false
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#fee2e2;color:#b91c1c;
+              padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;">✗&nbsp;Not Accessible</span>`
+      : `<span style="display:inline-flex;align-items:center;gap:4px;background:#f3f4f6;color:#6b7280;
+              padding:3px 9px;border-radius:999px;font-size:11px;font-weight:600;">?&nbsp;Unknown</span>`;
+
+  return `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+                min-width:220px;max-width:280px;padding:2px 2px 0;">
+      <p style="font-size:14px;font-weight:700;color:#111827;margin:0 0 7px;line-height:1.35;">
+        ${stop.name ?? 'Unnamed Stop'}
+      </p>
+      ${badge}
+      <div style="margin:10px 0 4px;font-size:12px;color:#6b7280;line-height:1.55;">
+        <div style="display:flex;gap:5px;align-items:flex-start;margin-bottom:2px;">
+          <span style="margin-top:1px;">📍</span>
+          <span>${addr}</span>
+        </div>
+        <div style="font-size:11px;color:#9ca3af;padding-left:20px;">${lat}, ${lng}</div>
+      </div>
+      <div style="height:1px;background:#f3f4f6;margin:10px 0;"></div>
+      <div style="display:flex;gap:6px;">
+        <button
+          onclick="window.busStopMapActions?.viewDetails('${stop.id}')"
+          style="flex:1;padding:7px 0;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;
+                 border:1px solid #e5e7eb;background:#fff;color:#374151;"
+          onmouseover="this.style.background='#f9fafb'"
+          onmouseout="this.style.background='#fff'"
+        >View Details</button>
+        <button
+          onclick="window.busStopMapActions?.editStop('${stop.id}')"
+          style="flex:1;padding:7px 0;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;
+                 border:none;background:#2563eb;color:#fff;"
+          onmouseover="this.style.background='#1d4ed8'"
+          onmouseout="this.style.background='#2563eb'"
+        >Edit</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ─── Global action bridge ───────────────────────────────────────────────── */
 
 declare global {
   interface Window {
     google: typeof google;
     busStopMapActions?: {
       viewDetails: (id: string) => void;
-      editStop: (id: string) => void;
-      deleteStop: (id: string) => void;
+      editStop:    (id: string) => void;
     };
   }
 }
 
-export function BusStopsMapView({ 
-  busStops, 
-  loading, 
-  onDelete 
-}: BusStopsMapViewProps) {
+/* ─── Component ──────────────────────────────────────────────────────────── */
+
+/** Return the marker icon config for a given stop and active state */
+function buildMarkerIcon(
+  stop: StopResponse,
+  active: boolean,
+): { url: string; scaledSize: google.maps.Size; anchor: google.maps.Point } {
+  const cfg =
+    stop.isAccessible === true
+      ? MARKER_COLORS.accessible
+      : stop.isAccessible === false
+      ? MARKER_COLORS.nonAccessible
+      : MARKER_COLORS.unknown;
+  const uri    = active ? pinActiveSvgUri(cfg.fill, cfg.stroke) : pinSvgUri(cfg.fill, cfg.stroke);
+  const [w, h] = active ? [34, 44] : [28, 36];
+  return {
+    url:        uri,
+    scaledSize: new window.google.maps.Size(w, h),
+    anchor:     new window.google.maps.Point(w / 2, h),
+  };
+}
+
+export function BusStopsMapView({ busStops, loading, onDelete }: BusStopsMapViewProps) {
   const router = useRouter();
-  const mapRef = useRef<HTMLDivElement>(null);
-  const googleMapRef = useRef<google.maps.Map | null>(null);
-  const markersRef = useRef<google.maps.Marker[]>([]);
-  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
-  const markerClustererRef = useRef<any>(null);
 
+  /* refs */
+  const mapRef          = useRef<HTMLDivElement>(null);
+  const googleMapRef    = useRef<google.maps.Map | null>(null);
+  const markersRef      = useRef<google.maps.Marker[]>([]);
+  const infoWindowRef   = useRef<google.maps.InfoWindow | null>(null);
+  const activeMarkerRef = useRef<google.maps.Marker | null>(null);
+
+  /* state */
   const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [mapError, setMapError] = useState<string | null>(null);
-  const [selectedBusStop, setSelectedBusStop] = useState<StopResponse | null>(null);
+  const [mapError,    setMapError]    = useState<string | null>(null);
 
-  // Filter bus stops that have valid coordinates
-  const validBusStops = useMemo(() => {
-    return busStops.filter(stop => 
-      stop.location?.latitude && 
-      stop.location?.longitude &&
-      !isNaN(Number(stop.location.latitude)) &&
-      !isNaN(Number(stop.location.longitude))
-    );
-  }, [busStops]);
+  /* derived */
+  const validBusStops = useMemo(
+    () =>
+      busStops.filter(
+        (s) =>
+          s.location?.latitude  != null &&
+          s.location?.longitude != null &&
+          !isNaN(Number(s.location.latitude)) &&
+          !isNaN(Number(s.location.longitude)),
+      ),
+    [busStops],
+  );
 
-  // Calculate map bounds to fit all bus stops
+  const invalidCount = busStops.length - validBusStops.length;
+
+  /* ── compute bounds ──────────────────────────────────────────────────────── */
   const getMapBounds = useCallback(() => {
-    if (validBusStops.length === 0) return null;
-
+    if (validBusStops.length === 0 || typeof window === 'undefined' || !window.google) return null;
     const bounds = new window.google.maps.LatLngBounds();
-    validBusStops.forEach(stop => {
-      if (stop.location?.latitude && stop.location?.longitude) {
-        bounds.extend(new window.google.maps.LatLng(
-          stop.location.latitude, 
-          stop.location.longitude
-        ));
-      }
+    validBusStops.forEach((s) => {
+      bounds.extend(
+        new window.google.maps.LatLng(
+          Number(s.location!.latitude),
+          Number(s.location!.longitude),
+        ),
+      );
     });
     return bounds;
   }, [validBusStops]);
 
-  // Initialize Google Maps
+  /* ── initialise Google Maps once ─────────────────────────────────────────── */
   useEffect(() => {
-    const initializeMap = async () => {
-      try {
-        // Check if Google Maps is already loaded
-        if (typeof window.google !== 'undefined') {
-          createMap();
-          return;
-        }
-
-        // Load Google Maps API
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=geometry`;
-        script.async = true;
-        script.defer = true;
-        script.onload = () => createMap();
-        script.onerror = () => setMapError('Failed to load Google Maps');
-        document.head.appendChild(script);
-      } catch (error) {
-        console.error('Error initializing map:', error);
-        setMapError('Failed to initialize map');
-      }
-    };
-
     const createMap = () => {
       if (!mapRef.current || !window.google) return;
-
       try {
         const map = new window.google.maps.Map(mapRef.current, {
           center: DEFAULT_CENTER,
           zoom: DEFAULT_ZOOM,
           styles: [
-            {
-              featureType: 'poi',
-              elementType: 'labels',
-              stylers: [{ visibility: 'off' }]
-            }
+            { featureType: 'poi',     elementType: 'labels', stylers: [{ visibility: 'off' }] },
+            { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'simplified' }] },
           ],
-          mapTypeControl: false,
+          mapTypeControl:    false,
           streetViewControl: false,
-          fullscreenControl: true,
-          zoomControl: false, // We'll use custom controls
+          fullscreenControl: false,
+          zoomControl:       false,
+          gestureHandling:  'greedy',
+          clickableIcons:    false,
         });
 
-        googleMapRef.current = map;
+        googleMapRef.current  = map;
+        infoWindowRef.current = new window.google.maps.InfoWindow({ maxWidth: 300 });
 
-        // Create info window
-        infoWindowRef.current = new window.google.maps.InfoWindow({
-          maxWidth: 300,
+        // Dismiss the popup when clicking blank map area
+        map.addListener('click', () => {
+          infoWindowRef.current?.close();
+          if (activeMarkerRef.current) {
+            const prevTitle = activeMarkerRef.current.getTitle();
+            const prev = markersRef.current.find((m) => m.getTitle() === prevTitle);
+            if (prev) {
+              const prevStop = validBusStops.find((s) => s.name === prevTitle);
+              if (prevStop) prev.setIcon(buildMarkerIcon(prevStop, false));
+            }
+            activeMarkerRef.current = null;
+          }
         });
 
         setIsMapLoaded(true);
-      } catch (error) {
-        console.error('Error creating map:', error);
-        setMapError('Failed to create map');
+      } catch {
+        setMapError('Failed to create the map. Please refresh the page.');
       }
     };
 
-    initializeMap();
-
-    // Cleanup
-    return () => {
-      if (markerClustererRef.current) {
-        markerClustererRef.current.clearMarkers();
+    if (typeof window !== 'undefined' && typeof window.google !== 'undefined') {
+      createMap();
+    } else {
+      const existing = document.querySelector('script[src*="maps.googleapis.com"]');
+      if (existing) {
+        existing.addEventListener('load', createMap);
+      } else {
+        const script    = document.createElement('script');
+        script.src      = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=geometry`;
+        script.async    = true;
+        script.defer    = true;
+        script.onload   = createMap;
+        script.onerror  = () => setMapError('Google Maps failed to load. Check your API key.');
+        document.head.appendChild(script);
       }
-      markersRef.current.forEach(marker => marker.setMap(null));
+    }
+
+    return () => {
+      markersRef.current.forEach((m) => m.setMap(null));
       markersRef.current = [];
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Create markers for bus stops
+  /* ── refresh markers whenever the stops list changes ────────────────────── */
   useEffect(() => {
     if (!isMapLoaded || !googleMapRef.current || !window.google) return;
 
-    // Clear existing markers
-    if (markerClustererRef.current) {
-      markerClustererRef.current.clearMarkers();
-    }
-    markersRef.current.forEach(marker => marker.setMap(null));
+    // Close any open popup and reset active marker
+    infoWindowRef.current?.close();
+    activeMarkerRef.current = null;
+
+    // Remove old markers
+    markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
 
-    // Create new markers
-    const newMarkers = validBusStops.map(stop => {
-      if (!stop.location?.latitude || !stop.location?.longitude) return null;
+    if (validBusStops.length === 0) return;
 
-      const position = new window.google.maps.LatLng(
-        stop.location.latitude,
-        stop.location.longitude
-      );
-
-      const markerColor = stop.isAccessible === true 
-        ? ACCESSIBLE_MARKER_COLOR 
-        : stop.isAccessible === false 
-        ? NOT_ACCESSIBLE_MARKER_COLOR 
-        : DEFAULT_MARKER_COLOR;
-
+    // Create markers
+    const newMarkers = validBusStops.map((stop) => {
       const marker = new window.google.maps.Marker({
-        position,
-        map: googleMapRef.current,
-        title: stop.name || 'Unnamed Stop',
-        icon: {
-          path: window.google.maps.SymbolPath.CIRCLE,
-          scale: 8,
-          fillColor: markerColor,
-          fillOpacity: 1,
-          strokeWeight: 2,
-          strokeColor: '#ffffff',
+        position: {
+          lat: Number(stop.location!.latitude),
+          lng: Number(stop.location!.longitude),
         },
+        map:       googleMapRef.current,
+        title:     stop.name ?? 'Unnamed Stop',
+        icon:      buildMarkerIcon(stop, false),
+        optimized: false,
       });
 
-      // Add click listener to show info window
       marker.addListener('click', () => {
-        showInfoWindow(marker, stop);
-        setSelectedBusStop(stop);
+        if (!infoWindowRef.current) return;
+
+        // Reset the previously active marker icon
+        if (activeMarkerRef.current && activeMarkerRef.current !== marker) {
+          const prevTitle = activeMarkerRef.current.getTitle();
+          const prevStop  = validBusStops.find((s) => s.name === prevTitle);
+          if (prevStop) activeMarkerRef.current.setIcon(buildMarkerIcon(prevStop, false));
+        }
+
+        // Elevate this marker visually
+        marker.setIcon(buildMarkerIcon(stop, true));
+        activeMarkerRef.current = marker;
+
+        infoWindowRef.current.setContent(buildInfoWindowContent(stop));
+        infoWindowRef.current.open(googleMapRef.current, marker);
       });
 
       return marker;
-    }).filter(Boolean) as google.maps.Marker[];
+    });
 
     markersRef.current = newMarkers;
 
-    // Initialize marker clusterer if there are many markers
-    if (newMarkers.length > 10) {
-      // Note: You'll need to install @googlemaps/markerclusterer if not already installed
-      // markerClustererRef.current = new MarkerClusterer({ markers: newMarkers, map: googleMapRef.current });
+    // Fit the map to the current set of markers
+    const bounds = getMapBounds();
+    if (bounds && googleMapRef.current) {
+      googleMapRef.current.fitBounds(bounds, { top: 60, right: 60, bottom: 80, left: 60 });
+      window.google.maps.event.addListenerOnce(googleMapRef.current, 'bounds_changed', () => {
+        const zoom = googleMapRef.current?.getZoom() ?? 0;
+        if (zoom > MAX_DETAIL_ZOOM) googleMapRef.current!.setZoom(MAX_DETAIL_ZOOM);
+      });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMapLoaded, validBusStops]);
 
-    // Fit map to show all markers
-    if (newMarkers.length > 0) {
-      const bounds = getMapBounds();
-      if (bounds && googleMapRef.current) {
-        googleMapRef.current.fitBounds(bounds);
-        
-        // Set minimum zoom level
-        const listener = window.google.maps.event.addListenerOnce(googleMapRef.current, 'bounds_changed', () => {
-          if (googleMapRef.current && googleMapRef.current.getZoom()! > CLUSTER_ZOOM) {
-            googleMapRef.current.setZoom(CLUSTER_ZOOM);
-          }
-        });
-      }
-    }
-
-  }, [isMapLoaded, validBusStops, getMapBounds]);
-
-  // Show info window for a bus stop
-  const showInfoWindow = (marker: google.maps.Marker, stop: StopResponse) => {
-    if (!infoWindowRef.current) return;
-    
-    const formatLocation = (location: any) => {
-      if (!location) return 'No location';
-      const parts = [];
-      if (location.address) parts.push(location.address);
-      if (location.city) parts.push(location.city);
-      if (location.state) parts.push(location.state);
-      return parts.length > 0 ? parts.join(', ') : 'No address';
-    };
-
-    const accessibilityBadge = stop.isAccessible === true 
-      ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">✓ Accessible</span>'
-      : stop.isAccessible === false
-      ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">✗ Not Accessible</span>'
-      : '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Unknown</span>';
-
-    const content = `
-      <div class="p-4 min-w-[250px]">
-        <h3 class="font-semibold text-lg text-gray-900 mb-2">${stop.name || 'Unnamed Stop'}</h3>
-        
-        <div class="space-y-2 mb-4">
-          <div class="flex items-start gap-2">
-            <svg class="w-4 h-4 text-gray-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            <span class="text-sm text-gray-600">${formatLocation(stop.location)}</span>
-          </div>
-          
-          ${stop.description ? `
-          <div class="flex items-start gap-2">
-            <svg class="w-4 h-4 text-gray-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
-            </svg>
-            <span class="text-sm text-gray-600">${stop.description}</span>
-          </div>
-          ` : ''}
-          
-          <div class="flex items-center gap-2">
-            <span class="text-sm font-medium text-gray-700">Accessibility:</span>
-            ${accessibilityBadge}
-          </div>
-        </div>
-        
-        <div class="flex justify-end space-x-2 pt-2 border-t border-gray-200">
-          <button 
-            onclick="window.busStopMapActions?.viewDetails('${stop.id}')" 
-            class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            View Details
-          </button>
-          <button 
-            onclick="window.busStopMapActions?.editStop('${stop.id}')" 
-            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Edit
-          </button>
-          <button 
-            onclick="window.busStopMapActions?.deleteStop('${stop.id}')" 
-            class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    `;
-
-    infoWindowRef.current.setContent(content);
-    infoWindowRef.current.open(googleMapRef.current, marker);
-  };
-
-  // Map action handlers
+  /* ── wire global action bridge (View Details / Edit popup buttons) ───────── */
   useEffect(() => {
     window.busStopMapActions = {
-      viewDetails: (id: string) => {
-        router.push(`/mot/bus-stops/${id}`);
-      },
-      editStop: (id: string) => {
-        router.push(`/mot/bus-stops/${id}/edit`);
-      },
-      deleteStop: (id: string) => {
-        const stop = busStops.find(s => s.id === id);
-        if (stop && onDelete) {
-          onDelete(stop);
-        }
-      },
+      viewDetails: (id) => router.push(`/mot/bus-stops/${id}`),
+      editStop:    (id) => router.push(`/mot/bus-stops/${id}/edit`),
     };
+    return () => { delete window.busStopMapActions; };
+  }, [router]);
 
-    return () => {
-      delete window.busStopMapActions;
-    };
-  }, [router, busStops, onDelete]);
-
-  // Map control handlers
-  const handleZoomIn = () => {
-    if (googleMapRef.current) {
-      const currentZoom = googleMapRef.current.getZoom() || DEFAULT_ZOOM;
-      googleMapRef.current.setZoom(currentZoom + 1);
-    }
+  /* ── map control handlers ──────────────────────────────────────────────── */
+  const handleZoomIn  = () => {
+    const z = googleMapRef.current?.getZoom() ?? DEFAULT_ZOOM;
+    googleMapRef.current?.setZoom(z + 1);
   };
-
   const handleZoomOut = () => {
-    if (googleMapRef.current) {
-      const currentZoom = googleMapRef.current.getZoom() || DEFAULT_ZOOM;
-      googleMapRef.current.setZoom(currentZoom - 1);
-    }
+    const z = googleMapRef.current?.getZoom() ?? DEFAULT_ZOOM;
+    googleMapRef.current?.setZoom(Math.max(z - 1, 1));
   };
-
-  const handleResetView = () => {
-    if (googleMapRef.current) {
-      const bounds = getMapBounds();
-      if (bounds && validBusStops.length > 0) {
-        googleMapRef.current.fitBounds(bounds);
-      } else {
-        googleMapRef.current.setCenter(DEFAULT_CENTER);
-        googleMapRef.current.setZoom(DEFAULT_ZOOM);
-      }
+  const handleResetView = useCallback(() => {
+    if (!googleMapRef.current) return;
+    const bounds = getMapBounds();
+    if (bounds && validBusStops.length > 0) {
+      googleMapRef.current.fitBounds(bounds, { top: 60, right: 60, bottom: 80, left: 60 });
+    } else {
+      googleMapRef.current.setCenter(DEFAULT_CENTER);
+      googleMapRef.current.setZoom(DEFAULT_ZOOM);
     }
-  };
+  }, [getMapBounds, validBusStops.length]);
 
   const handleFindMyLocation = () => {
     if (!navigator.geolocation) return;
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        if (googleMapRef.current) {
-          const userLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          googleMapRef.current.setCenter(userLocation);
-          googleMapRef.current.setZoom(12);
-        }
-      },
-      () => {
-        console.error('Unable to retrieve your location');
-      }
-    );
+    navigator.geolocation.getCurrentPosition((pos) => {
+      googleMapRef.current?.setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      googleMapRef.current?.setZoom(13);
+    });
   };
 
+  const mapControls = [
+    { icon: <ZoomIn  className="w-4 h-4" />, onClick: handleZoomIn,         title: 'Zoom in'       },
+    { icon: <ZoomOut className="w-4 h-4" />, onClick: handleZoomOut,        title: 'Zoom out'      },
+    { icon: <RotateCcw className="w-4 h-4" />, onClick: handleResetView,    title: 'Reset view'    },
+    { icon: <Locate  className="w-4 h-4" />, onClick: handleFindMyLocation, title: 'My location'   },
+  ];
+
+  /* ── error state ─────────────────────────────────────────────────────────── */
   if (mapError) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-8">
-        <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Map Error</h3>
-          <p className="text-gray-500 mb-4">{mapError}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
-            Retry
-          </button>
+      <div className="bg-white rounded-2xl border border-gray-200 p-16 text-center shadow-sm">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-red-50 mb-4">
+          <AlertTriangle className="w-7 h-7 text-red-400" />
         </div>
+        <h3 className="text-base font-semibold text-gray-900 mb-1">Map Unavailable</h3>
+        <p className="text-sm text-gray-500 mb-5 max-w-sm mx-auto">{mapError}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-5 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+        >
+          Retry
+        </button>
       </div>
     );
   }
 
+  /* ── main render ─────────────────────────────────────────────────────────── */
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden relative">
-      {/* Map Header */}
-      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900">Bus Stops Map</h3>
-            <p className="text-sm text-gray-600">
-              {validBusStops.length} bus stops with valid coordinates
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+
+      {/* ── Map canvas ─────────────────────────────────────────────────── */}
+      <div
+        className="relative"
+        style={{ height: 'calc(100vh - 400px)', minHeight: '480px', maxHeight: '700px' }}
+      >
+        {/* Google Maps mount point */}
+        <div ref={mapRef} className="absolute inset-0" />
+
+        {/* ── Top-left: live stop count badge ──────────────────────── */}
+        {isMapLoaded && !loading && (
+          <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5
+                          bg-white/90 backdrop-blur-sm border border-gray-100
+                          rounded-xl shadow-md px-3 py-1.5 pointer-events-none">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <span className="text-xs font-semibold text-gray-700">
+              {validBusStops.length} {validBusStops.length === 1 ? 'stop' : 'stops'}
+            </span>
+          </div>
+        )}
+
+        {/* ── Top-right: zoom / reset / locate ─────────────────────── */}
+        <div className="absolute top-4 right-4 z-10 flex flex-col gap-1.5">
+          {mapControls.map(({ icon, onClick, title }) => (
+            <button
+              key={title}
+              onClick={onClick}
+              title={title}
+              className="w-9 h-9 bg-white rounded-xl shadow-md border border-gray-100
+                         flex items-center justify-center text-gray-500
+                         hover:text-gray-900 hover:bg-gray-50 hover:shadow-lg
+                         active:scale-95 transition-all duration-150
+                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            >
+              {icon}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Bottom-left: colour legend ────────────────────────────── */}
+        <div className="absolute bottom-4 left-4 z-10
+                        bg-white/90 backdrop-blur-sm border border-gray-100
+                        rounded-xl shadow-md px-3 py-2.5 pointer-events-none">
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">
+            Accessibility
+          </p>
+          <div className="flex flex-col gap-1.5">
+            {LEGEND_ITEMS.map(({ color, label }) => (
+              <div key={label} className="flex items-center gap-2">
+                <span
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  style={{ backgroundColor: color }}
+                />
+                <span className="text-xs text-gray-600 font-medium">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Loading / initialising overlay ────────────────────────── */}
+        {(loading || !isMapLoaded) && (
+          <div className="absolute inset-0 z-20 bg-white/80 backdrop-blur-[2px]
+                          flex flex-col items-center justify-center gap-3">
+            <div className="w-10 h-10 rounded-full border-2 border-blue-100 border-t-blue-600 animate-spin" />
+            <p className="text-sm font-medium text-gray-500">
+              {!isMapLoaded ? 'Loading map…' : 'Updating stops…'}
             </p>
           </div>
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-3 text-xs">
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-green-500 mr-1"></div>
-                <span>Accessible</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-red-500 mr-1"></div>
-                <span>Not Accessible</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-3 h-3 rounded-full bg-gray-500 mr-1"></div>
-                <span>Unknown</span>
-              </div>
+        )}
+
+        {/* ── Empty state: stops exist but none have coords ─────────── */}
+        {isMapLoaded && !loading && busStops.length > 0 && validBusStops.length === 0 && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+            <div className="bg-white/90 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-lg px-8 py-6 text-center">
+              <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-gray-700">No map coordinates</p>
+              <p className="text-xs text-gray-400 mt-1">None of these stops have valid location data.</p>
             </div>
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* Map Container */}
-      <div className="relative">
-        <div ref={mapRef} className="w-full h-96" />
-        
-        {/* Map Controls */}
-        <div className="absolute top-4 right-4 flex flex-col space-y-2">
-          <button
-            onClick={handleZoomIn}
-            className="bg-white p-2 rounded-lg shadow-md hover:bg-gray-50 border border-gray-200"
-            title="Zoom In"
-          >
-            <ZoomIn className="w-4 h-4 text-gray-600" />
-          </button>
-          <button
-            onClick={handleZoomOut}
-            className="bg-white p-2 rounded-lg shadow-md hover:bg-gray-50 border border-gray-200"
-            title="Zoom Out"
-          >
-            <ZoomOut className="w-4 h-4 text-gray-600" />
-          </button>
-          <button
-            onClick={handleResetView}
-            className="bg-white p-2 rounded-lg shadow-md hover:bg-gray-50 border border-gray-200"
-            title="Reset View"
-          >
-            <RotateCcw className="w-4 h-4 text-gray-600" />
-          </button>
-          <button
-            onClick={handleFindMyLocation}
-            className="bg-white p-2 rounded-lg shadow-md hover:bg-gray-50 border border-gray-200"
-            title="Find My Location"
-          >
-            <Locate className="w-4 h-4 text-gray-600" />
-          </button>
-        </div>
-
-        {/* Loading Overlay */}
-        {(loading || !isMapLoaded) && (
-          <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center">
-            <div className="text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <p className="mt-2 text-sm text-gray-600">
-                {!isMapLoaded ? 'Loading map...' : 'Loading bus stops...'}
-              </p>
+        {/* ── Empty state: no stops on this page ───────────────────── */}
+        {isMapLoaded && !loading && busStops.length === 0 && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+            <div className="bg-white/90 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-lg px-8 py-6 text-center">
+              <p className="text-sm font-semibold text-gray-700">No stops on this page</p>
+              <p className="text-xs text-gray-400 mt-1">Try a different page or adjust your filters.</p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Invalid Coordinates Warning */}
-      {busStops.length > validBusStops.length && (
-        <div className="px-6 py-3 bg-yellow-50 border-t border-yellow-200">
-          <div className="flex items-center">
-            <AlertTriangle className="w-4 h-4 text-yellow-600 mr-2" />
-            <span className="text-sm text-yellow-800">
-              {busStops.length - validBusStops.length} bus stops have invalid coordinates and are not shown on the map.
-            </span>
-          </div>
+      {/* ── Warning: stops with missing coordinates ─────────────────────── */}
+      {invalidCount > 0 && (
+        <div className="flex items-center gap-2.5 px-5 py-3 bg-amber-50 border-t border-amber-100">
+          <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+          <p className="text-xs text-amber-700">
+            {invalidCount} {invalidCount === 1 ? 'stop has' : 'stops have'} missing or invalid
+            coordinates and {invalidCount === 1 ? 'is' : 'are'} not shown on the map.
+          </p>
         </div>
       )}
     </div>

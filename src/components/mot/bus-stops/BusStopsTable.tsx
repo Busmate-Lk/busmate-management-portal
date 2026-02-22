@@ -220,7 +220,7 @@ export function BusStopsTable({
                 </td>
 
                 {/* Actions */}
-                <td className="px-4 py-3 text-right whitespace-nowrap">
+                <td className="px-4 py-3 text-center whitespace-nowrap">
                   <div className="inline-flex items-center gap-1">
                     <button
                       onClick={() => onView(stop.id!)}
@@ -305,7 +305,7 @@ function TableHeader({
         {th('Accessibility', 'isAccessible')}
         {th('Description')}
         {th('Created', 'createdAt')}
-        <th scope="col" className="px-4 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-right">
+        <th scope="col" className="px-4 py-3 text-[11px] font-semibold text-gray-500 uppercase tracking-wider text-center">
           Actions
         </th>
       </tr>
