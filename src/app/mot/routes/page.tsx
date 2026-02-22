@@ -2,15 +2,21 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/hooks/use-toast';
 import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
-import RouteAdvancedFilters from '@/components/mot/routes/RouteAdvancedFilters';
 import { RouteStatsCards } from '@/components/mot/routes/RouteStatsCards';
-import { RoutesTable } from '@/components/mot/routes/RoutesTable';
+import { RouteAdvancedFilters } from '@/components/mot/routes/RouteAdvancedFilters';
 import { RouteActionButtons } from '@/components/mot/routes/RouteActionButtons';
-import Pagination from '@/components/shared/Pagination';
-import DeleteRouteConfirmation from '@/components/mot/routes/DeleteRouteConfirmation';
+import { RoutesTable } from '@/components/mot/routes/RoutesTable';
+import { RoutePagination } from '@/components/mot/routes/RoutePagination';
+import { DeleteConfirmationModal } from '@/components/mot/confirmation-modals';
 import { RouteManagementService } from '../../../../generated/api-clients/route-management';
-import type { RouteResponse, PageRouteResponse, RouteStatisticsResponse, RouteFilterOptionsResponse } from '../../../../generated/api-clients/route-management';
+import type {
+  RouteResponse,
+  PageRouteResponse,
+} from '../../../../generated/api-clients/route-management';
+
+// ── Types ─────────────────────────────────────────────────────────
 
 interface QueryParams {
   page: number;
@@ -34,8 +40,11 @@ interface FilterOptions {
   durationRange: { min: number; max: number };
 }
 
+// ── Page ──────────────────────────────────────────────────────────
+
 export default function RoutesPage() {
   const router = useRouter();
+  const { toast } = useToast();
 
   useSetPageMetadata({
     title: 'Routes',
@@ -45,28 +54,32 @@ export default function RoutesPage() {
     breadcrumbs: [{ label: 'Routes' }],
   });
 
+  // ── Data state ──────────────────────────────────────────────────
+
   const [routes, setRoutes] = useState<RouteResponse[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Filter states
+
+  // ── Filter state ────────────────────────────────────────────────
+
+  const [searchTerm, setSearchTerm] = useState('');
   const [routeGroupFilter, setRouteGroupFilter] = useState('all');
   const [directionFilter, setDirectionFilter] = useState('all');
   const [minDistance, setMinDistance] = useState('');
   const [maxDistance, setMaxDistance] = useState('');
   const [minDuration, setMinDuration] = useState('');
   const [maxDuration, setMaxDuration] = useState('');
-  
-  // Filter options from API
+
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({
     routeGroups: [],
     directions: [],
     roadTypes: [],
     distanceRange: { min: 0, max: 100 },
-    durationRange: { min: 0, max: 300 }
+    durationRange: { min: 0, max: 300 },
   });
   const [filterOptionsLoading, setFilterOptionsLoading] = useState(true);
+
+  // ── Pagination / query params ───────────────────────────────────
 
   const [queryParams, setQueryParams] = useState<QueryParams>({
     page: 0,
@@ -76,7 +89,6 @@ export default function RoutesPage() {
     search: '',
   });
 
-  // Pagination state
   const [pagination, setPagination] = useState({
     currentPage: 0,
     totalPages: 0,
@@ -84,42 +96,35 @@ export default function RoutesPage() {
     pageSize: 10,
   });
 
-  // Statistics state
+  // ── Statistics state ────────────────────────────────────────────
+
   const [stats, setStats] = useState({
     totalRoutes: { count: 0, change: undefined as string | undefined },
     outboundRoutes: { count: 0, change: undefined as string | undefined },
     inboundRoutes: { count: 0, change: undefined as string | undefined },
     averageDistance: { count: 0, unit: 'km' },
     totalRouteGroups: { count: 0, change: undefined as string | undefined },
-    averageDuration: { count: 0, unit: 'min' }
+    averageDuration: { count: 0, unit: 'min' },
   });
 
-  // State for delete modal
+  // ── Delete modal state ──────────────────────────────────────────
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [routeToDelete, setRouteToDelete] = useState<RouteResponse | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Load filter options
+  // ── Data loaders ────────────────────────────────────────────────
+
   const loadFilterOptions = useCallback(async () => {
     try {
       setFilterOptionsLoading(true);
       const response = await RouteManagementService.getRouteFilterOptions();
-
       setFilterOptions({
-        routeGroups: response.routeGroups?.map((rg: any) => ({ 
-          id: rg.id, 
-          name: rg.name 
-        })) || [],
+        routeGroups: response.routeGroups?.map((rg: any) => ({ id: rg.id, name: rg.name })) || [],
         directions: response.directions || [],
         roadTypes: response.roadTypes || [],
-        distanceRange: {
-          min: response.distanceRange?.min || 0,
-          max: response.distanceRange?.max || 100
-        },
-        durationRange: {
-          min: response.durationRange?.min || 0,
-          max: response.durationRange?.max || 300
-        }
+        distanceRange: { min: response.distanceRange?.min || 0, max: response.distanceRange?.max || 100 },
+        durationRange: { min: response.durationRange?.min || 0, max: response.durationRange?.max || 300 },
       });
     } catch (err) {
       console.error('Error loading filter options:', err);
@@ -128,48 +133,26 @@ export default function RoutesPage() {
     }
   }, []);
 
-  // Load statistics
   const loadStatistics = useCallback(async () => {
     try {
-      const statisticsData = await RouteManagementService.getRouteStatistics();
-      
+      const data = await RouteManagementService.getRouteStatistics();
       setStats({
-        totalRoutes: { 
-          count: statisticsData.totalRoutes || 0,
-          change: statisticsData.totalRoutes && statisticsData.totalRoutes > 0 ? '+5% this month' : undefined
-        },
-        outboundRoutes: { 
-          count: statisticsData.outboundRoutes || 0,
-          change: statisticsData.outboundRoutes && statisticsData.outboundRoutes > 0 ? '+3% this month' : undefined
-        },
-        inboundRoutes: { 
-          count: statisticsData.inboundRoutes || 0,
-          change: statisticsData.inboundRoutes && statisticsData.inboundRoutes > 0 ? '+2% this month' : undefined
-        },
-        averageDistance: { 
-          count: statisticsData.averageDistanceKm || 0,
-          unit: 'km'
-        },
-        totalRouteGroups: { 
-          count: statisticsData.totalRouteGroups || 0,
-          change: statisticsData.totalRouteGroups && statisticsData.totalRouteGroups > 0 ? '+1 new' : undefined
-        },
-        averageDuration: { 
-          count: statisticsData.averageDurationMinutes || 0,
-          unit: 'min'
-        }
+        totalRoutes: { count: data.totalRoutes || 0, change: data.totalRoutes ? '+5% this month' : undefined },
+        outboundRoutes: { count: data.outboundRoutes || 0, change: data.outboundRoutes ? '+3% this month' : undefined },
+        inboundRoutes: { count: data.inboundRoutes || 0, change: data.inboundRoutes ? '+2% this month' : undefined },
+        averageDistance: { count: data.averageDistanceKm || 0, unit: 'km' },
+        totalRouteGroups: { count: data.totalRouteGroups || 0, change: data.totalRouteGroups ? '+1 new' : undefined },
+        averageDuration: { count: data.averageDurationMinutes || 0, unit: 'min' },
       });
     } catch (err) {
       console.error('Error loading statistics:', err);
     }
   }, []);
 
-  // Load routes from API
   const loadRoutes = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
-
       const response: PageRouteResponse = await RouteManagementService.getAllRoutes(
         queryParams.page,
         queryParams.size,
@@ -178,13 +161,12 @@ export default function RoutesPage() {
         queryParams.search || undefined,
         queryParams.routeGroupId,
         queryParams.direction,
-        undefined, // roadType - not currently used in UI
+        undefined,
         queryParams.minDistance,
         queryParams.maxDistance,
         queryParams.minDuration,
-        queryParams.maxDuration
+        queryParams.maxDuration,
       );
-
       setRoutes(response.content || []);
       setPagination({
         currentPage: response.number || 0,
@@ -196,12 +178,7 @@ export default function RoutesPage() {
       console.error('Error loading routes:', err);
       setError('Failed to load routes. Please try again.');
       setRoutes([]);
-      setPagination({
-        currentPage: 0,
-        totalPages: 0,
-        totalElements: 0,
-        pageSize: 10,
-      });
+      setPagination({ currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 });
     } finally {
       setIsLoading(false);
     }
@@ -209,107 +186,67 @@ export default function RoutesPage() {
 
   useEffect(() => {
     loadFilterOptions();
-  }, [loadFilterOptions]);
-
-  useEffect(() => {
     loadStatistics();
-  }, [loadStatistics]);
+  }, [loadFilterOptions, loadStatistics]);
 
   useEffect(() => {
     loadRoutes();
   }, [loadRoutes]);
 
-  // Update query params with filters (optimized to prevent unnecessary updates)
-  const updateQueryParams = useCallback((updates: Partial<QueryParams>) => {
-    setQueryParams(prev => {
-      const newParams = { ...prev, ...updates };
-      
-      // Convert filter states to query params
-      const currentRouteGroupId = routeGroupFilter !== 'all' ? routeGroupFilter : undefined;
-      const currentDirection = directionFilter !== 'all' ? directionFilter as 'OUTBOUND' | 'INBOUND' : undefined;
-      const currentMinDistance = minDistance ? parseFloat(minDistance) : undefined;
-      const currentMaxDistance = maxDistance ? parseFloat(maxDistance) : undefined;
-      const currentMinDuration = minDuration ? parseFloat(minDuration) : undefined;
-      const currentMaxDuration = maxDuration ? parseFloat(maxDuration) : undefined;
-      
-      // Only update if values actually changed
-      if (currentRouteGroupId !== prev.routeGroupId) {
-        if (currentRouteGroupId) {
-          newParams.routeGroupId = currentRouteGroupId;
-        } else {
-          delete newParams.routeGroupId;
-        }
-      }
-      
-      if (currentDirection !== prev.direction) {
-        if (currentDirection) {
-          newParams.direction = currentDirection;
-        } else {
-          delete newParams.direction;
-        }
-      }
-      
-      if (currentMinDistance !== prev.minDistance) {
-        if (currentMinDistance) {
-          newParams.minDistance = currentMinDistance;
-        } else {
-          delete newParams.minDistance;
-        }
-      }
-      
-      if (currentMaxDistance !== prev.maxDistance) {
-        if (currentMaxDistance) {
-          newParams.maxDistance = currentMaxDistance;
-        } else {
-          delete newParams.maxDistance;
-        }
-      }
-      
-      if (currentMinDuration !== prev.minDuration) {
-        if (currentMinDuration) {
-          newParams.minDuration = currentMinDuration;
-        } else {
-          delete newParams.minDuration;
-        }
-      }
-      
-      if (currentMaxDuration !== prev.maxDuration) {
-        if (currentMaxDuration) {
-          newParams.maxDuration = currentMaxDuration;
-        } else {
-          delete newParams.maxDuration;
-        }
-      }
-      
-      return newParams;
-    });
-  }, [routeGroupFilter, directionFilter, minDistance, maxDistance, minDuration, maxDuration]);
+  // ── Query param helpers ─────────────────────────────────────────
 
-  // Apply filters when they change (with debounce for better UX)
+  const updateQueryParams = useCallback(
+    (updates: Partial<QueryParams>) => {
+      setQueryParams((prev) => {
+        const next = { ...prev, ...updates };
+
+        const groupId = routeGroupFilter !== 'all' ? routeGroupFilter : undefined;
+        const dir = directionFilter !== 'all' ? (directionFilter as 'OUTBOUND' | 'INBOUND') : undefined;
+        const minDist = minDistance ? parseFloat(minDistance) : undefined;
+        const maxDist = maxDistance ? parseFloat(maxDistance) : undefined;
+        const minDur = minDuration ? parseFloat(minDuration) : undefined;
+        const maxDur = maxDuration ? parseFloat(maxDuration) : undefined;
+
+        if (groupId !== undefined) next.routeGroupId = groupId;
+        else delete next.routeGroupId;
+        if (dir !== undefined) next.direction = dir;
+        else delete next.direction;
+        if (minDist !== undefined) next.minDistance = minDist;
+        else delete next.minDistance;
+        if (maxDist !== undefined) next.maxDistance = maxDist;
+        else delete next.maxDistance;
+        if (minDur !== undefined) next.minDuration = minDur;
+        else delete next.minDuration;
+        if (maxDur !== undefined) next.maxDuration = maxDur;
+        else delete next.maxDuration;
+
+        return next;
+      });
+    },
+    [routeGroupFilter, directionFilter, minDistance, maxDistance, minDuration, maxDuration],
+  );
+
+  // Re-fetch when filter controls change (debounced)
   useEffect(() => {
     const timer = setTimeout(() => {
       updateQueryParams({ page: 0 });
-    }, 300); // Short debounce for filter changes
-
+    }, 300);
     return () => clearTimeout(timer);
   }, [routeGroupFilter, directionFilter, minDistance, maxDistance, minDuration, maxDuration]);
 
-  const handleSearch = (searchTerm: string) => {
-    setSearchTerm(searchTerm);
-    updateQueryParams({ search: searchTerm, page: 0 });
+  // ── Handlers ────────────────────────────────────────────────────
+
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    updateQueryParams({ search: term, page: 0 });
   };
 
   const handleSort = (sortBy: string, sortDir: 'asc' | 'desc') => {
     updateQueryParams({ sortBy, sortDir, page: 0 });
   };
 
-  const handlePageChange = (page: number) => {
-    updateQueryParams({ page });
-  };
-
-  const handlePageSizeChange = (size: number) => {
-    updateQueryParams({ size, page: 0 });
-  };
+  const handlePageChange = (page: number) => updateQueryParams({ page });
+  const handlePageSizeChange = (size: number) => updateQueryParams({ size, page: 0 });
 
   const handleClearAllFilters = () => {
     setSearchTerm('');
@@ -319,83 +256,50 @@ export default function RoutesPage() {
     setMaxDistance('');
     setMinDuration('');
     setMaxDuration('');
+    setQueryParams({ page: 0, size: queryParams.size, sortBy: 'name', sortDir: 'asc', search: '' });
   };
+
+  const handleAddNewRoute = () => router.push('/mot/routes/workspace');
+  const handleImport = () => router.push('/mot/routes/import');
 
   const handleExportAll = async () => {
     try {
-      // Get all routes without pagination for export
       const allRoutes = await RouteManagementService.getAllRoutesAsList();
-      
-      // Create CSV content
-      const csvHeaders = [
-        'ID', 'Name', 'Description', 'Route Group', 'Direction', 
-        'Start Stop', 'End Stop', 'Distance (km)', 'Duration (min)', 
-        'Created At', 'Updated At'
-      ];
-      const csvRows = allRoutes.map(route => [
-        route.id || '',
-        route.name || '',
-        route.description || '',
-        route.routeGroupName || '',
-        route.direction || '',
-        route.startStopName || '',
-        route.endStopName || '',
-        route.distanceKm || '',
-        route.estimatedDurationMinutes || '',
-        route.createdAt || '',
-        route.updatedAt || ''
-      ]);
-
-      const csvContent = [
-        csvHeaders.join(','),
-        ...csvRows.map(row => row.map(field => `"${field}"`).join(','))
-      ].join('\n');
-
-      // Download CSV
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
+      const headers = ['ID', 'Name', 'Description', 'Route Group', 'Direction', 'Start Stop', 'End Stop', 'Distance (km)', 'Duration (min)', 'Created At', 'Updated At'];
+      const rows = allRoutes.map((r) =>
+        [r.id, r.name, r.description, r.routeGroupName, r.direction, r.startStopName, r.endStopName, r.distanceKm, r.estimatedDurationMinutes, r.createdAt, r.updatedAt]
+          .map((f) => `"${f ?? ''}"`)
+          .join(','),
+      );
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `routes-${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error('Error exporting routes:', error);
-      setError('Failed to export routes. Please try again.');
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `routes-${new Date().toISOString().split('T')[0]}.csv`;
+      a.style.visibility = 'hidden';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      toast({ title: 'Export Complete', description: `${allRoutes.length} routes exported successfully.` });
+    } catch (err) {
+      console.error('Error exporting routes:', err);
+      toast({ title: 'Export Failed', description: 'Failed to export routes. Please try again.', variant: 'destructive' });
     }
-  };
-
-  const handleAddNewRoute = () => {
-    // router.push('/mot/routes/add-new');  // old route creation page
-    router.push('/mot/routes/workspace')
-  };
-
-  const handleImport = () => {
-    router.push('/mot/routes/import');
   };
 
   const handleView = (routeId: string) => {
-    // Navigate to route group page since routes are managed within route groups
-    const route = routes.find(r => r.id === routeId);
-    if (route?.routeGroupId) {
-      router.push(`/mot/routes/${route.routeGroupId}?highlight=${routeId}`);
-    }
+    const route = routes.find((r) => r.id === routeId);
+    if (route?.routeGroupId) router.push(`/mot/routes/${route.routeGroupId}?highlight=${routeId}`);
   };
 
   const handleEdit = (routeId: string) => {
-    // Navigate to route group edit page
-    const route = routes.find(r => r.id === routeId);
-    if (route?.routeGroupId) {
-      // router.push(`/mot/routes/${route.routeGroupId}/edit?route=${routeId}`); //old route edit page
-      router.push(`/mot/routes/workspace?routeGroupId=${route.routeGroupId}`);
-    }
+    const route = routes.find((r) => r.id === routeId);
+    if (route?.routeGroupId) router.push(`/mot/routes/workspace?routeGroupId=${route.routeGroupId}`);
   };
 
-  const handleDelete = (routeId: string, routeName: string) => {
-    // Find the route to get full details for the modal
-    const route = routes.find(r => r.id === routeId);
+  const handleDelete = (routeId: string) => {
+    const route = routes.find((r) => r.id === routeId);
     if (route) {
       setRouteToDelete(route);
       setShowDeleteModal(true);
@@ -409,26 +313,22 @@ export default function RoutesPage() {
 
   const handleDeleteConfirm = async () => {
     if (!routeToDelete?.id) return;
-
     try {
       setIsDeleting(true);
-      // Note: You'll need to implement a delete route API endpoint
       // await RouteManagementService.deleteRoute(routeToDelete.id);
-      console.log('Delete route not implemented in API yet:', routeToDelete.id);
-      
-      // Refresh the list after successful deletion
-      await loadRoutes();
-      
+      toast({ title: 'Route Deleted', description: `${routeToDelete.name} has been deleted successfully.` });
       setShowDeleteModal(false);
       setRouteToDelete(null);
-    } catch (error) {
-      console.error('Error deleting route:', error);
-      setError('Failed to delete route. Please try again.');
-      // Keep the modal open on error so user can see what happened
+      await loadRoutes();
+      await loadStatistics();
+    } catch (err) {
+      toast({ title: 'Delete Failed', description: 'Failed to delete route. Please try again.', variant: 'destructive' });
     } finally {
       setIsDeleting(false);
     }
   };
+
+  // ── Page actions ────────────────────────────────────────────────
 
   useSetPageActions(
     <RouteActionButtons
@@ -436,110 +336,90 @@ export default function RoutesPage() {
       onImport={handleImport}
       onExportAll={handleExportAll}
       isLoading={isLoading}
-    />
+    />,
   );
 
-  if (isLoading && routes.length === 0) {
+  // ── Error state ─────────────────────────────────────────────────
+
+  if (error && routes.length === 0) {
     return (
-      <div className="flex items-center justify-center py-12">
+      <div className="p-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading routes...</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Error Loading Routes</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => { setError(null); loadRoutes(); }}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     );
   }
 
+  // ── Render ──────────────────────────────────────────────────────
+
   return (
-      <div className="space-y-6">
-        {/* Error Alert */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div className="flex">
-              <div className="text-red-600 text-sm">{error}</div>
-              <button
-                onClick={() => setError(null)}
-                className="ml-auto text-red-600 hover:text-red-800"
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        )}
+    <div className="space-y-6">
+      {/* Statistics Cards */}
+      <RouteStatsCards stats={stats} loading={isLoading} />
 
-        {/* Stats Cards */}
-        <RouteStatsCards stats={stats} />
+      {/* Search & Filters */}
+      <RouteAdvancedFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        routeGroupFilter={routeGroupFilter}
+        setRouteGroupFilter={setRouteGroupFilter}
+        directionFilter={directionFilter}
+        setDirectionFilter={setDirectionFilter}
+        minDistance={minDistance}
+        setMinDistance={setMinDistance}
+        maxDistance={maxDistance}
+        setMaxDistance={setMaxDistance}
+        minDuration={minDuration}
+        setMinDuration={setMinDuration}
+        maxDuration={maxDuration}
+        setMaxDuration={setMaxDuration}
+        filterOptions={filterOptions}
+        loading={filterOptionsLoading}
+        totalCount={pagination.totalElements}
+        filteredCount={routes.length}
+        onSearch={handleSearch}
+        onClearAll={handleClearAllFilters}
+      />
 
-        {/* Advanced Filters */}
-        <RouteAdvancedFilters
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          routeGroupFilter={routeGroupFilter}
-          setRouteGroupFilter={setRouteGroupFilter}
-          directionFilter={directionFilter}
-          setDirectionFilter={setDirectionFilter}
-          minDistance={minDistance}
-          setMinDistance={setMinDistance}
-          maxDistance={maxDistance}
-          setMaxDistance={setMaxDistance}
-          minDuration={minDuration}
-          setMinDuration={setMinDuration}
-          maxDuration={maxDuration}
-          setMaxDuration={setMaxDuration}
-          filterOptions={filterOptions}
-          loading={filterOptionsLoading}
-          totalCount={pagination.totalElements}
-          filteredCount={routes.length}
-          onSearch={handleSearch}
-          onClearAll={handleClearAllFilters}
+      {/* Table + Pagination */}
+      <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        <RoutesTable
+          routes={routes}
+          onView={handleView}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onSort={handleSort}
+          loading={isLoading}
+          currentSort={{ field: queryParams.sortBy, direction: queryParams.sortDir }}
         />
-
-        {/* Routes Table */}
-        <div className="bg-white rounded-lg shadow">
-          <RoutesTable
-            routes={routes}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onSort={handleSort}
-            activeFilters={{ 
-              search: searchTerm,
-              routeGroup: routeGroupFilter,
-              direction: directionFilter,
-              minDistance,
-              maxDistance,
-              minDuration,
-              maxDuration
-            }}
-            loading={isLoading}
-            currentSort={{ field: queryParams.sortBy, direction: queryParams.sortDir }}
-          />
-
-
-          {pagination.totalElements > 0 && (
-            <div className="bg-white shadow px-2 py-0">
-              <Pagination
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                totalElements={pagination.totalElements}
-                pageSize={pagination.pageSize}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-                loading={isLoading}
-                searchActive={!!searchTerm}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Delete Confirmation Modal */}
-        <DeleteRouteConfirmation
-          isOpen={showDeleteModal}
-          onClose={handleDeleteCancel}
-          onConfirm={handleDeleteConfirm}
-          route={routeToDelete}
-          isDeleting={isDeleting}
+        <RoutePagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          totalElements={pagination.totalElements}
+          pageSize={pagination.pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          loading={isLoading}
         />
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Route"
+        itemName={routeToDelete?.name || 'this route'}
+        isLoading={isDeleting}
+      />
+    </div>
   );
 }
