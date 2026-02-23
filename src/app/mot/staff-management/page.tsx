@@ -11,7 +11,7 @@ import {
   StaffTypeTabs,
   DeleteStaffModal,
 } from '@/components/mot/staff';
-import Pagination from '@/components/shared/Pagination';
+import { DataPagination } from '@/components/shared/DataPagination';
 import {
   getStaffMembers,
   getStaffStatistics,
@@ -266,22 +266,17 @@ export default function StaffManagementPage() {
   return (
       <div className="space-y-6">
         {/* Statistics Cards */}
-        <div className="mb-6">
-          <StaffStatsCards stats={statsForCards} />
-        </div>
+        <StaffStatsCards stats={statsForCards} />
 
         {/* Staff Type Tabs */}
-        <div className="mb-6">
-          <StaffTypeTabs
+        <StaffTypeTabs
             activeTab={activeTab}
             onTabChange={handleTabChange}
             counts={tabCounts}
           />
-        </div>
 
         {/* Advanced Filters */}
-        <div className="mb-6">
-          <StaffAdvancedFilters
+        <StaffAdvancedFilters
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             statusFilter={statusFilter}
@@ -303,10 +298,9 @@ export default function StaffManagementPage() {
             onSearch={handleSearch}
             onClearAll={handleClearAllFilters}
           />
-        </div>
 
         {/* Staff Table */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
           <StaffTable
             staff={tableData}
             onView={handleView}
@@ -322,29 +316,17 @@ export default function StaffManagementPage() {
             currentSort={{ field: sortBy, direction: sortDir }}
           />
 
-          {/* Pagination */}
-          {filteredStaff.length > 0 && (
-            <div className="border-t border-gray-200">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalElements={filteredStaff.length}
-                pageSize={pageSize}
-                onPageChange={setCurrentPage}
-                onPageSizeChange={(size) => {
-                  setPageSize(size);
-                  setCurrentPage(0);
-                }}
-                loading={false}
-                searchActive={Boolean(searchTerm)}
-                filterCount={
-                  [statusFilter !== 'all', provinceFilter !== 'all'].filter(
-                    Boolean
-                  ).length
-                }
-              />
-            </div>
-          )}
+          <DataPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalElements={filteredStaff.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setCurrentPage(0);
+            }}
+          />
         </div>
 
         {/* Delete Staff Modal */}

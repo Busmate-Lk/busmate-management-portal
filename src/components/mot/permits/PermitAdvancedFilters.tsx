@@ -1,7 +1,21 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { Search, Filter, ChevronDown, ChevronUp, X, FileText, CheckCircle, XCircle, Users, MapPin, Clock } from 'lucide-react';
+import React, { useCallback, useMemo } from 'react';
+import {
+  CheckCircle,
+  XCircle,
+  Clock,
+  Users,
+  MapPin,
+  FileText,
+} from 'lucide-react';
+import {
+  SearchFilterBar,
+  SelectFilter,
+} from '@/components/shared/SearchFilterBar';
+import type { FilterChipDescriptor } from '@/components/shared/SearchFilterBar';
+
+// ── Types ─────────────────────────────────────────────────────────
 
 interface FilterOptions {
   statuses: Array<string>;
@@ -11,11 +25,8 @@ interface FilterOptions {
 }
 
 interface PermitAdvancedFiltersProps {
-  // Search
   searchTerm: string;
   setSearchTerm: (value: string) => void;
-
-  // Filters
   statusFilter: string;
   setStatusFilter: (value: string) => void;
   operatorFilter: string;
@@ -24,19 +35,24 @@ interface PermitAdvancedFiltersProps {
   setRouteGroupFilter: (value: string) => void;
   permitTypeFilter: string;
   setPermitTypeFilter: (value: string) => void;
-
-  // Data
   filterOptions: FilterOptions;
   loading: boolean;
-
-  // Stats for display
   totalCount?: number;
   filteredCount?: number;
-
-  // Event handlers
   onClearAll?: () => void;
   onSearch?: (term: string) => void;
 }
+
+// ── Helpers ───────────────────────────────────────────────────────
+
+const STATUS_LABELS: Record<string, string> = {
+  ACTIVE: 'Active',
+  INACTIVE: 'Inactive',
+  PENDING: 'Pending',
+  EXPIRED: 'Expired',
+};
+
+// ── Component ─────────────────────────────────────────────────────
 
 export function PermitAdvancedFilters({
   searchTerm,
@@ -54,315 +70,144 @@ export function PermitAdvancedFilters({
   totalCount = 0,
   filteredCount = 0,
   onClearAll,
-  onSearch
 }: PermitAdvancedFiltersProps) {
-  const [isFilterExpanded, setIsFilterExpanded] = useState(false);
-  const [searchValue, setSearchValue] = useState(searchTerm);
-
-  // Debounced search effect
-  useEffect(() => {
-    if (searchValue !== searchTerm) {
-      const handler = setTimeout(() => {
-        setSearchTerm(searchValue);
-        if (onSearch) {
-          onSearch(searchValue);
-        }
-      }, 400);
-
-      return () => {
-        clearTimeout(handler);
-      };
-    }
-  }, [searchValue, searchTerm, setSearchTerm, onSearch]);
-
-  // Update local search when prop changes (but avoid infinite loops)
-  useEffect(() => {
-    if (searchTerm !== searchValue) {
-      setSearchValue(searchTerm);
-    }
-  }, [searchTerm]);
-
-  const hasActiveFilters = Boolean(
-    searchTerm ||
-    statusFilter !== 'all' ||
-    operatorFilter !== 'all' ||
-    routeGroupFilter !== 'all' ||
-    permitTypeFilter !== 'all'
-  );
-
-  const activeFilterCount = [
-    searchTerm && 'search',
-    statusFilter !== 'all' && 'status',
-    operatorFilter !== 'all' && 'operator',
-    routeGroupFilter !== 'all' && 'route-group',
-    permitTypeFilter !== 'all' && 'permit-type'
-  ].filter(Boolean).length;
 
   const handleClearAll = useCallback(() => {
-    setSearchValue('');
+    setSearchTerm('');
     setStatusFilter('all');
     setOperatorFilter('all');
     setRouteGroupFilter('all');
     setPermitTypeFilter('all');
-    if (onClearAll) {
-      onClearAll();
-    }
-  }, [setStatusFilter, setOperatorFilter, setRouteGroupFilter, setPermitTypeFilter, onClearAll]);
+    onClearAll?.();
+  }, [setSearchTerm, setStatusFilter, setOperatorFilter, setRouteGroupFilter, setPermitTypeFilter, onClearAll]);
 
-  const getStatusIcon = (value: string) => {
-    switch (value?.toUpperCase()) {
-      case 'ACTIVE':
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'INACTIVE':
-        return <XCircle className="w-4 h-4 text-red-600" />;
-      case 'PENDING':
-        return <Clock className="w-4 h-4 text-yellow-600" />;
-      case 'EXPIRED':
-        return <XCircle className="w-4 h-4 text-gray-600" />;
-      default:
-        return <Filter className="w-4 h-4 text-gray-600" />;
-    }
-  };
+  // ── Options ─────────────────────────────────────────────────────
 
-  const getStatusLabel = (value: string) => {
-    switch (value?.toUpperCase()) {
-      case 'ACTIVE':
-        return 'Active Only';
-      case 'INACTIVE':
-        return 'Inactive Only';
-      case 'PENDING':
-        return 'Pending Only';
-      case 'EXPIRED':
-        return 'Expired Only';
-      default:
-        return 'All Statuses';
+  const statusOptions = filterOptions.statuses.map((s) => ({
+    value: s,
+    label: STATUS_LABELS[s] ?? (s.charAt(0) + s.slice(1).toLowerCase()),
+  }));
+
+  const operatorOptions = filterOptions.operators.map((op) => ({
+    value: op.id,
+    label: op.name,
+  }));
+
+  const routeGroupOptions = filterOptions.routeGroups.map((rg) => ({
+    value: rg.id,
+    label: rg.name,
+  }));
+
+  const permitTypeOptions = filterOptions.permitTypes.map((t) => ({
+    value: t,
+    label: t,
+  }));
+
+  // ── Active filter chips ─────────────────────────────────────────
+
+  const activeChips = useMemo<FilterChipDescriptor[]>(() => {
+    const chips: FilterChipDescriptor[] = [];
+
+    if (statusFilter !== 'all') {
+      const icons: Record<string, React.ReactNode> = {
+        ACTIVE: <CheckCircle className="h-3 w-3 opacity-70" />,
+        INACTIVE: <XCircle className="h-3 w-3 opacity-70" />,
+        PENDING: <Clock className="h-3 w-3 opacity-70" />,
+        EXPIRED: <XCircle className="h-3 w-3 opacity-70" />,
+      };
+      chips.push({
+        key: 'status',
+        label: STATUS_LABELS[statusFilter] ?? statusFilter,
+        onRemove: () => setStatusFilter('all'),
+        colorClass: 'bg-green-50 text-green-700 border-green-200',
+        icon: icons[statusFilter],
+      });
     }
-  };
+
+    if (operatorFilter !== 'all') {
+      const opName = filterOptions.operators.find((op) => op.id === operatorFilter)?.name ?? 'Unknown';
+      chips.push({
+        key: 'operator',
+        label: opName,
+        onRemove: () => setOperatorFilter('all'),
+        colorClass: 'bg-blue-50 text-blue-700 border-blue-200',
+        icon: <Users className="h-3 w-3 opacity-70" />,
+      });
+    }
+
+    if (routeGroupFilter !== 'all') {
+      const rgName = filterOptions.routeGroups.find((rg) => rg.id === routeGroupFilter)?.name ?? 'Unknown';
+      chips.push({
+        key: 'routeGroup',
+        label: rgName,
+        onRemove: () => setRouteGroupFilter('all'),
+        colorClass: 'bg-purple-50 text-purple-700 border-purple-200',
+        icon: <MapPin className="h-3 w-3 opacity-70" />,
+      });
+    }
+
+    if (permitTypeFilter !== 'all') {
+      chips.push({
+        key: 'permitType',
+        label: permitTypeFilter,
+        onRemove: () => setPermitTypeFilter('all'),
+        colorClass: 'bg-amber-50 text-amber-700 border-amber-200',
+        icon: <FileText className="h-3 w-3 opacity-70" />,
+      });
+    }
+
+    return chips;
+  }, [statusFilter, operatorFilter, routeGroupFilter, permitTypeFilter, filterOptions, setStatusFilter, setOperatorFilter, setRouteGroupFilter, setPermitTypeFilter]);
+
+  // ── Render ──────────────────────────────────────────────────────
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-      {/* Compact Main Filter Section */}
-      <div className="p-4">
-        {/* Header with Count */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Search className="h-5 w-5 text-gray-500" />
-            <h3 className="text-lg font-semibold text-gray-900">Search & Filters</h3>
-          </div>
-          <div className="text-sm text-gray-600">
-            {filteredCount !== totalCount ? (
-              <>Showing {filteredCount.toLocaleString()} of {totalCount.toLocaleString()} permits</>
-            ) : (
-              <>{totalCount.toLocaleString()} permits</>
-            )}
-          </div>
-        </div>
-
-        {/* Compact Filter Row */}
-        <div className="flex flex-col gap-3">
-          {/* Search Bar */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Search by permit number, operator, or route group..."
-              className="block w-full pl-4 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-            />
-          </div>
-
-          {/* Inline Filters */}
-          <div className="flex flex-wrap gap-3">
-            {/* Status Filter */}
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Status:</label>
-              <div className="relative">
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[120px]"
-                >
-                  <option value="all">All Statuses</option>
-                  {filterOptions.statuses.map((status) => (
-                    <option key={status} value={status}>
-                      {status.charAt(0) + status.slice(1).toLowerCase()}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
-                </div>
-              </div>
-            </div>
-
-            {/* Operator Filter */}
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Operator:</label>
-              <div className="relative">
-                <select
-                  value={operatorFilter}
-                  onChange={(e) => setOperatorFilter(e.target.value)}
-                  className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[140px]"
-                >
-                  <option value="all">All Operators</option>
-                  {filterOptions.operators.map((operator) => (
-                    <option key={operator.id} value={operator.id}>
-                      {operator.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
-                </div>
-              </div>
-            </div>
-
-            {/* Route Group Filter */}
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Route Group:</label>
-              <div className="relative">
-                <select
-                  value={routeGroupFilter}
-                  onChange={(e) => setRouteGroupFilter(e.target.value)}
-                  className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[140px]"
-                >
-                  <option value="all">All Route Groups</option>
-                  {filterOptions.routeGroups.map((routeGroup) => (
-                    <option key={routeGroup.id} value={routeGroup.id}>
-                      {routeGroup.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
-                </div>
-              </div>
-            </div>
-
-            {/* Permit Type Filter */}
-            <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Type:</label>
-              <div className="relative">
-                <select
-                  value={permitTypeFilter}
-                  onChange={(e) => setPermitTypeFilter(e.target.value)}
-                  className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-w-[120px]"
-                >
-                  <option value="all">All Types</option>
-                  {filterOptions.permitTypes.map((permitType) => (
-                    <option key={permitType} value={permitType}>
-                      {permitType}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                  <ChevronDown className="h-4 w-4 text-gray-400" />
-                </div>
-              </div>
-            </div>
-
-            {/* Clear All Button */}
-            {hasActiveFilters && (
-              <button
-                onClick={handleClearAll}
-                className="flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
-              >
-                <X className="h-3 w-3" />
-                Clear All
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Active Filters Section */}
-      {hasActiveFilters && (
-        <div className="border-t border-gray-100">
-          <div className="p-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Active Filters ({activeFilterCount})
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {searchTerm && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
-                  <Search className="h-3 w-3" />
-                  Search: "{searchTerm}"
-                  <button
-                    onClick={() => setSearchValue('')}
-                    className="ml-1 hover:text-blue-900"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
-
-              {statusFilter !== 'all' && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-md">
-                  {getStatusIcon(statusFilter)}
-                  {getStatusLabel(statusFilter)}
-                  <button
-                    onClick={() => setStatusFilter('all')}
-                    className="ml-1 hover:text-green-900"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
-
-              {operatorFilter !== 'all' && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-md">
-                  <Users className="h-3 w-3" />
-                  {filterOptions.operators.find(op => op.id === operatorFilter)?.name || 'Unknown Operator'}
-                  <button
-                    onClick={() => setOperatorFilter('all')}
-                    className="ml-1 hover:text-indigo-900"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
-
-              {routeGroupFilter !== 'all' && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-md">
-                  <MapPin className="h-3 w-3" />
-                  {filterOptions.routeGroups.find(rg => rg.id === routeGroupFilter)?.name || 'Unknown Route Group'}
-                  <button
-                    onClick={() => setRouteGroupFilter('all')}
-                    className="ml-1 hover:text-purple-900"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
-
-              {permitTypeFilter !== 'all' && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-md">
-                  <FileText className="h-3 w-3" />
-                  Type: {permitTypeFilter}
-                  <button
-                    onClick={() => setPermitTypeFilter('all')}
-                    className="ml-1 hover:text-orange-900"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Loading State */}
-      {loading && (
-        <div className="px-4 py-2 bg-blue-50 border-t border-blue-100">
-          <div className="flex items-center gap-2">
-            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
-            <span className="text-xs text-blue-800">Updating permit list...</span>
-          </div>
-        </div>
-      )}
-    </div>
+    <SearchFilterBar
+      searchValue={searchTerm}
+      onSearchChange={setSearchTerm}
+      searchPlaceholder="Search by permit number, operator, or route group…"
+      totalCount={totalCount}
+      filteredCount={filteredCount}
+      resultLabel="permit"
+      loading={loading}
+      filters={
+        <>
+          <SelectFilter
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={statusOptions}
+            allLabel="All Statuses"
+            icon={<CheckCircle className="h-3.5 w-3.5" />}
+            activeColorClass="bg-green-50 border-green-300 text-green-800"
+          />
+          <SelectFilter
+            value={operatorFilter}
+            onChange={setOperatorFilter}
+            options={operatorOptions}
+            allLabel="All Operators"
+            icon={<Users className="h-3.5 w-3.5" />}
+            activeColorClass="bg-blue-50 border-blue-300 text-blue-800"
+          />
+          <SelectFilter
+            value={routeGroupFilter}
+            onChange={setRouteGroupFilter}
+            options={routeGroupOptions}
+            allLabel="All Route Groups"
+            icon={<MapPin className="h-3.5 w-3.5" />}
+            activeColorClass="bg-purple-50 border-purple-300 text-purple-800"
+          />
+          <SelectFilter
+            value={permitTypeFilter}
+            onChange={setPermitTypeFilter}
+            options={permitTypeOptions}
+            allLabel="All Types"
+            icon={<FileText className="h-3.5 w-3.5" />}
+            activeColorClass="bg-amber-50 border-amber-300 text-amber-800"
+          />
+        </>
+      }
+      activeChips={activeChips}
+      onClearAllFilters={handleClearAll}
+    />
   );
 }

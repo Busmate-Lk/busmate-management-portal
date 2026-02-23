@@ -8,7 +8,7 @@ import { PermitStatsCards } from '@/components/mot/permits/PermitStatsCards';
 import { PermitAdvancedFilters } from '@/components/mot/permits/PermitAdvancedFilters';
 import { PermitActionButtons } from '@/components/mot/permits/PermitActionButtons';
 import { PermitsTable } from '@/components/mot/permits/PermitsTable';
-import { Pagination } from '@/components/mot/pagination';
+import { DataPagination } from '@/components/shared/DataPagination';
 import { 
   PermitManagementService,
   PassengerServicePermitResponse 
@@ -70,7 +70,7 @@ function PassengerServicePermitsContent() {
   
   // Pagination and sort states with URL sync
   const [pagination, setPagination] = useState<PaginationState>({
-    currentPage: parseInt(searchParams.get('page') || '1'),
+    currentPage: Math.max(0, parseInt(searchParams.get('page') || '1') - 1),
     totalPages: 0,
     totalElements: 0,
     pageSize: parseInt(searchParams.get('size') || '10')
@@ -97,7 +97,7 @@ function PassengerServicePermitsContent() {
     if (filters.routeGroupId !== 'all') params.set('routeGroup', filters.routeGroupId);
     if (filters.permitType !== 'all') params.set('permitType', filters.permitType);
     if (filters.expiryWithin) params.set('expiryWithin', filters.expiryWithin.toString());
-    if (pagination.currentPage > 1) params.set('page', pagination.currentPage.toString());
+    if (pagination.currentPage > 0) params.set('page', (pagination.currentPage + 1).toString());
     if (pagination.pageSize !== 10) params.set('size', pagination.pageSize.toString());
     if (sort.field !== 'createdAt') params.set('sortBy', sort.field);
     if (sort.direction !== 'desc') params.set('sortDir', sort.direction);
@@ -170,7 +170,7 @@ function PassengerServicePermitsContent() {
       
       // When there's a search term, fetch more data to enable client-side filtering
       const pageSize = filters.search ? Math.max(pagination.pageSize * 5, 100) : pagination.pageSize;
-      const currentPage = filters.search ? 0 : (pagination.currentPage - 1);
+      const currentPage = filters.search ? 0 : pagination.currentPage;
       
       const response = await PermitManagementService.getPermits(
         currentPage, // Convert to 0-based for API
@@ -198,7 +198,7 @@ function PassengerServicePermitsContent() {
         filteredCount = permitsData.length;
         
         // Apply client-side pagination for search results
-        const startIndex = (pagination.currentPage - 1) * pagination.pageSize;
+        const startIndex = pagination.currentPage * pagination.pageSize;
         const endIndex = startIndex + pagination.pageSize;
         permitsData = permitsData.slice(startIndex, endIndex);
       }
@@ -264,7 +264,7 @@ function PassengerServicePermitsContent() {
   // Filter handlers
   const handleFilterChange = useCallback((newFilters: Partial<PermitFilters>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setPagination(prev => ({ ...prev, currentPage: 0 }));
   }, []);
 
   // Pagination handlers
@@ -273,13 +273,13 @@ function PassengerServicePermitsContent() {
   }, []);
 
   const handlePageSizeChange = useCallback((size: number) => {
-    setPagination(prev => ({ ...prev, pageSize: size, currentPage: 1 }));
+    setPagination(prev => ({ ...prev, pageSize: size, currentPage: 0 }));
   }, []);
 
   // Sort handlers
   const handleSort = useCallback((field: string, direction: 'asc' | 'desc') => {
     setSort({ field, direction });
-    setPagination(prev => ({ ...prev, currentPage: 1 }));
+    setPagination(prev => ({ ...prev, currentPage: 0 }));
   }, []);
 
   // Action handlers
@@ -425,7 +425,7 @@ function PassengerServicePermitsContent() {
   );
 
   // Loading state for initial load
-  if (loading && pagination.currentPage === 1 && permits.length === 0) {
+  if (loading && pagination.currentPage === 0 && permits.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -481,25 +481,12 @@ function PassengerServicePermitsContent() {
               routeGroupId: 'all',
               permitType: 'all'
             });
-            setPagination(prev => ({ ...prev, currentPage: 1 }));
+            setPagination(prev => ({ ...prev, currentPage: 0 }));
           }}
         />
 
-        {/* Active Filters Indicator */}
-        {hasActiveFilters && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-blue-700 font-medium">
-                  {pagination.totalElements} permits found with active filters
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Main Content */}
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
           <PermitsTable
             permits={permits}
             onView={handleView}
@@ -513,67 +500,15 @@ function PassengerServicePermitsContent() {
           />
 
           {/* Pagination */}
-          {pagination.totalElements > 0 && (
-            <div className="border-t border-gray-200 px-4 pb-3">
-              <Pagination
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                totalItems={pagination.totalElements}
-                itemsPerPage={pagination.pageSize}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-              />
-            </div>
-          )}
-
-          {/* Empty State */}
-          {!loading && permits.length === 0 && !error && (
-            <div className="text-center py-12 px-4">
-              <div className="text-gray-500">
-                {!hasActiveFilters ? (
-                  <div>
-                    <div className="text-lg font-medium mb-2">No permits found</div>
-                    <div className="text-sm mb-4">Get started by adding your first passenger service permit.</div>
-                    <button
-                      onClick={handleAddNew}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Add First Permit
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="text-lg font-medium mb-2">No permits match your search</div>
-                    <div className="text-sm mb-4">Try adjusting your search criteria or add a new permit.</div>
-                    <div className="flex items-center justify-center gap-3">
-                      <button
-                        onClick={() => {
-                          setFilters({ 
-                            search: '', 
-                            status: 'all', 
-                            operatorId: 'all',
-                            routeGroupId: 'all',
-                            permitType: 'all'
-                          });
-                          setPagination(prev => ({ ...prev, currentPage: 1 }));
-                        }}
-                        className="text-blue-600 hover:text-blue-700 underline"
-                      >
-                        Clear all filters
-                      </button>
-                      <span className="text-gray-400">or</span>
-                      <button
-                        onClick={handleAddNew}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                      >
-                        Add New Permit
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          <DataPagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            totalElements={pagination.totalElements}
+            pageSize={pagination.pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            loading={loading}
+          />
         </div>
 
         {/* Delete Permit Modal */}

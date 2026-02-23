@@ -1,23 +1,25 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import {
-  Search,
-  Filter,
-  ChevronDown,
-  ChevronUp,
-  X,
-  Calendar,
   CheckCircle,
-  XCircle,
   Clock,
+  XCircle,
   AlertCircle,
   MapPin,
   Users,
   Bus,
+  User,
+  Calendar,
   Route,
-  User
 } from 'lucide-react';
+import {
+  SearchFilterBar,
+  SelectFilter,
+} from '@/components/shared/SearchFilterBar';
+import type { FilterChipDescriptor } from '@/components/shared/SearchFilterBar';
+
+// ── Types ─────────────────────────────────────────────────────────
 
 interface FilterOptions {
   statuses: Array<'pending' | 'active' | 'completed' | 'cancelled' | 'delayed' | 'in_transit' | 'boarding' | 'departed'>;
@@ -63,14 +65,29 @@ interface TripAdvancedFiltersProps {
   filterOptions: FilterOptions;
   loading: boolean;
 
-  // Stats for display
+  // Stats
   totalCount?: number;
   filteredCount?: number;
 
-  // Event handlers
+  // Events
   onClearAll?: () => void;
   onSearch?: (term: string) => void;
 }
+
+// ── Helpers ───────────────────────────────────────────────────────
+
+const STATUS_LABELS: Record<string, string> = {
+  active: 'Active',
+  completed: 'Completed',
+  pending: 'Pending',
+  cancelled: 'Cancelled',
+  delayed: 'Delayed',
+  in_transit: 'In Transit',
+  boarding: 'Boarding',
+  departed: 'Departed',
+};
+
+// ── Component ─────────────────────────────────────────────────────
 
 export default function TripAdvancedFilters({
   searchTerm,
@@ -104,68 +121,21 @@ export default function TripAdvancedFilters({
   totalCount = 0,
   filteredCount = 0,
   onClearAll,
-  onSearch
+  onSearch,
 }: TripAdvancedFiltersProps) {
-  const [isFilterExpanded, setIsFilterExpanded] = useState(false);
-  const [searchValue, setSearchValue] = useState(searchTerm);
-
-  // Debounced search effect
-  useEffect(() => {
-    if (searchValue !== searchTerm) {
-      const handler = setTimeout(() => {
-        setSearchTerm(searchValue);
-        if (onSearch) {
-          onSearch(searchValue);
-        }
-      }, 400);
-
-      return () => {
-        clearTimeout(handler);
-      };
-    }
-  }, [searchValue, searchTerm, setSearchTerm, onSearch]);
-
-  // Update local search when prop changes (but avoid infinite loops)
-  useEffect(() => {
-    if (searchTerm !== searchValue) {
-      setSearchValue(searchTerm);
-    }
-  }, [searchTerm]);
-
-  const hasActiveFilters = Boolean(
-    searchTerm ||
-    statusFilter !== 'all' ||
-    routeFilter !== 'all' ||
-    operatorFilter !== 'all' ||
-    scheduleFilter !== 'all' ||
-    busFilter !== 'all' ||
-    pspFilter !== 'all' ||
-    fromDate ||
-    toDate ||
-    hasPsp ||
-    hasBus ||
-    hasDriver ||
-    hasConductor
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      if (onSearch) {
+        onSearch(value);
+      } else {
+        setSearchTerm(value);
+      }
+    },
+    [onSearch, setSearchTerm],
   );
 
-  const activeFilterCount = [
-    searchTerm && 'search',
-    statusFilter !== 'all' && 'status',
-    routeFilter !== 'all' && 'route',
-    operatorFilter !== 'all' && 'operator',
-    scheduleFilter !== 'all' && 'schedule',
-    busFilter !== 'all' && 'bus',
-    pspFilter !== 'all' && 'psp',
-    fromDate && 'from-date',
-    toDate && 'to-date',
-    hasPsp && 'has-psp',
-    hasBus && 'has-bus',
-    hasDriver && 'has-driver',
-    hasConductor && 'has-conductor'
-  ].filter(Boolean).length;
-
   const handleClearAll = useCallback(() => {
-    setSearchValue('');
+    setSearchTerm('');
     setStatusFilter('all');
     setRouteFilter('all');
     setOperatorFilter('all');
@@ -178,484 +148,286 @@ export default function TripAdvancedFilters({
     setHasBus(false);
     setHasDriver(false);
     setHasConductor(false);
-    if (onClearAll) {
-      onClearAll();
-    }
+    onClearAll?.();
   }, [
-    setStatusFilter, setRouteFilter, setOperatorFilter, setScheduleFilter,
-    setBusFilter, setPspFilter, setFromDate, setToDate, setHasPsp, setHasBus,
-    setHasDriver, setHasConductor, onClearAll
+    setSearchTerm, setStatusFilter, setRouteFilter, setOperatorFilter,
+    setScheduleFilter, setBusFilter, setPspFilter, setFromDate, setToDate,
+    setHasPsp, setHasBus, setHasDriver, setHasConductor, onClearAll,
   ]);
 
-  const getStatusIcon = (value: string) => {
-    switch (value) {
-      case 'active':
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
-      case 'completed':
-        return <CheckCircle className="w-4 h-4 text-emerald-600" />;
-      case 'pending':
-        return <Clock className="w-4 h-4 text-yellow-600" />;
-      case 'cancelled':
-        return <XCircle className="w-4 h-4 text-red-600" />;
-      case 'delayed':
-        return <AlertCircle className="w-4 h-4 text-orange-600" />;
-      case 'in_transit':
-        return <MapPin className="w-4 h-4 text-blue-600" />;
-      case 'boarding':
-        return <Users className="w-4 h-4 text-purple-600" />;
-      case 'departed':
-        return <CheckCircle className="w-4 h-4 text-indigo-600" />;
-      default:
-        return <Filter className="w-4 h-4 text-gray-600" />;
-    }
-  };
+  // ── Build active-filter chips ─────────────────────────────────
 
-  const getStatusLabel = (value: string) => {
-    switch (value) {
-      case 'active':
-        return 'Active Only';
-      case 'completed':
-        return 'Completed Only';
-      case 'pending':
-        return 'Pending Only';
-      case 'cancelled':
-        return 'Cancelled Only';
-      case 'delayed':
-        return 'Delayed Only';
-      case 'in_transit':
-        return 'In Transit Only';
-      case 'boarding':
-        return 'Boarding Only';
-      case 'departed':
-        return 'Departed Only';
-      default:
-        return 'All Statuses';
-    }
-  };
+  const chips: FilterChipDescriptor[] = [];
+
+  if (statusFilter !== 'all') {
+    chips.push({
+      key: 'status',
+      label: STATUS_LABELS[statusFilter] || statusFilter,
+      onRemove: () => setStatusFilter('all'),
+      colorClass: 'bg-green-50 text-green-700 border-green-200',
+      icon: <CheckCircle className="h-3 w-3 opacity-70" />,
+    });
+  }
+
+  if (routeFilter !== 'all') {
+    const routeName = filterOptions.routes.find((r) => r.id === routeFilter)?.name;
+    chips.push({
+      key: 'route',
+      label: `Route: ${routeName || routeFilter}`,
+      onRemove: () => setRouteFilter('all'),
+      colorClass: 'bg-purple-50 text-purple-700 border-purple-200',
+      icon: <Route className="h-3 w-3 opacity-70" />,
+    });
+  }
+
+  if (operatorFilter !== 'all') {
+    const opName = filterOptions.operators.find((o) => o.id === operatorFilter)?.name;
+    chips.push({
+      key: 'operator',
+      label: `Operator: ${opName || operatorFilter}`,
+      onRemove: () => setOperatorFilter('all'),
+      colorClass: 'bg-orange-50 text-orange-700 border-orange-200',
+      icon: <User className="h-3 w-3 opacity-70" />,
+    });
+  }
+
+  if (scheduleFilter !== 'all') {
+    const schName = filterOptions.schedules.find((s) => s.id === scheduleFilter)?.name;
+    chips.push({
+      key: 'schedule',
+      label: `Schedule: ${schName || scheduleFilter}`,
+      onRemove: () => setScheduleFilter('all'),
+      colorClass: 'bg-blue-50 text-blue-700 border-blue-200',
+      icon: <Clock className="h-3 w-3 opacity-70" />,
+    });
+  }
+
+  if (busFilter !== 'all') {
+    const busReg = filterOptions.buses.find((b) => b.id === busFilter)?.registrationNumber;
+    chips.push({
+      key: 'bus',
+      label: `Bus: ${busReg || busFilter}`,
+      onRemove: () => setBusFilter('all'),
+      colorClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      icon: <Bus className="h-3 w-3 opacity-70" />,
+    });
+  }
+
+  if (pspFilter !== 'all') {
+    const pspNum = filterOptions.passengerServicePermits.find((p) => p.id === pspFilter)?.permitNumber;
+    chips.push({
+      key: 'psp',
+      label: `PSP: ${pspNum || pspFilter}`,
+      onRemove: () => setPspFilter('all'),
+      colorClass: 'bg-purple-50 text-purple-700 border-purple-200',
+      icon: <Users className="h-3 w-3 opacity-70" />,
+    });
+  }
+
+  if (fromDate) {
+    chips.push({
+      key: 'from-date',
+      label: `From: ${fromDate}`,
+      onRemove: () => setFromDate(''),
+      colorClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      icon: <Calendar className="h-3 w-3 opacity-70" />,
+    });
+  }
+
+  if (toDate) {
+    chips.push({
+      key: 'to-date',
+      label: `To: ${toDate}`,
+      onRemove: () => setToDate(''),
+      colorClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      icon: <Calendar className="h-3 w-3 opacity-70" />,
+    });
+  }
+
+  if (hasPsp) {
+    chips.push({
+      key: 'has-psp',
+      label: 'Has PSP',
+      onRemove: () => setHasPsp(false),
+      colorClass: 'bg-purple-50 text-purple-700 border-purple-200',
+      icon: <Users className="h-3 w-3 opacity-70" />,
+    });
+  }
+
+  if (hasBus) {
+    chips.push({
+      key: 'has-bus',
+      label: 'Has Bus',
+      onRemove: () => setHasBus(false),
+      colorClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      icon: <Bus className="h-3 w-3 opacity-70" />,
+    });
+  }
+
+  if (hasDriver) {
+    chips.push({
+      key: 'has-driver',
+      label: 'Has Driver',
+      onRemove: () => setHasDriver(false),
+      colorClass: 'bg-blue-50 text-blue-700 border-blue-200',
+      icon: <User className="h-3 w-3 opacity-70" />,
+    });
+  }
+
+  if (hasConductor) {
+    chips.push({
+      key: 'has-conductor',
+      label: 'Has Conductor',
+      onRemove: () => setHasConductor(false),
+      colorClass: 'bg-orange-50 text-orange-700 border-orange-200',
+      icon: <User className="h-3 w-3 opacity-70" />,
+    });
+  }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-      {/* Compact Main Filter Section */}
-      <div className="p-4">
-        {/* Header with Results Count and Clear All */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Search className="h-5 w-5 text-gray-500" />
-            <h3 className="text-lg font-semibold text-gray-900">Search & Filters</h3>
-          </div>
-          <div className="flex items-center gap-3">
-            <h3 className="text-sm font-medium text-gray-900">
-              {filteredCount > 0 ? (
-                <span>
-                  {filteredCount.toLocaleString()} of {totalCount.toLocaleString()} trips
-                </span>
-              ) : (
-                <span>{totalCount.toLocaleString()} trips</span>
-              )}
-            </h3>
-            {hasActiveFilters && (
-              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''}
-              </span>
-            )}
-          </div>
-          {hasActiveFilters && (
-            <button
-              onClick={handleClearAll}
-              className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1"
-            >
-              <X className="w-4 h-4" />
-              Clear All
-            </button>
-          )}
-        </div>
+    <SearchFilterBar
+      searchValue={searchTerm}
+      onSearchChange={handleSearchChange}
+      searchPlaceholder="Search trips by route name, operator, schedule…"
+      totalCount={totalCount}
+      filteredCount={filteredCount}
+      resultLabel="trip"
+      loading={loading}
+      filters={
+        <>
+          {/* Row 1: Primary dropdown filters */}
+          <SelectFilter
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={filterOptions.statuses.map((s) => ({
+              value: s,
+              label: STATUS_LABELS[s] || s,
+            }))}
+            allLabel="All Statuses"
+            icon={<AlertCircle className="h-3.5 w-3.5" />}
+          />
+          <SelectFilter
+            value={routeFilter}
+            onChange={setRouteFilter}
+            options={filterOptions.routes.map((r) => ({
+              value: r.id,
+              label: r.routeGroup ? `${r.name} (${r.routeGroup})` : r.name,
+            }))}
+            allLabel="All Routes"
+            icon={<Route className="h-3.5 w-3.5" />}
+          />
+          <SelectFilter
+            value={operatorFilter}
+            onChange={setOperatorFilter}
+            options={filterOptions.operators.map((o) => ({
+              value: o.id,
+              label: o.name,
+            }))}
+            allLabel="All Operators"
+            icon={<User className="h-3.5 w-3.5" />}
+          />
+          <SelectFilter
+            value={scheduleFilter}
+            onChange={setScheduleFilter}
+            options={filterOptions.schedules.map((s) => ({
+              value: s.id,
+              label: s.name,
+            }))}
+            allLabel="All Schedules"
+            icon={<Clock className="h-3.5 w-3.5" />}
+          />
+          <SelectFilter
+            value={busFilter}
+            onChange={setBusFilter}
+            options={filterOptions.buses.map((b) => ({
+              value: b.id,
+              label: b.registrationNumber,
+            }))}
+            allLabel="All Buses"
+            icon={<Bus className="h-3.5 w-3.5" />}
+          />
+          <SelectFilter
+            value={pspFilter}
+            onChange={setPspFilter}
+            options={filterOptions.passengerServicePermits.map((p) => ({
+              value: p.id,
+              label: p.permitNumber,
+            }))}
+            allLabel="All PSPs"
+            icon={<Users className="h-3.5 w-3.5" />}
+          />
 
-        {/* Main Filter Controls */}
-        <div className="flex flex-col gap-3">
-          {/* Search Bar */}
-          <div className="relative">
-            <input
-              type="text"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              placeholder="Search trips by route name, operator, schedule..."
-              className="block w-full pl-4 pr-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500 text-sm"
-            />
-          </div>
+          {/* Date range inputs */}
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            className="appearance-none pl-3 pr-2 py-1.5 text-xs font-medium rounded-lg border bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/25 focus:border-purple-400 transition-all duration-150"
+            placeholder="From Date"
+            title="From Date"
+          />
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            className="appearance-none pl-3 pr-2 py-1.5 text-xs font-medium rounded-lg border bg-gray-50 border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-white focus:outline-none focus:ring-2 focus:ring-purple-500/25 focus:border-purple-400 transition-all duration-150"
+            placeholder="To Date"
+            title="To Date"
+          />
 
-          {/* Quick Filters Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {/* Status Filter */}
-            <div className="relative">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-              >
-                <option value="all">All Statuses</option>
-                {filterOptions.statuses.map((status) => (
-                  <option key={status} value={status}>
-                    {status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                {getStatusIcon(statusFilter)}
-              </div>
-            </div>
-
-            {/* Route Filter */}
-            <div className="relative">
-              <select
-                value={routeFilter}
-                onChange={(e) => setRouteFilter(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-              >
-                <option value="all">All Routes</option>
-                {filterOptions.routes.map((route) => (
-                  <option key={route.id} value={route.id}>
-                    {route.name} {route.routeGroup && `(${route.routeGroup})`}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <Route className="w-4 h-4 text-gray-400" />
-              </div>
-            </div>
-
-            {/* Date Range From */}
-            <div className="relative">
-              <input
-                type="date"
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-                placeholder="From Date"
-              />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <Calendar className="w-4 h-4 text-gray-400" />
-              </div>
-            </div>
-
-            {/* Date Range To */}
-            <div className="relative">
-              <input
-                type="date"
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-                className="block w-full pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-                placeholder="To Date"
-              />
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <Calendar className="w-4 h-4 text-gray-400" />
-              </div>
-            </div>
-          </div>
-
-          {/* Advanced Filters Toggle */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsFilterExpanded(!isFilterExpanded)}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <Filter className="w-4 h-4" />
-              Advanced Filters
-              {isFilterExpanded ? (
-                <ChevronUp className="w-4 h-4" />
-              ) : (
-                <ChevronDown className="w-4 h-4" />
-              )}
-            </button>
-
-            {/* Assignment Status Toggles */}
-            <div className="flex items-center gap-2">
-              <label className="flex items-center gap-1 text-sm">
-                <input
-                  type="checkbox"
-                  checked={hasPsp}
-                  onChange={(e) => setHasPsp(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <Users className="w-4 h-4 text-purple-600" />
-                <span className="text-gray-600">Has PSP</span>
-              </label>
-
-              <label className="flex items-center gap-1 text-sm">
-                <input
-                  type="checkbox"
-                  checked={hasBus}
-                  onChange={(e) => setHasBus(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <Bus className="w-4 h-4 text-indigo-600" />
-                <span className="text-gray-600">Has Bus</span>
-              </label>
-
-              <label className="flex items-center gap-1 text-sm">
-                <input
-                  type="checkbox"
-                  checked={hasDriver}
-                  onChange={(e) => setHasDriver(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <User className="w-4 h-4 text-blue-600" />
-                <span className="text-gray-600">Has Driver</span>
-              </label>
-
-              <label className="flex items-center gap-1 text-sm">
-                <input
-                  type="checkbox"
-                  checked={hasConductor}
-                  onChange={(e) => setHasConductor(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <User className="w-4 h-4 text-orange-600" />
-                <span className="text-gray-600">Has Conductor</span>
-              </label>
-            </div>
-          </div>
-
-          {/* Advanced Filters Expanded Section */}
-          {isFilterExpanded && (
-            <div className="border-t pt-3 mt-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {/* Operator Filter */}
-                <div className="relative">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Operator
-                  </label>
-                  <select
-                    value={operatorFilter}
-                    onChange={(e) => setOperatorFilter(e.target.value)}
-                    className="block w-full pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-                  >
-                    <option value="all">All Operators</option>
-                    {filterOptions.operators.map((operator) => (
-                      <option key={operator.id} value={operator.id}>
-                        {operator.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Schedule Filter */}
-                <div className="relative">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Schedule
-                  </label>
-                  <select
-                    value={scheduleFilter}
-                    onChange={(e) => setScheduleFilter(e.target.value)}
-                    className="block w-full pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-                  >
-                    <option value="all">All Schedules</option>
-                    {filterOptions.schedules.map((schedule) => (
-                      <option key={schedule.id} value={schedule.id}>
-                        {schedule.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Bus Filter */}
-                <div className="relative">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Bus
-                  </label>
-                  <select
-                    value={busFilter}
-                    onChange={(e) => setBusFilter(e.target.value)}
-                    className="block w-full pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-                  >
-                    <option value="all">All Buses</option>
-                    {filterOptions.buses.map((bus) => (
-                      <option key={bus.id} value={bus.id}>
-                        {bus.registrationNumber}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* PSP Filter */}
-                <div className="relative">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
-                    Passenger Service Permit
-                  </label>
-                  <select
-                    value={pspFilter}
-                    onChange={(e) => setPspFilter(e.target.value)}
-                    className="block w-full pl-3 pr-10 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-                  >
-                    <option value="all">All PSPs</option>
-                    {filterOptions.passengerServicePermits.map((psp) => (
-                      <option key={psp.id} value={psp.id}>
-                        {psp.permitNumber}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Active Filters Section */}
-      {hasActiveFilters && (
-        <div className="border-t border-gray-100">
-          <div className="p-3">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h4 className="text-xs font-medium text-gray-700 mb-2">Active Filters:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {searchTerm && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 border border-blue-200">
-                      <Search className="w-3 h-3" />
-                      Search: "{searchTerm}"
-                      <button
-                        onClick={() => {
-                          setSearchValue('');
-                          setSearchTerm('');
-                        }}
-                        className="ml-1 hover:text-blue-900"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-
-                  {statusFilter !== 'all' && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 border border-green-200">
-                      {getStatusIcon(statusFilter)}
-                      {getStatusLabel(statusFilter)}
-                      <button
-                        onClick={() => setStatusFilter('all')}
-                        className="ml-1 hover:text-green-900"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-
-                  {routeFilter !== 'all' && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800 border border-purple-200">
-                      <Route className="w-3 h-3" />
-                      Route: {filterOptions.routes.find(r => r.id === routeFilter)?.name}
-                      <button
-                        onClick={() => setRouteFilter('all')}
-                        className="ml-1 hover:text-purple-900"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-
-                  {operatorFilter !== 'all' && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800 border border-orange-200">
-                      <User className="w-3 h-3" />
-                      Operator: {filterOptions.operators.find(o => o.id === operatorFilter)?.name}
-                      <button
-                        onClick={() => setOperatorFilter('all')}
-                        className="ml-1 hover:text-orange-900"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-
-                  {fromDate && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800 border border-indigo-200">
-                      <Calendar className="w-3 h-3" />
-                      From: {fromDate}
-                      <button
-                        onClick={() => setFromDate('')}
-                        className="ml-1 hover:text-indigo-900"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-
-                  {toDate && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800 border border-indigo-200">
-                      <Calendar className="w-3 h-3" />
-                      To: {toDate}
-                      <button
-                        onClick={() => setToDate('')}
-                        className="ml-1 hover:text-indigo-900"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-
-                  {hasPsp && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800 border border-purple-200">
-                      <Users className="w-3 h-3" />
-                      Has PSP
-                      <button
-                        onClick={() => setHasPsp(false)}
-                        className="ml-1 hover:text-purple-900"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-
-                  {hasBus && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-indigo-100 text-indigo-800 border border-indigo-200">
-                      <Bus className="w-3 h-3" />
-                      Has Bus
-                      <button
-                        onClick={() => setHasBus(false)}
-                        className="ml-1 hover:text-indigo-900"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-
-                  {hasDriver && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800 border border-blue-200">
-                      <User className="w-3 h-3" />
-                      Has Driver
-                      <button
-                        onClick={() => setHasDriver(false)}
-                        className="ml-1 hover:text-blue-900"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-
-                  {hasConductor && (
-                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800 border border-orange-200">
-                      <User className="w-3 h-3" />
-                      Has Conductor
-                      <button
-                        onClick={() => setHasConductor(false)}
-                        className="ml-1 hover:text-orange-900"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Loading State */}
-      {loading && (
-        <div className="px-4 py-2 bg-blue-50 border-t border-blue-100">
-          <div className="flex items-center gap-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-            <span className="text-sm text-blue-700">Filtering trips...</span>
-          </div>
-        </div>
-      )}
-    </div>
+          {/* Assignment toggle buttons */}
+          <button
+            type="button"
+            onClick={() => setHasPsp(!hasPsp)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-150 whitespace-nowrap ${
+              hasPsp
+                ? 'bg-purple-50 border-purple-300 text-purple-800'
+                : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-white'
+            }`}
+          >
+            <Users className="h-3 w-3" />
+            PSP
+          </button>
+          <button
+            type="button"
+            onClick={() => setHasBus(!hasBus)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-150 whitespace-nowrap ${
+              hasBus
+                ? 'bg-indigo-50 border-indigo-300 text-indigo-800'
+                : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-white'
+            }`}
+          >
+            <Bus className="h-3 w-3" />
+            Bus
+          </button>
+          <button
+            type="button"
+            onClick={() => setHasDriver(!hasDriver)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-150 whitespace-nowrap ${
+              hasDriver
+                ? 'bg-blue-50 border-blue-300 text-blue-800'
+                : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-white'
+            }`}
+          >
+            <User className="h-3 w-3" />
+            Driver
+          </button>
+          <button
+            type="button"
+            onClick={() => setHasConductor(!hasConductor)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border transition-all duration-150 whitespace-nowrap ${
+              hasConductor
+                ? 'bg-orange-50 border-orange-300 text-orange-800'
+                : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300 hover:bg-white'
+            }`}
+          >
+            <User className="h-3 w-3" />
+            Conductor
+          </button>
+        </>
+      }
+      activeChips={chips}
+      onClearAllFilters={handleClearAll}
+    />
   );
 }

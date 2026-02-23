@@ -8,8 +8,7 @@ import { FareStatsCards } from '@/components/mot/fares/FareStatsCards';
 import { FareFilters } from '@/components/mot/fares/FareFilters';
 import { FaresTable } from '@/components/mot/fares/FaresTable';
 import { DeleteFareModal } from '@/components/mot/fares/DeleteFareModal';
-import { usePagination } from '@/components/mot/pagination';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { DataPagination } from '@/components/shared/DataPagination';
 import { Upload, Download } from 'lucide-react';
 
 export default function FaresPage() {
@@ -101,9 +100,12 @@ export default function FaresPage() {
         return filtered;
     }, [allFares, searchTerm, statusFilter, busTypeFilter, operatorFilter, regionFilter, sortField, sortDirection]);
 
-    // Pagination
-    const { currentPage, totalPages, paginatedData, handlePageChange, totalItems } =
-        usePagination(filteredFares, 10);
+    // Pagination (0-based)
+    const [currentPage, setCurrentPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const totalElements = filteredFares.length;
+    const totalPages = Math.max(1, Math.ceil(totalElements / pageSize));
+    const paginatedData = filteredFares.slice(currentPage * pageSize, (currentPage + 1) * pageSize);
 
     // Handlers
     const handleView = useCallback((fareId: string) => {
@@ -185,16 +187,13 @@ export default function FaresPage() {
                     regionFilter={regionFilter}
                     onRegionChange={setRegionFilter}
                     filterOptions={filterOptions}
-                    totalCount={filteredFares.length}
+                    totalCount={allFares.length}
+                    filteredCount={filteredFares.length}
                     onClearAll={handleClearAll}
                 />
 
-                {/* Table */}
-                <div className="bg-white rounded-lg shadow border border-gray-200">
-                    <div className="px-6 py-4 border-b border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900">Fare Structures Directory</h3>
-                    </div>
-
+                {/* Table + Pagination */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <FaresTable
                         fares={paginatedData}
                         onView={handleView}
@@ -205,42 +204,14 @@ export default function FaresPage() {
                         currentSort={{ field: sortField, direction: sortDirection }}
                     />
 
-                    {/* Pagination */}
-                    {totalPages > 1 && (
-                        <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                            <p className="text-sm text-gray-600">
-                                Showing page {currentPage} of {totalPages} ({totalItems} total)
-                            </p>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => handlePageChange(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <ChevronLeft className="w-4 h-4" />
-                                </button>
-                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                                    <button
-                                        key={page}
-                                        onClick={() => handlePageChange(page)}
-                                        className={`w-8 h-8 rounded-lg text-sm font-medium ${page === currentPage
-                                            ? 'bg-blue-600 text-white'
-                                            : 'border border-gray-300 hover:bg-gray-50 text-gray-700'
-                                            }`}
-                                    >
-                                        {page}
-                                    </button>
-                                ))}
-                                <button
-                                    onClick={() => handlePageChange(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    <ChevronRight className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                    <DataPagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalElements={totalElements}
+                        pageSize={pageSize}
+                        onPageChange={setCurrentPage}
+                        onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(0); }}
+                    />
                 </div>
 
             {/* Delete Modal */}

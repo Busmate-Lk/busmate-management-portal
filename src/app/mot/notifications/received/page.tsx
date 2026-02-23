@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { NotificationFilters, NotificationTable } from "@/components/admin/notifications"
+import { ReceivedNotificationFilters, ReceivedNotificationTable } from "@/components/mot/notifications"
+import { DataPagination } from "@/components/shared/DataPagination"
 import { filterNotifications, getReceivedNotifications, getUniqueAudiences } from "@/data/admin"
 
 export default function ReceivedNotificationsPage() {
@@ -13,6 +14,9 @@ export default function ReceivedNotificationsPage() {
         field: "createdAt",
         direction: "desc",
     })
+
+    const [currentPage, setCurrentPage] = useState(0)
+    const [pageSize, setPageSize] = useState(10)
 
     const allNotifications = useMemo(() => getReceivedNotifications(), [])
 
@@ -35,6 +39,16 @@ export default function ReceivedNotificationsPage() {
         })
         return s
     }, [filtered, sort])
+
+    const totalElements = sorted.length
+    const totalPages = Math.max(1, Math.ceil(totalElements / pageSize))
+    const paginatedData = sorted.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
+
+    const handleClearAll = useCallback(() => {
+        setFilters({})
+        setSearchTerm("")
+        setCurrentPage(0)
+    }, [])
 
     const filterConfig = useMemo(() => {
         const audiences = getUniqueAudiences()
@@ -65,20 +79,20 @@ export default function ReceivedNotificationsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="bg-white rounded-xl border border-gray-200">
-                <div className="p-4 border-b border-gray-100">
-                    <NotificationFilters
-                        searchTerm={searchTerm}
-                        onSearchChange={setSearchTerm}
-                        filters={filters}
-                        onFilterChange={(key, value) => setFilters((prev) => ({ ...prev, [key]: value }))}
-                        filterConfig={filterConfig}
-                        totalCount={allNotifications.length}
-                        filteredCount={filtered.length}
-                    />
-                </div>
-                <NotificationTable
-                    notifications={sorted}
+            <ReceivedNotificationFilters
+                searchTerm={searchTerm}
+                onSearchChange={(val) => { setSearchTerm(val); setCurrentPage(0); }}
+                filters={filters}
+                onFilterChange={(key, value) => { setFilters((prev) => ({ ...prev, [key]: value })); setCurrentPage(0); }}
+                filterConfig={filterConfig}
+                totalCount={allNotifications.length}
+                filteredCount={sorted.length}
+                onClearAll={handleClearAll}
+            />
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <ReceivedNotificationTable
+                    notifications={paginatedData}
                     onView={(id) => router.push(`/mot/notifications/detail/${id}`)}
                     currentSort={sort}
                     onSort={(field) =>
@@ -87,6 +101,15 @@ export default function ReceivedNotificationsPage() {
                             direction: prev.field === field && prev.direction === "asc" ? "desc" : "asc",
                         }))
                     }
+                />
+
+                <DataPagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalElements={totalElements}
+                    pageSize={pageSize}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(0); }}
                 />
             </div>
         </div>

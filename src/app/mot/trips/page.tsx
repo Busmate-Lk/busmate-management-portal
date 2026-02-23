@@ -17,7 +17,7 @@ import { TripActionButtons } from '@/components/mot/trips/TripActionButtons';
 import { TripsTable } from '@/components/mot/trips/TripsTable';
 
 // Import shared UI components
-import Pagination from '@/components/shared/Pagination';
+import { DataPagination } from '@/components/shared/DataPagination';
 import { DeleteConfirmationModal } from '@/components/mot/confirmation-modals';
 import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 
@@ -720,7 +720,7 @@ export default function TripsPage() {
           onSearch={handleSearch}
         />
 
-        <div className="bg-white shadow-sm">
+        <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
           {/* Trips Table */}
           <TripsTable
             trips={trips}
@@ -743,16 +743,15 @@ export default function TripsPage() {
             onSelectAll={handleSelectAll}
           />
           {/* Pagination */}
-          {pagination.totalElements > 0 && (
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
-              totalElements={pagination.totalElements}
-              pageSize={pagination.pageSize}
-              onPageChange={handlePageChange}
-              onPageSizeChange={handlePageSizeChange}
-            />
-          )}
+          <DataPagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            totalElements={pagination.totalElements}
+            pageSize={pagination.pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            loading={isLoading}
+          />
         </div>
 
         {/* Delete Confirmation Modal */}

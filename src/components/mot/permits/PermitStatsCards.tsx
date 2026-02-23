@@ -9,6 +9,10 @@ import {
   Users,
   MapPin,
 } from 'lucide-react';
+import { StatsCardsContainer } from '@/components/shared/StatsCardsContainer';
+import type { StatsCardMetric } from '@/components/shared/StatsCard';
+
+// ── Types ─────────────────────────────────────────────────────────
 
 interface PermitStatsCardsProps {
   stats?: {
@@ -22,11 +26,9 @@ interface PermitStatsCardsProps {
   loading?: boolean;
 }
 
-export function PermitStatsCards({
-  stats,
-  loading = false,
-}: PermitStatsCardsProps) {
-  // Provide default values when stats is null/undefined
+// ── Component ─────────────────────────────────────────────────────
+
+export function PermitStatsCards({ stats, loading = false }: PermitStatsCardsProps) {
   const safeStats = stats || {
     totalPermits: 0,
     activePermits: 0,
@@ -36,133 +38,78 @@ export function PermitStatsCards({
     permitsByRouteGroup: {},
   };
 
-  // Calculate derived values
   const totalOperators = Object.keys(safeStats.permitsByOperator || {}).length;
-  const totalRouteGroups = Object.keys(
-    safeStats.permitsByRouteGroup || {}
-  ).length;
+  const totalRouteGroups = Object.keys(safeStats.permitsByRouteGroup || {}).length;
+
+  const metrics: StatsCardMetric[] = [
+    {
+      label: 'Total Permits',
+      value: (safeStats.totalPermits || 0).toLocaleString(),
+      trend: 'stable',
+      trendValue: '',
+      trendPositiveIsGood: true,
+      color: 'blue',
+      sparkData: [],
+      icon: FileText,
+    },
+    {
+      label: 'Active',
+      value: (safeStats.activePermits || 0).toLocaleString(),
+      trend: 'stable',
+      trendValue: '',
+      trendPositiveIsGood: true,
+      color: 'green',
+      sparkData: [],
+      icon: CheckCircle,
+    },
+    {
+      label: 'Inactive',
+      value: (safeStats.inactivePermits || 0).toLocaleString(),
+      trend: 'stable',
+      trendValue: '',
+      trendPositiveIsGood: false,
+      color: 'amber',
+      sparkData: [],
+      icon: XCircle,
+    },
+    {
+      label: 'Expiring Soon',
+      value: (safeStats.expiringSoonPermits || 0).toLocaleString(),
+      trend: 'stable',
+      trendValue: '',
+      trendPositiveIsGood: false,
+      color: 'red',
+      sparkData: [],
+      icon: Clock,
+    },
+    {
+      label: 'Operators',
+      value: totalOperators.toLocaleString(),
+      trend: 'stable',
+      trendValue: '',
+      trendPositiveIsGood: true,
+      color: 'purple',
+      sparkData: [],
+      icon: Users,
+    },
+    {
+      label: 'Route Groups',
+      value: totalRouteGroups.toLocaleString(),
+      trend: 'stable',
+      trendValue: '',
+      trendPositiveIsGood: true,
+      color: 'teal',
+      sparkData: [],
+      icon: MapPin,
+    },
+  ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-      {/* Total Permits */}
-      <div className="bg-blue-50 border-blue-200 rounded-xl shadow-sm border-2 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-        <div className="flex items-center">
-          <div className="bg-blue-100 text-blue-600 w-12 h-12 rounded-lg flex items-center justify-center">
-            <FileText className="w-6 h-6" />
-          </div>
-          <div className="ml-4 flex-1">
-            <p className="text-sm font-medium text-gray-600 mb-1">
-              Total Permits
-            </p>
-            <p className="text-3xl font-bold text-gray-900 mb-1">
-              {loading ? (
-                <span className="animate-pulse bg-gray-200 h-9 w-16 rounded inline-block"></span>
-              ) : (
-                (safeStats.totalPermits || 0).toLocaleString()
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Active Permits */}
-      <div className="bg-green-50 border-green-200 rounded-xl shadow-sm border-2 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-        <div className="flex items-center">
-          <div className="bg-green-100 text-green-600 w-12 h-12 rounded-lg flex items-center justify-center">
-            <CheckCircle className="w-6 h-6" />
-          </div>
-          <div className="ml-4 flex-1">
-            <p className="text-sm font-medium text-gray-600 mb-1">Active</p>
-            <p className="text-3xl font-bold text-gray-900 mb-1">
-              {loading ? (
-                <span className="animate-pulse bg-gray-200 h-9 w-16 rounded inline-block"></span>
-              ) : (
-                (safeStats.activePermits || 0).toLocaleString()
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Inactive Permits */}
-      <div className="bg-orange-50 border-orange-200 rounded-xl shadow-sm border-2 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-        <div className="flex items-center">
-          <div className="bg-orange-100 text-orange-600 w-12 h-12 rounded-lg flex items-center justify-center">
-            <XCircle className="w-6 h-6" />
-          </div>
-          <div className="ml-4 flex-1">
-            <p className="text-sm font-medium text-gray-600 mb-1">Inactive</p>
-            <p className="text-3xl font-bold text-gray-900 mb-1">
-              {loading ? (
-                <span className="animate-pulse bg-gray-200 h-9 w-16 rounded inline-block"></span>
-              ) : (
-                (safeStats.inactivePermits || 0).toLocaleString()
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Expiring Permits */}
-      <div className="bg-teal-50 border-teal-200 rounded-xl shadow-sm border-2 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-        <div className="flex items-center">
-          <div className="bg-teal-100 text-teal-600 w-12 h-12 rounded-lg flex items-center justify-center">
-            <Clock className="w-6 h-6" />
-          </div>
-          <div className="ml-4 flex-1">
-            <p className="text-sm font-medium text-gray-600 mb-1">
-              Expiring Soon
-            </p>
-            <p className="text-3xl font-bold text-gray-900 mb-1">
-              {loading ? (
-                <span className="animate-pulse bg-gray-200 h-9 w-16 rounded inline-block"></span>
-              ) : (
-                (safeStats.expiringSoonPermits || 0).toLocaleString()
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Total Operators */}
-      <div className="bg-purple-50 border-purple-200 rounded-xl shadow-sm border-2 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-        <div className="flex items-center">
-          <div className="bg-purple-100 text-purple-600 w-12 h-12 rounded-lg flex items-center justify-center">
-            <Users className="w-6 h-6" />
-          </div>
-          <div className="ml-4 flex-1">
-            <p className="text-sm font-medium text-gray-600 mb-1">Operators</p>
-            <p className="text-3xl font-bold text-gray-900 mb-1">
-              {loading ? (
-                <span className="animate-pulse bg-gray-200 h-9 w-16 rounded inline-block"></span>
-              ) : (
-                totalOperators.toLocaleString()
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Total Route Groups */}
-      <div className="bg-indigo-50 border-indigo-200 rounded-xl shadow-sm border-2 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-        <div className="flex items-center">
-          <div className="bg-indigo-100 text-indigo-600 w-12 h-12 rounded-lg flex items-center justify-center">
-            <MapPin className="w-6 h-6" />
-          </div>
-          <div className="ml-4 flex-1">
-            <p className="text-sm font-medium text-gray-600 mb-1">
-              Route Groups
-            </p>
-            <p className="text-3xl font-bold text-gray-900 mb-1">
-              {loading ? (
-                <span className="animate-pulse bg-gray-200 h-9 w-16 rounded inline-block"></span>
-              ) : (
-                totalRouteGroups.toLocaleString()
-              )}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <StatsCardsContainer
+      metrics={metrics}
+      loading={loading}
+      columns={6}
+      skeletonCount={6}
+    />
   );
 }

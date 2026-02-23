@@ -9,7 +9,7 @@ import {
   OperatorStatsCards, 
   OperatorsTable 
 } from '@/components/mot/operators';
-import Pagination from '@/components/shared/Pagination';
+import { DataPagination } from '@/components/shared/DataPagination';
 import { OperatorManagementService, OperatorResponse } from '../../../../../generated/api-clients/route-management';
 import DeleteOperatorModal from '@/components/mot/users/operator/DeleteOperatorModal';
 
@@ -413,13 +413,10 @@ export default function OperatorsPage() {
         )}
 
         {/* Statistics Cards */}
-        <div className="mb-6">
-          <OperatorStatsCards stats={stats} />
-        </div>
+        <OperatorStatsCards stats={stats} />
 
         {/* Advanced Filters */}
-        <div className="mb-6">
-          <OperatorAdvancedFilters
+        <OperatorAdvancedFilters
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             statusFilter={statusFilter}
@@ -435,10 +432,9 @@ export default function OperatorsPage() {
             onSearch={handleSearch}
             onClearAll={handleClearAllFilters}
           />
-        </div>
 
         {/* Operators Table */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
           <OperatorsTable
             operators={transformedOperators}
             onView={handleView}
@@ -456,25 +452,15 @@ export default function OperatorsPage() {
           />
           
           {/* Pagination */}
-          {pagination.totalElements > 0 && (
-            <div className="border-t border-gray-200">
-              <Pagination
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                totalElements={pagination.totalElements}
-                pageSize={pagination.pageSize}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-                loading={isLoading}
-                searchActive={Boolean(searchTerm)}
-                filterCount={[
-                  statusFilter !== 'all',
-                  operatorTypeFilter !== 'all',
-                  regionFilter !== 'all'
-                ].filter(Boolean).length}
-              />
-            </div>
-          )}
+          <DataPagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            totalElements={pagination.totalElements}
+            pageSize={pagination.pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            loading={isLoading}
+          />
         </div>
 
         {/* Delete Operator Modal */}

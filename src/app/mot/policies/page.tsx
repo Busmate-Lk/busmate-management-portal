@@ -2,14 +2,15 @@
 
 import { useState, useMemo, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { AlertCircle, RefreshCw } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { Upload, Download } from 'lucide-react';
 import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { PolicyStatsCards } from '@/components/mot/policies/PolicyStatsCards';
 import { PolicyFilters } from '@/components/mot/policies/PolicyFilters';
 import { PoliciesTable } from '@/components/mot/policies/PoliciesTable';
 import { DeletePolicyModal } from '@/components/mot/policies/DeletePolicyModal';
-import { Pagination } from '@/components/mot/pagination';
+import { DataPagination } from '@/components/shared/DataPagination';
+import { ActionButton, ActionButtonsContainer } from '@/components/shared/ActionButton';
 import {
     getPolicies,
     getPolicyStatistics,
@@ -41,8 +42,8 @@ function PoliciesListContent() {
     const [departmentFilter, setDepartmentFilter] = useState(searchParams.get('department') || 'all');
     const [priorityFilter, setPriorityFilter] = useState(searchParams.get('priority') || 'all');
 
-    // Pagination
-    const [currentPage, setCurrentPage] = useState(1);
+    // Pagination (0-based)
+    const [currentPage, setCurrentPage] = useState(0);
     const [pageSize, setPageSize] = useState(10);
 
     // Sort
@@ -100,7 +101,7 @@ function PoliciesListContent() {
     // Paginate
     const totalPages = Math.ceil(filteredPolicies.length / pageSize);
     const paginatedPolicies = useMemo(() => {
-        const start = (currentPage - 1) * pageSize;
+        const start = currentPage * pageSize;
         return filteredPolicies.slice(start, start + pageSize);
     }, [filteredPolicies, currentPage, pageSize]);
 
@@ -189,37 +190,25 @@ function PoliciesListContent() {
         setTypeFilter('all');
         setDepartmentFilter('all');
         setPriorityFilter('all');
-        setCurrentPage(1);
+        setCurrentPage(0);
     }, []);
 
     const handleSort = useCallback((field: string, direction: 'asc' | 'desc') => {
         setSort({ field, direction });
-        setCurrentPage(1);
+        setCurrentPage(0);
     }, []);
 
     const handlePageChange = useCallback((page: number) => setCurrentPage(page), []);
     const handlePageSizeChange = useCallback((size: number) => {
         setPageSize(size);
-        setCurrentPage(1);
+        setCurrentPage(0);
     }, []);
 
     useSetPageActions(
-        <div className="flex items-center gap-2 shrink-0">
-            <button
-                onClick={handleUploadPolicy}
-                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
-            >
-                <Upload className="w-4 h-4" />
-                Upload Policy
-            </button>
-            <button
-                onClick={handleExport}
-                className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-                <Download className="w-4 h-4" />
-                Export
-            </button>
-        </div>
+        <ActionButtonsContainer>
+            <ActionButton variant="primary" icon={<Upload className="w-4 h-4" />} label="Upload Policy" onClick={handleUploadPolicy} />
+            <ActionButton variant="secondary" icon={<Download className="w-4 h-4" />} label="Export" onClick={handleExport} />
+        </ActionButtonsContainer>
     );
 
     return (
@@ -249,22 +238,23 @@ function PoliciesListContent() {
                 {/* Filters + Actions */}
                 <PolicyFilters
                     searchTerm={searchTerm}
-                    onSearchChange={(v) => { setSearchTerm(v); setCurrentPage(1); }}
+                    onSearchChange={(v) => { setSearchTerm(v); setCurrentPage(0); }}
                     statusFilter={statusFilter}
-                    onStatusChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}
+                    onStatusChange={(v) => { setStatusFilter(v); setCurrentPage(0); }}
                     typeFilter={typeFilter}
-                    onTypeChange={(v) => { setTypeFilter(v); setCurrentPage(1); }}
+                    onTypeChange={(v) => { setTypeFilter(v); setCurrentPage(0); }}
                     departmentFilter={departmentFilter}
-                    onDepartmentChange={(v) => { setDepartmentFilter(v); setCurrentPage(1); }}
+                    onDepartmentChange={(v) => { setDepartmentFilter(v); setCurrentPage(0); }}
                     priorityFilter={priorityFilter}
-                    onPriorityChange={(v) => { setPriorityFilter(v); setCurrentPage(1); }}
+                    onPriorityChange={(v) => { setPriorityFilter(v); setCurrentPage(0); }}
                     filterOptions={filterOptions}
-                    totalCount={filteredPolicies.length}
+                    totalCount={allPolicies.length}
+                    filteredCount={filteredPolicies.length}
                     onClearAll={handleClearFilters}
                 />
 
-                {/* Table */}
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                {/* Table + Pagination */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                     <PoliciesTable
                         policies={paginatedPolicies}
                         onView={handleView}
@@ -274,49 +264,14 @@ function PoliciesListContent() {
                         currentSort={sort}
                     />
 
-                    {/* Pagination */}
-                    {filteredPolicies.length > 0 && (
-                        <div className="border-t border-gray-200 px-4 pb-3">
-                            <Pagination
-                                currentPage={currentPage}
-                                totalPages={totalPages}
-                                totalItems={filteredPolicies.length}
-                                itemsPerPage={pageSize}
-                                onPageChange={handlePageChange}
-                                onPageSizeChange={handlePageSizeChange}
-                            />
-                        </div>
-                    )}
-
-                    {/* Empty State */}
-                    {filteredPolicies.length === 0 && (
-                        <div className="text-center py-12 px-4">
-                            <div className="text-gray-500">
-                                <div className="text-lg font-medium mb-2">No policies found</div>
-                                <div className="text-sm mb-4">
-                                    {searchTerm || statusFilter !== 'all' || typeFilter !== 'all'
-                                        ? 'Try adjusting your search or filters.'
-                                        : 'Get started by uploading your first policy.'}
-                                </div>
-                                <div className="flex items-center justify-center gap-3">
-                                    {(searchTerm || statusFilter !== 'all' || typeFilter !== 'all') && (
-                                        <button
-                                            onClick={handleClearFilters}
-                                            className="text-blue-600 hover:text-blue-700 underline text-sm"
-                                        >
-                                            Clear all filters
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={handleUploadPolicy}
-                                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                                    >
-                                        Upload New Policy
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    <DataPagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalElements={filteredPolicies.length}
+                        pageSize={pageSize}
+                        onPageChange={handlePageChange}
+                        onPageSizeChange={handlePageSizeChange}
+                    />
                 </div>
 
                 {/* Delete Modal */}

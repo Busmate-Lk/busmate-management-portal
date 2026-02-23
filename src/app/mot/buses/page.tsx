@@ -7,7 +7,7 @@ import { BusStatsCards } from '@/components/mot/buses/BusStatsCards';
 import BusAdvancedFilters from '@/components/mot/buses/BusAdvancedFilters';
 import { BusActionButtons } from '@/components/mot/buses/BusActionButtons';
 import { BusesTable } from '@/components/mot/buses/BusesTable';
-import Pagination from '@/components/shared/Pagination';
+import { DataPagination } from '@/components/shared/DataPagination';
 import DeleteBusModal from '@/components/mot/buses/DeleteBusModal';
 import { 
   BusManagementService,
@@ -417,7 +417,7 @@ export default function BusesPage() {
         />
 
 
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
         {/* Buses Table */}
         <BusesTable
           buses={buses}
@@ -438,18 +438,15 @@ export default function BusesPage() {
         />
 
         {/* Pagination */}
-        {pagination.totalPages > 0 && (
-            <div className="border-t border-gray-200">
-            <Pagination
-              currentPage={pagination.currentPage}
-              totalPages={pagination.totalPages}
-              onPageChange={handlePageChange}
-              totalElements={pagination.totalElements}
-              pageSize={pagination.pageSize}
-              onPageSizeChange={handlePageSizeChange}
-            />
-            </div>
-        )}
+        <DataPagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          totalElements={pagination.totalElements}
+          pageSize={pagination.pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          loading={isLoading}
+        />
         </div>
 
         {/* Error Display */}
