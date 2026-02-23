@@ -1,8 +1,22 @@
 'use client';
 
-import React from 'react';
-import { Bus, Users, Eye, Edit, Trash2, Settings } from 'lucide-react';
-import { DataTable, DataTableColumn, SortState } from '@/components/shared/DataTable';
+import React, { useMemo } from 'react';
+import {
+  Bus,
+  Users,
+  Eye,
+  Edit,
+  Trash2,
+  Settings,
+  CheckCircle,
+  XCircle,
+  Clock,
+  AlertTriangle,
+} from 'lucide-react';
+import { DataTable } from '@/components/shared/DataTable';
+import type { DataTableColumn, SortState } from '@/components/shared/DataTable';
+
+// ── Types ─────────────────────────────────────────────────────────
 
 interface BusesTableProps {
   buses: any[];
@@ -16,8 +30,24 @@ interface BusesTableProps {
   currentSort: { field: string; direction: 'asc' | 'desc' };
 }
 
-const formatDate = (dateString?: string) => {
-  if (!dateString) return 'N/A';
+// ── Helpers ───────────────────────────────────────────────────────
+
+const STATUS_STYLES: Record<string, string> = {
+  ACTIVE:    'bg-green-50 text-green-700 border-green-200',
+  INACTIVE:  'bg-red-50 text-red-700 border-red-200',
+  PENDING:   'bg-amber-50 text-amber-700 border-amber-200',
+  CANCELLED: 'bg-gray-100 text-gray-600 border-gray-200',
+};
+
+const STATUS_ICONS: Record<string, React.ReactNode> = {
+  ACTIVE:    <CheckCircle className="w-3.5 h-3.5" />,
+  INACTIVE:  <XCircle className="w-3.5 h-3.5" />,
+  PENDING:   <Clock className="w-3.5 h-3.5" />,
+  CANCELLED: <XCircle className="w-3.5 h-3.5" />,
+};
+
+function formatDate(dateString?: string): string {
+  if (!dateString) return '—';
   try {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -25,24 +55,11 @@ const formatDate = (dateString?: string) => {
       day: 'numeric',
     });
   } catch {
-    return 'Invalid date';
+    return '—';
   }
-};
+}
 
-const getStatusStyle = (status?: string) => {
-  switch (status?.toUpperCase()) {
-    case 'ACTIVE':
-      return 'bg-green-100 text-green-800 border-green-200';
-    case 'INACTIVE':
-      return 'bg-red-100 text-red-800 border-red-200';
-    case 'PENDING':
-      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-    case 'CANCELLED':
-      return 'bg-gray-100 text-gray-800 border-gray-200';
-    default:
-      return 'bg-gray-100 text-gray-600 border-gray-200';
-  }
-};
+// ── Component ─────────────────────────────────────────────────────
 
 export function BusesTable({
   buses,
@@ -55,135 +72,161 @@ export function BusesTable({
   loading,
   currentSort,
 }: BusesTableProps) {
-  const columns: DataTableColumn<any>[] = [
-    {
-      key: 'ntcRegistrationNumber',
-      header: 'Registration',
-      sortable: true,
-      render: (bus) => (
-        <div className="flex items-center">
-          <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center shrink-0">
-            <Bus className="h-4 w-4 text-blue-600" />
-          </div>
-          <div className="ml-3">
-            <div className="text-sm font-medium text-gray-900">
-              {bus.ntcRegistrationNumber || bus.ntc_registration_number || 'N/A'}
+  const columns = useMemo<DataTableColumn<any>[]>(
+    () => [
+      {
+        key: 'ntcRegistrationNumber',
+        header: 'Registration',
+        sortable: true,
+        minWidth: 'min-w-[180px]',
+        render: (bus) => (
+          <div className="flex items-center gap-3">
+            <div className="shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center ring-1 ring-blue-200/60">
+              <Bus className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
+                {bus.ntcRegistrationNumber || bus.ntc_registration_number || 'N/A'}
+              </p>
+              <p className="text-[11px] text-gray-400 font-mono leading-tight mt-0.5 truncate">
+                #{bus.id?.slice(0, 8)}
+              </p>
             </div>
           </div>
-        </div>
-      ),
-    },
-    {
-      key: 'plateNumber',
-      header: 'Plate Number',
-      sortable: true,
-      render: (bus) => (
-        <span className="text-sm text-gray-900">{bus.plateNumber || bus.plate_number || 'N/A'}</span>
-      ),
-    },
-    {
-      key: 'operator.name',
-      header: 'Operator',
-      sortable: true,
-      render: (bus) => (
-        <div className="flex items-center">
-          <Users className="h-4 w-4 text-gray-400 mr-2 shrink-0" />
-          <div>
-            <div className="text-sm font-medium text-gray-900">
+        ),
+      },
+      {
+        key: 'plateNumber',
+        header: 'Plate Number',
+        sortable: true,
+        cellClassName: 'whitespace-nowrap',
+        render: (bus) => (
+          <span className="text-sm text-gray-700 font-mono">
+            {bus.plateNumber || bus.plate_number || '—'}
+          </span>
+        ),
+      },
+      {
+        key: 'operator.name',
+        header: 'Operator',
+        sortable: true,
+        minWidth: 'min-w-[140px]',
+        render: (bus) => (
+          <div className="flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+            <span className="text-sm text-gray-900 truncate">
               {bus.operator?.name || bus.operatorName || 'Unknown'}
-            </div>
-            {(bus.operator?.operatorType || bus.operatorType) && (
-              <div className="text-xs text-gray-500">
-                {bus.operator?.operatorType || bus.operatorType}
-              </div>
-            )}
+            </span>
           </div>
-        </div>
-      ),
-    },
-    {
-      key: 'model',
-      header: 'Model',
-      sortable: true,
-      render: (bus) => <span className="text-sm text-gray-900">{bus.model || 'N/A'}</span>,
-    },
-    {
-      key: 'capacity',
-      header: 'Capacity',
-      sortable: true,
-      render: (bus) => (
-        <span className="text-sm font-medium text-gray-900">{bus.capacity || '0'} seats</span>
-      ),
-    },
-    {
-      key: 'status',
-      header: 'Status',
-      sortable: true,
-      render: (bus) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusStyle(bus.status)}`}
-        >
-          {bus.status ? bus.status.charAt(0) + bus.status.slice(1).toLowerCase() : 'Unknown'}
-        </span>
-      ),
-    },
-    {
-      key: 'createdAt',
-      header: 'Created',
-      sortable: true,
-      render: (bus) => (
-        <span className="text-sm text-gray-500">{formatDate(bus.createdAt || bus.created_at)}</span>
-      ),
-    },
-    {
-      key: 'actions',
-      header: 'Actions',
-      headerClassName: 'text-right',
-      cellClassName: 'text-right',
-      render: (bus) => (
-        <div className="flex items-center justify-end gap-1">
-          <button
-            onClick={() => onView(bus.id)}
-            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
-            title="View Details"
-          >
-            <Eye className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => onEdit(bus.id)}
-            className="p-1.5 text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
-            title="Edit Bus"
-          >
-            <Edit className="h-4 w-4" />
-          </button>
-          {onAssignRoute && (
+        ),
+      },
+      {
+        key: 'model',
+        header: 'Model',
+        sortable: true,
+        render: (bus) => (
+          <span className="text-sm text-gray-700">{bus.model || '—'}</span>
+        ),
+      },
+      {
+        key: 'capacity',
+        header: 'Capacity',
+        sortable: true,
+        cellClassName: 'whitespace-nowrap',
+        render: (bus) => (
+          <span className="text-sm text-gray-700 tabular-nums">
+            {bus.capacity ?? '—'}
+            {bus.capacity != null && (
+              <span className="text-[11px] text-gray-400 ml-0.5">seats</span>
+            )}
+          </span>
+        ),
+      },
+      {
+        key: 'status',
+        header: 'Status',
+        sortable: true,
+        cellClassName: 'whitespace-nowrap',
+        render: (bus) => {
+          const s = (bus.status ?? '').toUpperCase();
+          return (
+            <span
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+                STATUS_STYLES[s] ?? 'bg-gray-100 text-gray-600 border-gray-200'
+              }`}
+            >
+              {STATUS_ICONS[s] ?? <AlertTriangle className="w-3.5 h-3.5" />}
+              {s ? s.charAt(0) + s.slice(1).toLowerCase() : 'Unknown'}
+            </span>
+          );
+        },
+      },
+      {
+        key: 'createdAt',
+        header: 'Created',
+        sortable: true,
+        cellClassName: 'whitespace-nowrap',
+        render: (bus) => (
+          <span className="text-xs text-gray-500 tabular-nums">
+            {formatDate(bus.createdAt || bus.created_at)}
+          </span>
+        ),
+      },
+      {
+        key: 'actions',
+        header: 'Actions',
+        headerClassName: 'text-center',
+        cellClassName: 'text-center whitespace-nowrap',
+        render: (bus) => (
+          <div className="inline-flex items-center gap-1">
+            <button
+              onClick={() => onView(bus.id)}
+              className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors duration-100"
+              title="View Details"
+            >
+              <Eye className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => onEdit(bus.id)}
+              className="p-1.5 rounded-lg text-amber-500 hover:bg-amber-50 transition-colors duration-100"
+              title="Edit Bus"
+            >
+              <Edit className="h-3.5 w-3.5" />
+            </button>
+            {onAssignRoute && (
+              <button
+                onClick={() =>
+                  onAssignRoute(
+                    bus.id,
+                    bus.ntcRegistrationNumber || bus.ntc_registration_number || 'Unknown',
+                  )
+                }
+                className="p-1.5 rounded-lg text-green-500 hover:bg-green-50 transition-colors duration-100"
+                title="Assign to Route"
+              >
+                <Settings className="h-3.5 w-3.5" />
+              </button>
+            )}
             <button
               onClick={() =>
-                onAssignRoute(bus.id, bus.ntcRegistrationNumber || bus.ntc_registration_number || 'Unknown')
+                onDelete(
+                  bus.id,
+                  bus.ntcRegistrationNumber || bus.ntc_registration_number || 'Unknown',
+                )
               }
-              className="p-1.5 text-green-600 hover:bg-green-50 rounded-md transition-colors"
-              title="Assign to Route"
+              className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors duration-100"
+              title="Delete Bus"
             >
-              <Settings className="h-4 w-4" />
+              <Trash2 className="h-3.5 w-3.5" />
             </button>
-          )}
-          <button
-            onClick={() =>
-              onDelete(bus.id, bus.ntcRegistrationNumber || bus.ntc_registration_number || 'Unknown')
-            }
-            className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
-            title="Delete Bus"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
-        </div>
-      ),
-    },
-  ];
+          </div>
+        ),
+      },
+    ],
+    [onView, onEdit, onDelete, onAssignRoute],
+  );
 
-  const handleSort = (field: string, direction: 'asc' | 'desc') => {
-    onSort(field, direction);
-  };
+  const hasActiveFilters = Object.values(activeFilters).some(Boolean);
 
   return (
     <DataTable
@@ -191,20 +234,22 @@ export function BusesTable({
       data={buses}
       loading={loading}
       currentSort={currentSort as SortState}
-      onSort={handleSort}
+      onSort={onSort}
       rowKey={(bus) => bus.id}
+      showRefreshing={loading && buses.length > 0}
       emptyState={
-        <div className="text-center py-12 px-4">
-          <Bus className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No buses found</h3>
-          <p className="text-gray-500">
-            {Object.keys(activeFilters).some((key) => activeFilters[key])
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+            <Bus className="w-7 h-7 text-blue-400" />
+          </div>
+          <h3 className="text-base font-semibold text-gray-900 mb-1">No buses found</h3>
+          <p className="text-sm text-gray-500 max-w-xs">
+            {hasActiveFilters
               ? 'No buses match your current filters. Try adjusting your search criteria.'
               : 'No buses have been registered yet.'}
           </p>
         </div>
       }
-      showRefreshing={loading && buses.length > 0}
     />
   );
 }

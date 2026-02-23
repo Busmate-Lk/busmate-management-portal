@@ -110,40 +110,50 @@ export function OperatorsTable({
               <Building className="h-4.5 w-4.5 text-blue-600" />
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-sm font-semibold text-gray-900 truncate">
                 {row.name || 'Unnamed Operator'}
               </p>
-              <p className="text-xs text-gray-500 truncate">ID: {row.id}</p>
+              <p className="text-[11px] text-gray-400 truncate">ID: {row.id}</p>
             </div>
           </div>
         ),
       },
       {
-        key: 'typeRegion',
-        header: 'Type & Region',
-        minWidth: 'min-w-[140px]',
+        key: 'operatorType',
+        header: 'Type',
+        cellClassName: 'whitespace-nowrap',
         render: (row) => (
-          <div className="space-y-1.5">
-            <span
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border ${
-                TYPE_STYLES[row.operatorType ?? ''] ?? 'bg-gray-100 text-gray-600 border-gray-200'
-              }`}
-            >
-              {row.operatorType === 'CTB' ? (
-                <Users className="w-3 h-3" />
-              ) : (
-                <Building className="w-3 h-3" />
-              )}
-              {row.operatorType === 'PRIVATE' ? 'Private' : row.operatorType === 'CTB' ? 'CTB' : 'Unknown'}
-            </span>
-            {row.region && (
-              <div className="flex items-center text-xs text-gray-500 gap-1">
-                <MapPin className="w-3 h-3 shrink-0" />
-                <span className="truncate">{row.region}</span>
-              </div>
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+              TYPE_STYLES[row.operatorType ?? ''] ?? 'bg-gray-100 text-gray-600 border-gray-200'
+            }`}
+          >
+            {row.operatorType === 'CTB' ? (
+              <Users className="w-3 h-3" />
+            ) : (
+              <Building className="w-3 h-3" />
             )}
-          </div>
+            {row.operatorType === 'PRIVATE'
+              ? 'Private'
+              : row.operatorType === 'CTB'
+                ? 'CTB'
+                : 'Unknown'}
+          </span>
         ),
+      },
+      {
+        key: 'region',
+        header: 'Region',
+        minWidth: 'min-w-[120px]',
+        render: (row) =>
+          row.region ? (
+            <div className="flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              <span className="text-sm text-gray-700 truncate">{row.region}</span>
+            </div>
+          ) : (
+            <span className="text-xs text-gray-300 italic">—</span>
+          ),
       },
       {
         key: 'status',
@@ -152,7 +162,7 @@ export function OperatorsTable({
           const s = row.status ?? '';
           return (
             <span
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium border ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
                 STATUS_STYLES[s] ?? 'bg-gray-100 text-gray-600 border-gray-200'
               }`}
             >
@@ -169,8 +179,8 @@ export function OperatorsTable({
         minWidth: 'min-w-[120px]',
         render: (row) => (
           <div>
-            <p className="text-sm text-gray-900">{formatDate(row.createdAt)}</p>
-            <p className="text-xs text-gray-500">{formatTime(row.createdAt)}</p>
+            <p className="text-xs text-gray-500">{formatDate(row.createdAt)}</p>
+            <p className="text-[11px] text-gray-400">{formatTime(row.createdAt)}</p>
           </div>
         ),
       },
@@ -181,8 +191,8 @@ export function OperatorsTable({
         minWidth: 'min-w-[120px]',
         render: (row) => (
           <div>
-            <p className="text-sm text-gray-500">{formatDate(row.updatedAt)}</p>
-            <p className="text-xs text-gray-500">{formatTime(row.updatedAt)}</p>
+            <p className="text-xs text-gray-500">{formatDate(row.updatedAt)}</p>
+            <p className="text-[11px] text-gray-400">{formatTime(row.updatedAt)}</p>
           </div>
         ),
       },
@@ -198,21 +208,21 @@ export function OperatorsTable({
               className="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
               title="View details"
             >
-              <Eye className="h-4 w-4" />
+              <Eye className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onEdit(row.id)}
               className="p-1.5 rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors"
               title="Edit"
             >
-              <Edit className="h-4 w-4" />
+              <Edit className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onDelete(row.id, row.name || 'Unknown Operator')}
               className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
               title="Delete"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-3.5 w-3.5" />
             </button>
           </div>
         ),
@@ -233,10 +243,12 @@ export function OperatorsTable({
       rowKey={(row) => row.id}
       showRefreshing={loading && operators.length > 0}
       emptyState={
-        <div className="text-center py-12">
-          <Building className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-base font-medium text-gray-900 mb-1">No operators found</h3>
-          <p className="text-sm text-gray-500">
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+            <Building className="w-7 h-7 text-blue-400" />
+          </div>
+          <h3 className="text-base font-semibold text-gray-900 mb-1">No operators found</h3>
+          <p className="text-sm text-gray-500 max-w-xs">
             {hasActiveFilters
               ? 'No operators match your current filters. Try adjusting your search criteria.'
               : 'No operators have been created yet.'}

@@ -170,11 +170,14 @@ export function SchedulesTable({
         key: 'status',
         header: 'Status',
         cellClassName: 'whitespace-nowrap',
+        render: (s) => <StatusBadge status={s.status} />,
+      },
+      {
+        key: 'operatingDays',
+        header: 'Operating Days',
+        cellClassName: 'whitespace-nowrap',
         render: (s) => (
-          <div className="space-y-1.5">
-            <StatusBadge status={s.status} />
-            <p className="text-[11px] text-gray-400">{getDaysOfWeek(s.scheduleCalendars)}</p>
-          </div>
+          <span className="text-[11px] text-gray-400">{getDaysOfWeek(s.scheduleCalendars)}</span>
         ),
       },
       {
