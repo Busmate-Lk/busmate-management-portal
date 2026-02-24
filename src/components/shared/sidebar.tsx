@@ -23,6 +23,8 @@ import {
   User,
   LogOut,
   CircleUser,
+  Text,
+  FileTextIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -116,7 +118,7 @@ export function Sidebar({
       href: '/mot/buses',
     },
     {
-      icon: TicketIcon,
+      icon: FileTextIcon,
       label: 'Permit Management',
       active: activeItem === 'passenger-service-permits',
       href: '/mot/passenger-service-permits',
@@ -286,20 +288,20 @@ export function Sidebar({
       <div className="px-4 py-3 border-b border-blue-700 flex items-center justify-center min-h-16">
         <div className="flex items-center justify-center w-full overflow-hidden">
           {!isCollapsed ? (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0">
               <Image
                 src="/busmate-logo-icon.png"
                 alt="Busmate LK"
                 width={1408}
                 height={768}
-                className="w-9 h-7 object-cover shrink-0"
+                className="w-18 h-8 object-cover shrink-0"
               />
               <Image
                 src="/busmate-logo-text.png"
                 alt="Busmate LK"
                 width={1408}
                 height={768}
-                className="w-32 h-10 object-cover shrink-0"
+                className="w-32 h-10 object-cover shrink-0 -ml-2"
               />
             </div>
           ) : (
