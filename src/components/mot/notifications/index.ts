@@ -1,2 +1,2 @@
-export { ReceivedNotificationFilters } from './ReceivedNotificationFilters';
-export { ReceivedNotificationTable } from './ReceivedNotificationTable';
+export { NotificationsTable } from './NotificationsTable';
+export type { NotificationsTableMode } from './NotificationsTable';
