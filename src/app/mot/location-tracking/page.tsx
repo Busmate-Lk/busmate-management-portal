@@ -1,574 +1,290 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { RefreshCw, Maximize2 } from 'lucide-react';
+import React, { useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { RefreshCw, Maximize2, Radio, Settings, LayoutGrid } from 'lucide-react';
 import { useJsApiLoader } from '@react-google-maps/api';
 
-// Import API services
-import { QueryService, TripService, DeviceService, OpenAPI } from '../../../../generated/api-clients/location-tracking';
-import { TripManagementService, RouteManagementService } from '../../../../generated/api-clients/route-management';
-import { TripResponse } from '../../../../generated/api-clients/route-management';
-
-// Import page context
+// Page Context
 import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 
-// Import our new components
-import { LocationStats } from '@/components/mot/location-tracking/LocationStats';
-import { LocationFilters } from '@/components/mot/location-tracking/LocationFilters';
-import { LocationMap } from '@/components/mot/location-tracking/LocationMap';
-import { TripsList } from '@/components/mot/location-tracking/TripsList';
+// Custom Hook
+import { useLocationTracking } from '@/hooks/useLocationTracking';
 
-// Types for location tracking
-interface LocationData {
-    tripId: string;
-    busId: string;
-    location: {
-        type: 'Point';
-        coordinates: [number, number]; // [longitude, latitude]
-    };
-    speed?: number;
-    heading?: number;
-    timestamp: string;
-    accuracy?: number;
-}
+// Components
+import {
+  TrackingStatsCards,
+  TrackingSearchFilters,
+  TrackingMap,
+  TrackingBusList,
+} from '@/components/mot/location-tracking';
 
-interface ActiveTripData {
-    id: string;
-    busId?: string;
-    routeId?: string;
-    status?: string;
-    currentLocation?: LocationData;
-    progress?: number;
-    nextStop?: string;
-    estimatedArrival?: string;
-    deviceStatus?: 'online' | 'offline' | 'unknown';
-    bus?: {
-        registrationNumber?: string;
-        capacity?: number;
-    };
-    route?: {
-        name?: string;
-    };
-}
+// Types
+import type { TrackedBus, MapViewMode } from '@/types/location-tracking';
 
-interface FilterState {
-    search: string;
-    status: string;
-    routeId: string;
-    operatorId: string;
-    showOnlyActive: boolean;
-    showOfflineDevices: boolean;
-}
+// ── Google Maps Libraries ─────────────────────────────────────────
 
-// Google Maps configuration
-const defaultCenter = {
-    lat: 6.9271, // Colombo, Sri Lanka
-    lng: 79.8612
-};
+const GOOGLE_MAPS_LIBRARIES: ('geometry' | 'places')[] = ['geometry', 'places'];
+
+// ── Main Page Component ───────────────────────────────────────────
 
 export default function LocationTrackingPage() {
-    useSetPageMetadata({
-        title: 'Location Tracking',
-        description: 'Real-time bus location monitoring and trip tracking',
-        activeItem: 'location-tracking',
-        showBreadcrumbs: true,
-        breadcrumbs: [{ label: 'Location Tracking' }],
-    });
+  const router = useRouter();
 
-    // Google Maps API loader
-    const { isLoaded } = useJsApiLoader({
-        id: 'google-map-script',
-        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-        libraries: ['geometry', 'places']
-    });
+  // Set page metadata
+  useSetPageMetadata({
+    title: 'Location Tracking',
+    description: 'Real-time bus location monitoring and fleet tracking',
+    activeItem: 'location-tracking',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Location Tracking' }],
+  });
 
-    // State management
-    const [activeTrips, setActiveTrips] = useState<ActiveTripData[]>([]);
-    const [selectedTrip, setSelectedTrip] = useState<ActiveTripData | null>(null);
-    const [mapCenter, setMapCenter] = useState(defaultCenter);
-    const [mapZoom, setMapZoom] = useState(12);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
-    const [autoRefresh, setAutoRefresh] = useState(true);
-    const [refreshInterval, setRefreshInterval] = useState(30); // seconds
-    const [isMapFullscreen, setIsMapFullscreen] = useState(false);
+  // Load Google Maps API
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+    libraries: GOOGLE_MAPS_LIBRARIES,
+  });
 
-    // Filter states
-    const [filters, setFilters] = useState<FilterState>({
-        search: '',
-        status: 'all',
-        routeId: 'all',
-        operatorId: 'all',
-        showOnlyActive: true,
-        showOfflineDevices: false
-    });
+  // Use custom hook for all state management
+  const {
+    buses,
+    filteredBuses,
+    statsMetrics,
+    filterOptions,
+    filters,
+    setFilters,
+    selectedBus,
+    setSelectedBus,
+    mapCenter,
+    setMapCenter,
+    mapZoom,
+    setMapZoom,
+    viewMode,
+    setViewMode,
+    statsCollapsed,
+    setStatsCollapsed,
+    isLoading,
+    error,
+    refresh,
+    lastUpdate,
+    autoRefresh,
+    setAutoRefresh,
+    refreshInterval,
+    setRefreshInterval,
+    focusOnBus,
+  } = useLocationTracking();
 
-    // Statistics
-    const [stats, setStats] = useState({
-        totalActiveTrips: 0,
-        onlineDevices: 0,
-        offlineDevices: 0,
-        averageSpeed: 0,
-        tripsOnTime: 0,
-        tripsDelayed: 0
-    });
+  // Handle view bus details
+  const handleViewBusDetails = useCallback(
+    (bus: TrackedBus) => {
+      // Navigate to a detailed bus view page (if exists)
+      // For now, just log or show a toast
+      console.log('View details for bus:', bus.bus.registrationNumber);
+    },
+    []
+  );
 
-    // Filter options
-    const [filterOptions, setFilterOptions] = useState({
-        routes: [] as Array<{ id: string; name: string }>
-    });
+  // Handle view route
+  const handleViewRoute = useCallback(
+    (routeId: string) => {
+      // Navigate to route details page
+      router.push(`/mot/routes/${routeId}`);
+    },
+    [router]
+  );
 
-    // Refs
-    const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  // Handle view mode changes
+  const handleViewModeChange = useCallback(
+    (mode: MapViewMode) => {
+      setViewMode(mode);
+      // Collapse stats when going fullscreen
+      if (mode === 'fullscreen') {
+        setStatsCollapsed(true);
+      }
+    },
+    [setViewMode, setStatsCollapsed]
+  );
 
-    // Demo data for development
-    const demoTrips: ActiveTripData[] = [
-        {
-            id: 'demo-trip-1',
-            busId: 'bus-001',
-            routeId: 'route-001',
-            status: 'active',
-            deviceStatus: 'online',
-            currentLocation: {
-                tripId: 'demo-trip-1',
-                busId: 'bus-001',
-                location: {
-                    type: 'Point',
-                    coordinates: [79.8612, 6.9271]
-                },
-                speed: 45.2,
-                heading: 120,
-                timestamp: new Date().toISOString(),
-                accuracy: 5
-            },
-            progress: 65,
-            nextStop: 'Pettah Bus Stand',
-            estimatedArrival: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
-            bus: {
-                registrationNumber: 'WP CAA-1234',
-                capacity: 45
-            },
-            route: {
-                name: 'Colombo - Kandy Express'
-            }
-        },
-        {
-            id: 'demo-trip-2',
-            busId: 'bus-002',
-            routeId: 'route-002',
-            status: 'delayed',
-            deviceStatus: 'online',
-            currentLocation: {
-                tripId: 'demo-trip-2',
-                busId: 'bus-002',
-                location: {
-                    type: 'Point',
-                    coordinates: [79.8712, 6.9371]
-                },
-                speed: 25.8,
-                heading: 45,
-                timestamp: new Date().toISOString(),
-                accuracy: 3
-            },
-            progress: 30,
-            nextStop: 'Fort Railway Station',
-            estimatedArrival: new Date(Date.now() + 25 * 60 * 1000).toISOString(),
-            bus: {
-                registrationNumber: 'WP CAB-5678',
-                capacity: 52
-            },
-            route: {
-                name: 'Colombo - Galle Highway'
-            }
+  // Set page actions
+  useSetPageActions(
+    <div className="flex items-center gap-2 shrink-0">
+      {/* Last update indicator */}
+      {lastUpdate && (
+        <span className="text-xs text-gray-500 hidden sm:inline">
+          Updated{' '}
+          {lastUpdate.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          })}
+        </span>
+      )}
+
+      {/* Live/Paused Toggle */}
+      <button
+        onClick={() => setAutoRefresh(!autoRefresh)}
+        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+          autoRefresh
+            ? 'bg-green-100 text-green-700 hover:bg-green-200'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        }`}
+      >
+        <Radio className={`h-3.5 w-3.5 ${autoRefresh ? 'animate-pulse' : ''}`} />
+        {autoRefresh ? 'Live' : 'Paused'}
+      </button>
+
+      {/* Refresh Button */}
+      <button
+        onClick={refresh}
+        disabled={isLoading}
+        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+      >
+        <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+        <span className="hidden sm:inline">Refresh</span>
+      </button>
+
+      {/* Fullscreen Toggle */}
+      <button
+        onClick={() =>
+          handleViewModeChange(viewMode === 'fullscreen' ? 'standard' : 'fullscreen')
         }
-    ];
+        className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+      >
+        <Maximize2 className="h-4 w-4" />
+        <span className="hidden sm:inline">
+          {viewMode === 'fullscreen' ? 'Exit Fullscreen' : 'Fullscreen'}
+        </span>
+      </button>
+    </div>
+  );
 
-    // Load active trips data
-    const loadActiveTrips = useCallback(async () => {
-        try {
-            setIsLoading(true);
-            setError(null);
-
-            let activeTripsResponse;
-            let tripsWithLocation: ActiveTripData[] = [];
-            
-            // Try location tracking API first
-            try {
-                console.log('Fetching active trips from location tracking API...');
-                activeTripsResponse = await QueryService.getActiveTrips();
-                console.log('Location tracking API response:', activeTripsResponse);
-                
-                if (activeTripsResponse?.data?.trips && Array.isArray(activeTripsResponse.data.trips)) {
-                    // Transform location tracking API response to our format
-                    tripsWithLocation = activeTripsResponse.data.trips.map((trip: any) => {
-                        return {
-                            id: trip.id || `trip-${Date.now()}-${Math.random()}`,
-                            busId: trip.busId,
-                            routeId: trip.routeId,
-                            status: trip.status || 'active',
-                            deviceStatus: trip.deviceStatus || 'online',
-                            currentLocation: trip.currentLocation ? {
-                                tripId: trip.id,
-                                busId: trip.busId,
-                                location: trip.currentLocation,
-                                speed: trip.latestLocationData?.speed || Math.random() * 60,
-                                heading: trip.latestLocationData?.heading || Math.random() * 360,
-                                timestamp: trip.latestLocationData?.timestamp || new Date().toISOString(),
-                                accuracy: trip.latestLocationData?.accuracy || Math.random() * 10
-                            } : {
-                                tripId: trip.id,
-                                busId: trip.busId,
-                                location: {
-                                    type: 'Point',
-                                    coordinates: [79.8612 + (Math.random() - 0.5) * 0.1, 6.9271 + (Math.random() - 0.5) * 0.1]
-                                },
-                                speed: Math.random() * 60,
-                                heading: Math.random() * 360,
-                                timestamp: new Date().toISOString(),
-                                accuracy: Math.random() * 10
-                            },
-                            progress: Math.floor(Math.random() * 100), // Will be updated with real data later
-                            nextStop: trip.nextStop || 'Unknown Stop',
-                            estimatedArrival: trip.eta || new Date(Date.now() + Math.random() * 60 * 60 * 1000).toISOString(),
-                            bus: trip.bus || {
-                                registrationNumber: trip.busRegistrationNumber || `WP ${trip.busId}`,
-                                capacity: trip.busCapacity || 50
-                            },
-                            route: trip.route || {
-                                name: trip.routeName || `Route ${trip.routeId}`
-                            }
-                        };
-                    });
-                    
-                    console.log(`Mapped ${tripsWithLocation.length} trips from location tracking API`);
-                } else {
-                    console.log('No active trips found in location tracking API response. Data structure:', activeTripsResponse?.data);
-                }
-            } catch (locationError) {
-                console.log('Location tracking API failed:', locationError);
-                
-                // Fallback to route management API
-                try {
-                    console.log('Trying route management API fallback...');
-                    const routeApiResponse = await TripManagementService.getTripsByStatus('active');
-                    console.log('Route management API response:', routeApiResponse);
-                    
-                    if (Array.isArray(routeApiResponse)) {
-                        tripsWithLocation = routeApiResponse.map((trip: any) => ({
-                            id: trip.id,
-                            busId: trip.busId,
-                            routeId: trip.routeId,
-                            status: trip.status || 'active',
-                            deviceStatus: 'unknown', // Route API doesn't have device status
-                            currentLocation: {
-                                tripId: trip.id,
-                                busId: trip.busId,
-                                location: {
-                                    type: 'Point',
-                                    coordinates: [79.8612 + (Math.random() - 0.5) * 0.1, 6.9271 + (Math.random() - 0.5) * 0.1]
-                                },
-                                speed: Math.random() * 60,
-                                heading: Math.random() * 360,
-                                timestamp: new Date().toISOString(),
-                                accuracy: Math.random() * 10
-                            },
-                            progress: Math.floor(Math.random() * 100),
-                            nextStop: 'Unknown Stop',
-                            estimatedArrival: new Date(Date.now() + Math.random() * 60 * 60 * 1000).toISOString(),
-                            bus: trip.bus || {
-                                registrationNumber: trip.busRegistrationNumber || `WP ${trip.busId}`,
-                                capacity: trip.busCapacity || 50
-                            },
-                            route: trip.route || {
-                                name: trip.routeName || `Route ${trip.routeId}`
-                            }
-                        }));
-                    }
-                } catch (routeError) {
-                    console.log('Route management API also failed:', routeError);
-                }
-            }
-
-            // If we have trips data, use it; otherwise fall back to demo data
-            if (tripsWithLocation.length > 0) {
-                setActiveTrips(tripsWithLocation);
-                setLastUpdate(new Date());
-                updateStatistics(tripsWithLocation);
-            } else {
-                console.log('No trips found from APIs, using demo data');
-                setActiveTrips(demoTrips);
-                setLastUpdate(new Date());
-                updateStatistics(demoTrips);
-            }
-
-        } catch (error) {
-            console.error('Error loading active trips:', error);
-            setError('Failed to load active trips. Using demo data.');
-            // Use demo data on error
-            setActiveTrips(demoTrips);
-            setLastUpdate(new Date());
-            updateStatistics(demoTrips);
-        } finally {
-            setIsLoading(false);
-        }
-    }, []);
-
-    // Load statistics
-    const loadStatistics = useCallback(async () => {
-        try {
-            console.log('Loading device statistics from API...');
-            const deviceStatsResponse = await DeviceService.getDeviceStatistics();
-            console.log('Device statistics response:', deviceStatsResponse);
-            
-            if (deviceStatsResponse?.data) {
-                const apiStats = deviceStatsResponse.data;
-                
-                // Update stats with API data, mapping to our interface
-                setStats(prevStats => ({
-                    totalActiveTrips: apiStats.totalDevices || prevStats.totalActiveTrips,
-                    onlineDevices: apiStats.activeDevices || 0,
-                    offlineDevices: apiStats.inactiveDevices || 0,
-                    averageSpeed: prevStats.averageSpeed, // Keep calculated from trips
-                    tripsOnTime: prevStats.tripsOnTime, // Keep calculated from trips
-                    tripsDelayed: prevStats.tripsDelayed // Keep calculated from trips
-                }));
-                
-                console.log('Statistics updated from API');
-            } else {
-                console.log('No device statistics data received, keeping current stats');
-            }
-        } catch (error) {
-            console.log('Failed to load device statistics:', error);
-            // Keep current statistics or use defaults
-        }
-    }, []);
-
-    // Update statistics based on current trips
-    const updateStatistics = (trips: ActiveTripData[]) => {
-        const onlineTrips = trips.filter(trip => trip.deviceStatus === 'online');
-        const offlineTrips = trips.filter(trip => trip.deviceStatus === 'offline');
-        const delayedTrips = trips.filter(trip => trip.status === 'delayed');
-        const onTimeTrips = trips.filter(trip => trip.status === 'active' || trip.status === 'in_transit');
-        
-        const avgSpeed = onlineTrips.reduce((acc, trip) => {
-            return acc + (trip.currentLocation?.speed || 0);
-        }, 0) / (onlineTrips.length || 1);
-
-        setStats({
-            totalActiveTrips: trips.length,
-            onlineDevices: onlineTrips.length,
-            offlineDevices: offlineTrips.length,
-            averageSpeed: avgSpeed,
-            tripsOnTime: onTimeTrips.length,
-            tripsDelayed: delayedTrips.length
-        });
-    };
-
-    // Filter trips based on current filters
-    const filteredTrips = activeTrips.filter(trip => {
-        // Search filter
-        if (filters.search) {
-            const searchLower = filters.search.toLowerCase();
-            const matchesSearch = 
-                trip.bus?.registrationNumber?.toLowerCase().includes(searchLower) ||
-                trip.route?.name?.toLowerCase().includes(searchLower) ||
-                trip.id?.toLowerCase().includes(searchLower);
-            if (!matchesSearch) return false;
-        }
-
-        // Status filter
-        if (filters.status !== 'all') {
-            if (filters.status === 'online' && trip.deviceStatus !== 'online') return false;
-            if (filters.status === 'offline' && trip.deviceStatus !== 'offline') return false;
-            if (filters.status === 'active' && trip.status !== 'active') return false;
-            if (filters.status === 'delayed' && trip.status !== 'delayed') return false;
-        }
-
-        // Route filter
-        if (filters.routeId !== 'all' && trip.routeId !== filters.routeId) return false;
-
-        // Show only active filter
-        if (filters.showOnlyActive && trip.status !== 'active' && trip.status !== 'in_transit') return false;
-
-        // Show offline devices filter
-        if (!filters.showOfflineDevices && trip.deviceStatus === 'offline') return false;
-
-        return true;
-    });
-
-    // Handle trip selection
-    const handleTripSelect = useCallback((trip: ActiveTripData | null) => {
-        setSelectedTrip(trip);
-    }, []);
-
-    // Handle trip focus (center map on trip)
-    const handleTripFocus = useCallback((trip: ActiveTripData) => {
-        if (trip.currentLocation?.location?.coordinates) {
-            const [lng, lat] = trip.currentLocation.location.coordinates;
-            setMapCenter({ lat, lng });
-            setMapZoom(15);
-            setSelectedTrip(trip);
-        }
-    }, []);
-
-    // Handle map center changes
-    const handleMapCenterChange = useCallback((center: { lat: number; lng: number }) => {
-        setMapCenter(center);
-    }, []);
-
-    // Handle map zoom changes
-    const handleMapZoomChange = useCallback((zoom: number) => {
-        setMapZoom(zoom);
-    }, []);
-
-    // Handle manual refresh
-    const handleManualRefresh = useCallback(() => {
-        loadActiveTrips();
-        loadStatistics();
-    }, [loadActiveTrips, loadStatistics]);
-
-    // Auto refresh setup
-    useEffect(() => {
-        if (autoRefresh) {
-            refreshIntervalRef.current = setInterval(() => {
-                loadActiveTrips();
-                loadStatistics();
-            }, refreshInterval * 1000);
-        } else {
-            if (refreshIntervalRef.current) {
-                clearInterval(refreshIntervalRef.current);
-                refreshIntervalRef.current = null;
-            }
-        }
-
-        return () => {
-            if (refreshIntervalRef.current) {
-                clearInterval(refreshIntervalRef.current);
-            }
-        };
-    }, [autoRefresh, refreshInterval, loadActiveTrips, loadStatistics]);
-
-    // Load filter options
-    const loadFilterOptions = useCallback(async () => {
-        try {
-            console.log('Loading filter options...');
-            const routesResponse = await RouteManagementService.getAllRoutes(0, 100, 'name', 'asc');
-            console.log('Routes response:', routesResponse);
-            
-            if (routesResponse?.content && Array.isArray(routesResponse.content)) {
-                const routeOptions = routesResponse.content.map((route: any) => ({
-                    id: route.id,
-                    name: route.name || `Route ${route.id}`
-                }));
-                
-                setFilterOptions(prev => ({
-                    ...prev,
-                    routes: routeOptions
-                }));
-                
-                console.log('Filter options loaded:', routeOptions);
-            }
-        } catch (error) {
-            console.log('Failed to load filter options:', error);
-        }
-    }, []);
-
-    // Load initial data
-    useEffect(() => {
-        loadActiveTrips();
-        loadStatistics();
-        loadFilterOptions();
-    }, [loadActiveTrips, loadStatistics, loadFilterOptions]);
-
-    // Toggle fullscreen map
-    const toggleFullscreen = useCallback(() => {
-        setIsMapFullscreen(!isMapFullscreen);
-    }, [isMapFullscreen]);
-
-    useSetPageActions(
-        <div className="flex items-center gap-2 shrink-0">
-            <button
-                onClick={handleManualRefresh}
-                disabled={isLoading}
-                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-            >
-                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-                Refresh
-            </button>
-            <button
-                onClick={toggleFullscreen}
-                className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
-            >
-                <Maximize2 className="h-4 w-4" />
-                Fullscreen
-            </button>
-        </div>
-    );
-
+  // Fullscreen view - only show map
+  if (viewMode === 'fullscreen') {
     return (
-        <div className="space-y-6">
-            {/* Statistics Dashboard */}
-            <LocationStats stats={stats} lastUpdate={lastUpdate} />
-
-            {/* Filters */}
-            <LocationFilters
-                filters={filters}
-                onFiltersChange={setFilters}
-                filterOptions={filterOptions}
-                autoRefresh={autoRefresh}
-                onAutoRefreshChange={setAutoRefresh}
-                refreshInterval={refreshInterval}
-                onRefreshIntervalChange={setRefreshInterval}
-                isLoading={isLoading}
-                filteredCount={filteredTrips.length}
-                totalCount={activeTrips.length}
-            />
-
-            {/* Main Content */}
-            <div className={`${isMapFullscreen ? 'fixed inset-0 z-50 bg-white' : 'grid grid-cols-1 lg:grid-cols-4 gap-6'}`}>
-                {/* Map */}
-                <div className={`${isMapFullscreen ? 'h-full' : 'lg:col-span-3 h-96 lg:h-[600px]'} bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden`}>
-                    <LocationMap
-                        activeTrips={filteredTrips}
-                        selectedTrip={selectedTrip}
-                        onTripSelect={handleTripSelect}
-                        mapCenter={mapCenter}
-                        mapZoom={mapZoom}
-                        onMapCenterChange={handleMapCenterChange}
-                        onMapZoomChange={handleMapZoomChange}
-                        isLoaded={isLoaded}
-                    />
-                </div>
-
-                {/* Trips List Sidebar */}
-                {!isMapFullscreen && (
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 h-fit max-h-[600px] overflow-hidden">
-                        <TripsList
-                            trips={filteredTrips}
-                            selectedTrip={selectedTrip}
-                            onTripSelect={handleTripSelect}
-                            onTripFocus={handleTripFocus}
-                            isLoading={isLoading}
-                            error={error}
-                        />
-                    </div>
-                )}
-            </div>
-
-            {/* Development Info */}
-            {process.env.NODE_ENV === 'development' && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-yellow-800 mb-2">Development Info</h3>
-                    <div className="text-xs text-yellow-700 space-y-1">
-                        <p>• Total trips loaded: {activeTrips.length}</p>
-                        <p>• Filtered trips: {filteredTrips.length}</p>
-                        <p>• Google Maps loaded: {isLoaded ? 'Yes' : 'Loading...'}</p>
-                        <p>• Auto refresh: {autoRefresh ? `Every ${refreshInterval}s` : 'Disabled'}</p>
-                        <p>• Last update: {lastUpdate?.toLocaleTimeString() || 'Never'}</p>
-                    </div>
-                </div>
-            )}
-        </div>
+      <TrackingMap
+        buses={filteredBuses}
+        selectedBus={selectedBus}
+        onBusSelect={setSelectedBus}
+        center={mapCenter}
+        zoom={mapZoom}
+        onCenterChange={setMapCenter}
+        onZoomChange={setMapZoom}
+        viewMode={viewMode}
+        onViewModeChange={handleViewModeChange}
+        isLoaded={isLoaded}
+        isLoading={isLoading}
+        onViewBusDetails={handleViewBusDetails}
+        onViewRoute={handleViewRoute}
+      />
     );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Stats Cards - Collapsible */}
+      <TrackingStatsCards
+        metrics={statsMetrics}
+        loading={isLoading && statsMetrics.length === 0}
+        isCollapsed={statsCollapsed}
+        onToggleCollapse={() => setStatsCollapsed(!statsCollapsed)}
+        lastUpdate={lastUpdate}
+      />
+
+      {/* Search & Filters */}
+      <TrackingSearchFilters
+        filters={filters}
+        onFiltersChange={setFilters}
+        filterOptions={filterOptions}
+        autoRefresh={autoRefresh}
+        onAutoRefreshToggle={() => setAutoRefresh(!autoRefresh)}
+        refreshInterval={refreshInterval}
+        onRefreshIntervalChange={setRefreshInterval}
+        isLoading={isLoading}
+        filteredCount={filteredBuses.length}
+        totalCount={buses.length}
+        onRefresh={refresh}
+      />
+
+      {/* Main Content: Map + Bus List */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        {/* Map - Takes 3 columns on large screens */}
+        <div className="lg:col-span-3">
+          <TrackingMap
+            buses={filteredBuses}
+            selectedBus={selectedBus}
+            onBusSelect={setSelectedBus}
+            center={mapCenter}
+            zoom={mapZoom}
+            onCenterChange={setMapCenter}
+            onZoomChange={setMapZoom}
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
+            isLoaded={isLoaded}
+            isLoading={isLoading}
+            onViewBusDetails={handleViewBusDetails}
+            onViewRoute={handleViewRoute}
+          />
+        </div>
+
+        {/* Bus List Sidebar - Takes 1 column on large screens */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm h-[500px] lg:h-[600px] overflow-hidden">
+            <TrackingBusList
+              buses={filteredBuses}
+              selectedBus={selectedBus}
+              onBusSelect={setSelectedBus}
+              onBusFocus={focusOnBus}
+              isLoading={isLoading}
+              error={error}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Development Info - Only in dev mode */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-amber-800 mb-2 flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Development Info
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-amber-700">
+            <div>
+              <span className="font-medium">Total Buses:</span> {buses.length}
+            </div>
+            <div>
+              <span className="font-medium">Filtered:</span> {filteredBuses.length}
+            </div>
+            <div>
+              <span className="font-medium">Maps Loaded:</span>{' '}
+              {isLoaded ? 'Yes' : 'Loading...'}
+            </div>
+            <div>
+              <span className="font-medium">Auto-refresh:</span>{' '}
+              {autoRefresh ? `Every ${refreshInterval}s` : 'Disabled'}
+            </div>
+            <div>
+              <span className="font-medium">Selected:</span>{' '}
+              {selectedBus?.bus.registrationNumber || 'None'}
+            </div>
+            <div>
+              <span className="font-medium">View Mode:</span> {viewMode}
+            </div>
+            <div>
+              <span className="font-medium">Last Update:</span>{' '}
+              {lastUpdate?.toLocaleTimeString() || 'Never'}
+            </div>
+            <div>
+              <span className="font-medium">Active Filters:</span>{' '}
+              {Object.values(filters).filter(
+                (v) => v !== 'all' && v !== '' && v !== true && v !== false
+              ).length}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
