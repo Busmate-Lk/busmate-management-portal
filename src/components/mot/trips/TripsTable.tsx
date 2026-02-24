@@ -7,13 +7,12 @@ import {
   XCircle,
   Clock,
   AlertCircle,
-  MapPin,
   Users,
   Bus,
-  User,
   FileText,
   Trash2,
   Eye,
+  Navigation2,
 } from 'lucide-react';
 import { TripResponse } from '../../../../generated/api-clients/route-management';
 import { DataTable, type DataTableColumn } from '@/components/shared/DataTable';
@@ -33,9 +32,6 @@ interface TripsTableProps {
   activeFilters: Record<string, any>;
   loading: boolean;
   currentSort: { field: string; direction: 'asc' | 'desc' };
-  selectedTrips?: string[];
-  onSelectTrip?: (tripId: string) => void;
-  onSelectAll?: () => void;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────
@@ -72,21 +68,21 @@ function getStatusMeta(status?: string): {
   const s = status?.toLowerCase();
   switch (s) {
     case 'active':
-      return { icon: <CheckCircle className="w-3.5 h-3.5" />, label: 'Active',     colorClass: 'bg-green-100 text-green-800 border-green-200' };
+      return { icon: <CheckCircle className="w-3.5 h-3.5" />, label: 'Active',     colorClass: 'bg-green-50 text-green-700 border-green-200' };
     case 'completed':
-      return { icon: <CheckCircle className="w-3.5 h-3.5" />, label: 'Completed',  colorClass: 'bg-emerald-100 text-emerald-800 border-emerald-200' };
+      return { icon: <CheckCircle className="w-3.5 h-3.5" />, label: 'Completed',  colorClass: 'bg-emerald-50 text-emerald-700 border-emerald-200' };
     case 'pending':
-      return { icon: <Clock className="w-3.5 h-3.5" />,       label: 'Pending',    colorClass: 'bg-yellow-100 text-yellow-800 border-yellow-200' };
+      return { icon: <Clock className="w-3.5 h-3.5" />,       label: 'Pending',    colorClass: 'bg-yellow-50 text-yellow-700 border-yellow-200' };
     case 'cancelled':
-      return { icon: <XCircle className="w-3.5 h-3.5" />,     label: 'Cancelled',  colorClass: 'bg-red-100 text-red-800 border-red-200' };
+      return { icon: <XCircle className="w-3.5 h-3.5" />,     label: 'Cancelled',  colorClass: 'bg-red-50 text-red-600 border-red-200' };
     case 'delayed':
-      return { icon: <AlertCircle className="w-3.5 h-3.5" />, label: 'Delayed',    colorClass: 'bg-orange-100 text-orange-800 border-orange-200' };
+      return { icon: <AlertCircle className="w-3.5 h-3.5" />, label: 'Delayed',    colorClass: 'bg-orange-50 text-orange-700 border-orange-200' };
     case 'in_transit':
-      return { icon: <MapPin className="w-3.5 h-3.5" />,      label: 'In Transit', colorClass: 'bg-blue-100 text-blue-800 border-blue-200' };
+      return { icon: <Navigation2 className="w-3.5 h-3.5" />, label: 'In Transit', colorClass: 'bg-blue-50 text-blue-700 border-blue-200' };
     case 'boarding':
-      return { icon: <Users className="w-3.5 h-3.5" />,       label: 'Boarding',   colorClass: 'bg-purple-100 text-purple-800 border-purple-200' };
+      return { icon: <Users className="w-3.5 h-3.5" />,       label: 'Boarding',   colorClass: 'bg-purple-50 text-purple-700 border-purple-200' };
     case 'departed':
-      return { icon: <CheckCircle className="w-3.5 h-3.5" />, label: 'Departed',   colorClass: 'bg-indigo-100 text-indigo-800 border-indigo-200' };
+      return { icon: <CheckCircle className="w-3.5 h-3.5" />, label: 'Departed',   colorClass: 'bg-indigo-50 text-indigo-700 border-indigo-200' };
     default:
       return { icon: <AlertCircle className="w-3.5 h-3.5" />, label: status ?? 'Unknown', colorClass: 'bg-gray-100 text-gray-600 border-gray-200' };
   }
@@ -103,53 +99,32 @@ function getStatusMeta(status?: string): {
 export function TripsTable({
   trips,
   onView,
-  onEdit,
   onDelete,
-  onStart,
-  onComplete,
-  onCancel,
-  onAssignPsp,
   onSort,
   activeFilters,
   loading,
   currentSort,
-  selectedTrips = [],
-  onSelectTrip,
-  onSelectAll,
 }: TripsTableProps) {
   const columns: DataTableColumn<TripResponse>[] = useMemo(
     () => [
-      // ── Optional checkbox column ──────────────────────────────
-      ...(onSelectAll || onSelectTrip
-        ? [{
-            key: 'select',
-            header: '',
-            headerClassName: 'w-10',
-            cellClassName: 'w-10',
-            render: (trip: TripResponse) => (
-              <input
-                type="checkbox"
-                checked={selectedTrips.includes(trip.id ?? '')}
-                onChange={() => onSelectTrip?.(trip.id ?? '')}
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-            ),
-          } satisfies DataTableColumn<TripResponse>]
-        : []
-      ),
-
       // ── Trip Date ─────────────────────────────────────────────
       {
         key: 'tripDate',
         header: 'Trip Date',
         sortable: true,
-        minWidth: 'min-w-[140px]',
+        minWidth: 'min-w-[160px]',
         render: (trip) => (
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-gray-900">{formatDate(trip.tripDate)}</p>
-              <p className="text-xs text-gray-500">#{trip.id?.slice(-8)}</p>
+          <div className="flex items-center gap-3">
+            <div className="shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center ring-1 ring-blue-200/60">
+              <Calendar className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
+                {formatDate(trip.tripDate)}
+              </p>
+              <p className="text-[11px] text-gray-400 font-mono leading-tight mt-0.5 truncate">
+                #{trip.id?.slice(-8)}
+              </p>
             </div>
           </div>
         ),
@@ -160,12 +135,16 @@ export function TripsTable({
         key: 'routeName',
         header: 'Route',
         sortable: true,
-        minWidth: 'min-w-[140px]',
+        minWidth: 'min-w-[160px]',
         render: (trip) => (
-          <div>
-            <p className="text-sm font-medium text-gray-900">{trip.routeName || '—'}</p>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
+              {trip.routeName || '—'}
+            </p>
             {trip.routeGroupName && (
-              <p className="text-xs text-gray-500">{trip.routeGroupName}</p>
+              <p className="text-[11px] text-gray-400 truncate leading-tight mt-0.5">
+                {trip.routeGroupName}
+              </p>
             )}
           </div>
         ),
@@ -178,7 +157,7 @@ export function TripsTable({
         sortable: true,
         minWidth: 'min-w-[120px]',
         render: (trip) => (
-          <span className="text-sm text-gray-900">{trip.scheduleName || '—'}</span>
+          <span className="text-sm text-gray-700">{trip.scheduleName || '—'}</span>
         ),
       },
 
@@ -188,7 +167,7 @@ export function TripsTable({
         header: 'Operator',
         minWidth: 'min-w-[120px]',
         render: (trip) => (
-          <span className="text-sm text-gray-900">{trip.operatorName || '—'}</span>
+          <span className="text-sm text-gray-700">{trip.operatorName || '—'}</span>
         ),
       },
 
@@ -200,11 +179,11 @@ export function TripsTable({
         minWidth: 'min-w-[100px]',
         render: (trip) => (
           <div>
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-semibold text-gray-900">
               {formatTime(trip.scheduledDepartureTime)}
             </p>
             {trip.actualDepartureTime && (
-              <p className="text-xs text-gray-500">
+              <p className="text-[11px] text-gray-400 mt-0.5">
                 Actual: {formatTime(trip.actualDepartureTime)}
               </p>
             )}
@@ -216,27 +195,31 @@ export function TripsTable({
       {
         key: 'assignments',
         header: 'Assignments',
-        minWidth: 'min-w-[130px]',
+        minWidth: 'min-w-[140px]',
         render: (trip) => (
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <FileText className={`w-3 h-3 shrink-0 ${trip.passengerServicePermitId ? 'text-green-600' : 'text-gray-300'}`} />
-              <span className={`text-xs ${trip.passengerServicePermitId ? 'text-green-800' : 'text-gray-500'}`}>
-                {trip.passengerServicePermitId ? (trip.passengerServicePermitNumber ?? 'PSP') : 'No PSP'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Bus className={`w-3 h-3 shrink-0 ${trip.busId ? 'text-blue-600' : 'text-gray-300'}`} />
-              <span className={`text-xs ${trip.busId ? 'text-blue-800' : 'text-gray-500'}`}>
-                {trip.busId ? (trip.busPlateNumber ?? 'Bus') : 'No Bus'}
-              </span>
-            </div>
-            {/* <div className="flex items-center gap-2">
-              <User className={`w-3 h-3 shrink-0 ${trip.driverId ? 'text-indigo-600' : 'text-gray-300'}`} />
-              <span className={`text-xs ${trip.driverId ? 'text-indigo-800' : 'text-gray-500'}`}>
-                {trip.driverId ? 'Driver' : 'No Driver'}
-              </span>
-            </div> */}
+            <span
+              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
+                trip.passengerServicePermitId
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-gray-50 text-gray-400 border-gray-200'
+              }`}
+            >
+              <FileText className="w-3 h-3 shrink-0" />
+              {trip.passengerServicePermitId
+                ? (trip.passengerServicePermitNumber ?? 'PSP Assigned')
+                : 'No PSP'}
+            </span>
+            <span
+              className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${
+                trip.busId
+                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                  : 'bg-gray-50 text-gray-400 border-gray-200'
+              }`}
+            >
+              <Bus className="w-3 h-3 shrink-0" />
+              {trip.busId ? (trip.busPlateNumber ?? 'Bus Assigned') : 'No Bus'}
+            </span>
           </div>
         ),
       },
@@ -250,7 +233,9 @@ export function TripsTable({
         render: (trip) => {
           const { icon, label, colorClass } = getStatusMeta(trip.status);
           return (
-            <span className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border ${colorClass}`}>
+            <span
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${colorClass}`}
+            >
               {icon}
               {label}
             </span>
@@ -266,31 +251,32 @@ export function TripsTable({
         cellClassName: 'text-center whitespace-nowrap',
         render: (trip) => (
           <div className="inline-flex items-center gap-1">
-            {/* View */}
             <button
               onClick={() => onView(trip.id ?? '')}
-              className="p-1.5 rounded text-blue-600 hover:text-blue-900 hover:bg-blue-50 transition-colors"
-              title="View Trip"
+              title="View details"
+              className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors duration-100"
             >
-              <Eye className="w-4 h-4" />
+              <Eye className="h-3.5 w-3.5" />
             </button>
-
-            {/* Delete — only for pending / cancelled trips */}
             {['pending', 'cancelled'].includes(trip.status?.toLowerCase() ?? '') && (
               <button
-                onClick={() => onDelete(trip.id ?? '', `${trip.routeName} - ${formatDate(trip.tripDate)}`)}
-                className="p-1.5 rounded text-red-600 hover:text-red-900 hover:bg-red-50 transition-colors"
-                title="Delete Trip"
+                onClick={() =>
+                  onDelete(
+                    trip.id ?? '',
+                    `${trip.routeName} - ${formatDate(trip.tripDate)}`
+                  )
+                }
+                title="Delete trip"
+                className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors duration-100"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
         ),
       },
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onView, onEdit, onDelete, onStart, onComplete, onCancel, onAssignPsp, onSelectTrip, onSelectAll, selectedTrips],
+    [onView, onDelete],
   );
 
   return (
@@ -303,16 +289,16 @@ export function TripsTable({
       rowKey={(trip) => trip.id!}
       showRefreshing
       emptyState={
-        <div className="flex flex-col items-center gap-3 py-12 text-center">
-          <Calendar className="w-12 h-12 text-gray-300" />
-          <div>
-            <p className="text-sm font-medium text-gray-900">No trips found</p>
-            <p className="mt-1 text-sm text-gray-500">
-              {Object.keys(activeFilters).length > 0
-                ? 'No trips match your current filters. Try adjusting your search criteria.'
-                : 'No trips have been created yet. Generate trips to get started.'}
-            </p>
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+            <Calendar className="w-7 h-7 text-blue-400" />
           </div>
+          <h3 className="text-base font-semibold text-gray-900 mb-1">No trips found</h3>
+          <p className="text-sm text-gray-500 max-w-xs">
+            {Object.keys(activeFilters).length > 0
+              ? 'No trips match your current filters. Try adjusting your search criteria.'
+              : 'No trips have been created yet. Generate trips to get started.'}
+          </p>
         </div>
       }
     />

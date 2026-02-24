@@ -150,9 +150,6 @@ export default function TripsPage() {
     inTransitTrips: { count: 0 },
   });
 
-  // Selection state for bulk operations
-  const [selectedTrips, setSelectedTrips] = useState<string[]>([]);
-
   // State for modals
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [tripToDelete, setTripToDelete] = useState<TripResponse | null>(null);
@@ -429,7 +426,6 @@ export default function TripsPage() {
     setHasBus(false);
     setHasDriver(false);
     setHasConductor(false);
-    setSelectedTrips([]);
 
     // Update query params to clear everything
     setQueryParams({
@@ -527,7 +523,7 @@ export default function TripsPage() {
     router.push(`/mot/trips/${tripId}/assign-psp`);
   };
 
-  const handleDelete = (tripId: string, tripName: string) => {
+  const handleDelete = (tripId: string, _tripName: string) => {
     const trip = trips.find((t) => t.id === tripId);
     if (trip) {
       setTripToDelete(trip);
@@ -557,79 +553,12 @@ export default function TripsPage() {
     }
   };
 
-  // Selection handlers
-  const handleSelectTrip = (tripId: string) => {
-    setSelectedTrips((prev) =>
-      prev.includes(tripId)
-        ? prev.filter((id) => id !== tripId)
-        : [...prev, tripId]
-    );
-  };
-
-  const handleSelectAll = () => {
-    if (selectedTrips.length === trips.length) {
-      setSelectedTrips([]);
-    } else {
-      setSelectedTrips(trips.map((trip) => trip.id || ''));
-    }
-  };
-
-  // Bulk operations
-  const handleBulkAssignPsp = () => {
-    router.push(`/mot/trips/bulk-assign-psp?trips=${selectedTrips.join(',')}`);
-  };
-
-  const handleBulkStart = async () => {
-    try {
-      // Implementation would depend on your bulk start API
-      console.log('Bulk starting trips:', selectedTrips);
-      setSelectedTrips([]);
-      loadTrips();
-      loadStatistics();
-    } catch (err) {
-      console.error('Bulk start failed:', err);
-    }
-  };
-
-  const handleBulkComplete = async () => {
-    try {
-      // Implementation would depend on your bulk complete API
-      console.log('Bulk completing trips:', selectedTrips);
-      setSelectedTrips([]);
-      loadTrips();
-      loadStatistics();
-    } catch (err) {
-      console.error('Bulk complete failed:', err);
-    }
-  };
-
-  const handleBulkCancel = async () => {
-    try {
-      // Implementation would depend on your bulk cancel API
-      console.log('Bulk cancelling trips:', selectedTrips);
-      setSelectedTrips([]);
-      loadTrips();
-      loadStatistics();
-    } catch (err) {
-      console.error('Bulk cancel failed:', err);
-    }
-  };
-
   useSetPageActions(
     <TripActionButtons
       onAddTrip={handleAddNewTrip}
       onGenerateTrips={handleGenerateTrips}
       onExportAll={handleExportAll}
-      onBulkAssignPsp={
-        selectedTrips.length > 0 ? handleBulkAssignPsp : undefined
-      }
-      onBulkStart={selectedTrips.length > 0 ? handleBulkStart : undefined}
-      onBulkComplete={
-        selectedTrips.length > 0 ? handleBulkComplete : undefined
-      }
-      onBulkCancel={selectedTrips.length > 0 ? handleBulkCancel : undefined}
       isLoading={isLoading}
-      selectedCount={selectedTrips.length}
     />
   );
 
@@ -738,9 +667,6 @@ export default function TripsPage() {
               field: queryParams.sortBy,
               direction: queryParams.sortDir,
             }}
-            selectedTrips={selectedTrips}
-            onSelectTrip={handleSelectTrip}
-            onSelectAll={handleSelectAll}
           />
           {/* Pagination */}
           <DataPagination
