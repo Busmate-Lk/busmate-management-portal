@@ -25,6 +25,10 @@ import {
   CircleUser,
   Text,
   FileTextIcon,
+  PlaneTakeoffIcon,
+  ChartAreaIcon,
+  CircleDollarSignIcon,
+  SquareActivityIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -100,7 +104,7 @@ export function Sidebar({
       href: '/mot/schedules',
     },
     {
-      icon: Bus,
+      icon: PlaneTakeoffIcon,
       label: 'Trip Management',
       active: activeItem === 'trips',
       href: '/mot/trips',
@@ -130,7 +134,7 @@ export function Sidebar({
       href: '/mot/location-tracking',
     },
     {
-      icon: DollarSign,
+      icon: CircleDollarSignIcon,
       label: 'Fare Management',
       active: activeItem === 'fares',
       href: '/mot/fares',
@@ -148,7 +152,7 @@ export function Sidebar({
       href: '/mot/notifications',
     },
     {
-      icon: BarChart3,
+      icon: ChartAreaIcon,
       label: 'Analytics',
       active: activeItem === 'analytics',
       href: '/mot/analytics',
@@ -241,7 +245,7 @@ export function Sidebar({
       href: '/admin/notifications',
     },
     {
-      icon: BarChart3,
+      icon: SquareActivityIcon,
       label: 'System Monitoring',
       active: activeItem === 'monitoring',
       href: '/admin/monitoring',
