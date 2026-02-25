@@ -5,11 +5,11 @@ import { useRouter, useParams } from 'next/navigation';
 import { AlertCircle, RefreshCw, Route as RouteIcon } from 'lucide-react';
 import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import {
-  RouteGroupHeader,
-  RouteGroupTabs,
+  RouteGroupDetailsSection,
+  RouteSelector,
   RouteGroupActionButtons,
-  RouteContentPanel,
-  RouteContentPanelEmpty,
+  RouteTabs,
+  RouteTabsEmpty,
 } from '@/components/mot/routes/route-group-view';
 import DeleteRouteConfirmation from '@/components/mot/routes/DeleteRouteConfirmation';
 import { RouteManagementService } from '../../../../../../generated/api-clients/route-management';
@@ -215,8 +215,8 @@ export default function RouteGroupViewPage() {
   if (routes.length === 0) {
     return (
       <div className="space-y-6">
-        {/* Header */}
-        <RouteGroupHeader routeGroup={routeGroup} />
+        {/* Route group details section */}
+        <RouteGroupDetailsSection routeGroup={routeGroup} />
 
         {/* Empty routes message */}
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12">
@@ -268,21 +268,21 @@ export default function RouteGroupViewPage() {
         </div>
       )}
 
-      {/* Route group header */}
-      <RouteGroupHeader routeGroup={routeGroup} />
+      {/* Route group details section */}
+      <RouteGroupDetailsSection routeGroup={routeGroup} />
 
       {/* Route selector tabs */}
-      <RouteGroupTabs
+      <RouteSelector
         routes={routes}
         selectedRouteId={selectedRouteId}
         onSelectRoute={handleSelectRoute}
       />
 
-      {/* Route content panel */}
+      {/* Route tabs */}
       {selectedRoute ? (
-        <RouteContentPanel route={selectedRoute} />
+        <RouteTabs route={selectedRoute} />
       ) : (
-        <RouteContentPanelEmpty />
+        <RouteTabsEmpty />
       )}
 
       {/* Delete confirmation modal */}

@@ -6,7 +6,7 @@ import { SwitchableTabs } from '@/components/shared/SwitchableTabs';
 import type { TabItem } from '@/components/shared/SwitchableTabs';
 import type { RouteResponse } from '../../../../../generated/api-clients/route-management';
 
-interface RouteGroupTabsProps {
+interface RouteSelectorProps {
   routes: RouteResponse[];
   selectedRouteId: string | null;
   onSelectRoute: (routeId: string | null) => void;
@@ -18,11 +18,11 @@ interface RouteGroupTabsProps {
  * Each tab represents a route (Outbound/Inbound), and clicking a tab
  * switches the displayed route details.
  */
-export function RouteGroupTabs({
+export function RouteSelector({
   routes,
   selectedRouteId,
   onSelectRoute,
-}: RouteGroupTabsProps) {
+}: RouteSelectorProps) {
   const tabs: TabItem[] = useMemo(() => {
     return routes.map((route) => ({
       id: route.id || '',

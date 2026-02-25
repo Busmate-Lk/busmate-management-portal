@@ -10,7 +10,7 @@ import type { RouteGroupResponse } from '../../../../../generated/api-clients/ro
 
 // ── Types ─────────────────────────────────────────────────────────
 
-interface RouteGroupHeaderProps {
+interface RouteGroupDetailsSectionProps {
   routeGroup: RouteGroupResponse;
 }
 
@@ -31,7 +31,7 @@ function formatDate(dateString?: string): string {
 
 // ── Component ─────────────────────────────────────────────────────
 
-export function RouteGroupHeader({ routeGroup }: RouteGroupHeaderProps) {
+export function RouteGroupDetailsSection({ routeGroup }: RouteGroupDetailsSectionProps) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
       {/* Gradient header bar */}

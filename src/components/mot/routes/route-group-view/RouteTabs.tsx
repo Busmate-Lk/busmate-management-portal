@@ -18,7 +18,7 @@ import { RouteAnalyticsTab } from './tabs/RouteAnalyticsTab';
 
 // ── Types ─────────────────────────────────────────────────────────
 
-interface RouteContentPanelProps {
+interface RouteTabsProps {
   route: RouteResponse;
 }
 
@@ -42,7 +42,7 @@ const TABS: Tab[] = [
 
 // ── Component ─────────────────────────────────────────────────────
 
-export function RouteContentPanel({ route }: RouteContentPanelProps) {
+export function RouteTabs({ route }: RouteTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
 
   return (
@@ -90,7 +90,7 @@ export function RouteContentPanel({ route }: RouteContentPanelProps) {
 
 // ── Empty state ───────────────────────────────────────────────────
 
-export function RouteContentPanelEmpty() {
+export function RouteTabsEmpty() {
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12">
       <div className="text-center">
