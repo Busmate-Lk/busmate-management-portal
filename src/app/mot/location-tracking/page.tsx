@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { RefreshCw, Maximize2, Radio, Settings, LayoutGrid } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { useJsApiLoader } from '@react-google-maps/api';
 
 // Page Context
@@ -14,9 +14,10 @@ import { useLocationTracking } from '@/hooks/useLocationTracking';
 // Components
 import {
   TrackingStatsCards,
-  TrackingSearchFilters,
   TrackingMap,
   TrackingBusList,
+  LocationTrackingAdvancedFilters,
+  LocationTrackingActionButtons,
 } from '@/components/mot/location-tracking';
 
 // Types
@@ -107,77 +108,77 @@ export default function LocationTrackingPage() {
     [setViewMode, setStatsCollapsed]
   );
 
-  // Set page actions
+  // Search term state (managed locally, synced to filters on change)
+  const [searchTerm, setSearchTerm] = useState(filters.search);
+
+  // Handle search change
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchTerm(value);
+      setFilters({ ...filters, search: value });
+    },
+    [filters, setFilters]
+  );
+
+  // Handle clear all filters
+  const handleClearAllFilters = useCallback(() => {
+    setSearchTerm('');
+    setFilters({
+      search: '',
+      routeId: 'all',
+      operatorId: 'all',
+      tripStatus: 'all',
+      deviceStatus: 'all',
+      movementStatus: 'all',
+      showOnlyActive: false,
+      showOfflineDevices: true,
+    });
+  }, [setFilters]);
+
+  // Set page actions using the new shared component
   useSetPageActions(
-    <div className="flex items-center gap-2 shrink-0">
-      {/* Last update indicator */}
-      {lastUpdate && (
-        <span className="text-xs text-gray-500 hidden sm:inline">
-          Updated{' '}
-          {lastUpdate.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-          })}
-        </span>
-      )}
-
-      {/* Live/Paused Toggle */}
-      <button
-        onClick={() => setAutoRefresh(!autoRefresh)}
-        className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-          autoRefresh
-            ? 'bg-green-100 text-green-700 hover:bg-green-200'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-        }`}
-      >
-        <Radio className={`h-3.5 w-3.5 ${autoRefresh ? 'animate-pulse' : ''}`} />
-        {autoRefresh ? 'Live' : 'Paused'}
-      </button>
-
-      {/* Refresh Button */}
-      <button
-        onClick={refresh}
-        disabled={isLoading}
-        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-        <span className="hidden sm:inline">Refresh</span>
-      </button>
-
-      {/* Fullscreen Toggle */}
-      <button
-        onClick={() =>
-          handleViewModeChange(viewMode === 'fullscreen' ? 'standard' : 'fullscreen')
-        }
-        className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-      >
-        <Maximize2 className="h-4 w-4" />
-        <span className="hidden sm:inline">
-          {viewMode === 'fullscreen' ? 'Exit Fullscreen' : 'Fullscreen'}
-        </span>
-      </button>
-    </div>
+    <LocationTrackingActionButtons
+      autoRefresh={autoRefresh}
+      onAutoRefreshToggle={() => setAutoRefresh(!autoRefresh)}
+      onRefresh={refresh}
+      isLoading={isLoading}
+      viewMode={viewMode}
+      onViewModeChange={handleViewModeChange}
+      lastUpdate={lastUpdate}
+    />
   );
 
   // Fullscreen view - only show map
   if (viewMode === 'fullscreen') {
+    if (!isLoaded) {
+      return (
+        <div className="flex items-center justify-center h-[calc(100vh-4rem)] bg-gray-50">
+          <div className="text-center">
+            <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-2" />
+            <p className="text-sm text-gray-600">Loading map...</p>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <TrackingMap
-        buses={filteredBuses}
-        selectedBus={selectedBus}
-        onBusSelect={setSelectedBus}
-        center={mapCenter}
-        zoom={mapZoom}
-        onCenterChange={setMapCenter}
-        onZoomChange={setMapZoom}
-        viewMode={viewMode}
-        onViewModeChange={handleViewModeChange}
-        isLoaded={isLoaded}
-        isLoading={isLoading}
-        onViewBusDetails={handleViewBusDetails}
-        onViewRoute={handleViewRoute}
-      />
+      <div className="fixed inset-0 z-50 bg-white">
+        <TrackingMap
+          buses={filteredBuses}
+          selectedBus={selectedBus}
+          onBusSelect={setSelectedBus}
+          center={mapCenter}
+          zoom={mapZoom}
+          onCenterChange={setMapCenter}
+          onZoomChange={setMapZoom}
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
+          isLoaded={isLoaded}
+          isLoading={isLoading}
+          onViewBusDetails={handleViewBusDetails}
+          onViewRoute={handleViewRoute}
+        />
+      </div>
     );
   }
 
@@ -193,18 +194,18 @@ export default function LocationTrackingPage() {
       />
 
       {/* Search & Filters */}
-      <TrackingSearchFilters
+      <LocationTrackingAdvancedFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
         filters={filters}
         onFiltersChange={setFilters}
         filterOptions={filterOptions}
-        autoRefresh={autoRefresh}
-        onAutoRefreshToggle={() => setAutoRefresh(!autoRefresh)}
-        refreshInterval={refreshInterval}
-        onRefreshIntervalChange={setRefreshInterval}
-        isLoading={isLoading}
-        filteredCount={filteredBuses.length}
+        loading={isLoading}
         totalCount={buses.length}
-        onRefresh={refresh}
+        filteredCount={filteredBuses.length}
+        loadedCount={filteredBuses.length}
+        onClearAll={handleClearAllFilters}
+        onSearch={handleSearchChange}
       />
 
       {/* Main Content: Map + Bus List */}

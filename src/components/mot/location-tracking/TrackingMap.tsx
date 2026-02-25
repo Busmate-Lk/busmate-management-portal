@@ -157,21 +157,19 @@ function BusMarker({ bus, isSelected, onClick }: BusMarkerProps) {
         e.stopPropagation();
         onClick();
       }}
-      className={`cursor-pointer transition-all duration-200 hover:scale-110 ${
-        isSelected ? 'scale-125 z-50' : 'z-10'
-      }`}
+      className={`cursor-pointer transition-all duration-200 hover:scale-110 ${isSelected ? 'scale-125 z-50' : 'z-10'
+        }`}
       style={{ position: 'relative' }}
     >
       {/* Outer ring for selection */}
       {isSelected && (
         <div className="absolute inset-0 -m-2 rounded-full bg-blue-500/20 animate-ping" />
       )}
-      
+
       {/* Main marker */}
       <div
-        className={`relative flex items-center justify-center rounded-full shadow-lg transition-shadow ${
-          isSelected ? 'shadow-xl ring-4 ring-blue-500/50' : ''
-        }`}
+        className={`relative flex items-center justify-center rounded-full shadow-lg transition-shadow ${isSelected ? 'shadow-xl ring-4 ring-blue-500/50' : ''
+          }`}
         style={{
           width: isSelected ? '40px' : '32px',
           height: isSelected ? '40px' : '32px',
@@ -284,18 +282,16 @@ function MapControls({
         </button>
         <button
           onClick={onToggleRoutes}
-          className={`p-2 hover:bg-gray-100 transition-colors border-b border-gray-100 ${
-            showRoutes ? 'bg-blue-50' : ''
-          }`}
+          className={`p-2 hover:bg-gray-100 transition-colors border-b border-gray-100 ${showRoutes ? 'bg-blue-50' : ''
+            }`}
           title="Toggle route paths"
         >
           <MapIcon className={`h-4 w-4 ${showRoutes ? 'text-blue-600' : 'text-gray-700'}`} />
         </button>
         <button
           onClick={onToggleTraffic}
-          className={`p-2 hover:bg-gray-100 rounded-b transition-colors ${
-            showTraffic ? 'bg-blue-50' : ''
-          }`}
+          className={`p-2 hover:bg-gray-100 rounded-b transition-colors ${showTraffic ? 'bg-blue-50' : ''
+            }`}
           title="Toggle traffic layer"
         >
           <Layers className={`h-4 w-4 ${showTraffic ? 'text-blue-600' : 'text-gray-700'}`} />
@@ -333,10 +329,10 @@ export function TrackingMap({
   // Get unique routes and their data for rendering
   const activeRoutes = useMemo(() => {
     const routeMap = new Map<string, { route: RoutePathDefinition; color: string; isHighlighted: boolean }>();
-    
+
     buses.forEach((bus) => {
       if (!bus.route) return; // Skip if route is undefined
-      
+
       const routeId = bus.route.id;
       if (!routeMap.has(routeId)) {
         const routePath = ROUTE_PATHS.find((r) => r.routeId === routeId);
@@ -353,7 +349,7 @@ export function TrackingMap({
         routeMap.set(routeId, { ...existing, isHighlighted: true });
       }
     });
-    
+
     return Array.from(routeMap.values());
   }, [buses, selectedBus]);
 
@@ -370,12 +366,12 @@ export function TrackingMap({
   // Handle center change - debounced to not interfere with dragging
   const handleCenterChanged = useCallback(() => {
     if (!mapRef.current || isUserInteracting.current) return;
-    
+
     // Clear any pending timeout
     if (centerUpdateTimeout.current) {
       clearTimeout(centerUpdateTimeout.current);
     }
-    
+
     // Debounce the state update
     centerUpdateTimeout.current = setTimeout(() => {
       if (!mapRef.current) return;
@@ -394,7 +390,7 @@ export function TrackingMap({
   // Handle zoom change - debounced to not interfere with user interaction
   const handleZoomChanged = useCallback(() => {
     if (!mapRef.current || isUserInteracting.current) return;
-    
+
     setTimeout(() => {
       if (!mapRef.current) return;
       const newZoom = mapRef.current.getZoom();
@@ -461,17 +457,17 @@ export function TrackingMap({
     (bus: TrackedBus) => {
       const [lng, lat] = bus.location.location.coordinates;
       const currentZoom = mapRef.current?.getZoom() || zoom;
-      
+
       // If zoom is too low, zoom in first
       if (currentZoom < 15 && mapRef.current) {
         mapRef.current.setZoom(15);
       }
-      
+
       // Center map on bus first
       if (mapRef.current) {
         mapRef.current.panTo({ lat, lng });
       }
-      
+
       // Select bus after a short delay to allow pan animation to start
       setTimeout(() => {
         onBusSelect(bus);
@@ -527,17 +523,17 @@ export function TrackingMap({
   const containerClass = useMemo(() => {
     switch (viewMode) {
       case 'fullscreen':
-        return 'fixed inset-0 z-50';
+        return 'w-full h-full bg-white relative';
       case 'split':
-        return 'h-[500px] lg:h-[600px]';
+        return 'h-[500px] lg:h-[600px] bg-white rounded-xl border border-gray-200 shadow-sm relative';
       default:
-        return 'h-[500px] lg:h-[600px]';
+        return 'h-[500px] lg:h-[600px] bg-white rounded-xl border border-gray-200 shadow-sm relative';
     }
   }, [viewMode]);
 
   if (!isLoaded) {
     return (
-      <div className={`${containerClass} bg-gray-100 rounded-xl border border-gray-200 flex items-center justify-center`}>
+      <div className={`${containerClass} flex items-center justify-center bg-gray-100`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent mx-auto mb-4" />
           <p className="text-gray-600">Loading map...</p>
@@ -547,7 +543,7 @@ export function TrackingMap({
   }
 
   return (
-    <div className={`${containerClass} bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden relative`}>
+    <div className={`${containerClass} overflow-hidden shadow-sm`}>
       {/* Loading overlay */}
       {isLoading && (
         <div className="absolute inset-0 bg-white/50 z-20 flex items-center justify-center">
@@ -660,7 +656,7 @@ export function TrackingMap({
             <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-red-600" />
             <span className="text-gray-600">Offline</span>
           </div>
-          
+
           {/* Route Paths */}
           {showRoutes && activeRoutes.length > 0 && (
             <>
