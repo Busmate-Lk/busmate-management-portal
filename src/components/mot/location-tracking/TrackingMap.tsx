@@ -525,9 +525,8 @@ export function TrackingMap({
       case 'fullscreen':
         return 'w-full h-full bg-white relative';
       case 'split':
-        return 'h-[500px] lg:h-[600px] bg-white rounded-xl border border-gray-200 shadow-sm relative';
       default:
-        return 'h-[500px] lg:h-[600px] bg-white rounded-xl border border-gray-200 shadow-sm relative';
+        return 'w-full h-full bg-white rounded-xl border border-gray-200 shadow-sm relative';
     }
   }, [viewMode]);
 

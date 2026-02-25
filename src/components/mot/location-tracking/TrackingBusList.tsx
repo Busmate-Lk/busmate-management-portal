@@ -9,6 +9,9 @@ import {
   Clock,
   AlertTriangle,
   ChevronRight,
+  ChevronLeft,
+  ChevronUp,
+  ChevronDown,
   MapPin,
   Gauge,
   Users,
@@ -32,6 +35,10 @@ interface TrackingBusListProps {
   isLoading: boolean;
   /** Error message if any */
   error: string | null;
+  /** Whether the list is collapsed */
+  isCollapsed?: boolean;
+  /** Callback to toggle collapse state */
+  onToggleCollapse?: () => void;
 }
 
 // ── Helper Functions ──────────────────────────────────────────────
@@ -50,7 +57,7 @@ function formatTime(dateString?: string): string {
 
 function getStatusBadge(bus: TrackedBus) {
   const status = bus.trip?.status;
-  
+
   switch (status) {
     case 'on_time':
     case 'in_transit':
@@ -86,11 +93,10 @@ function BusListItem({ bus, isSelected, onSelect, onFocus }: BusListItemProps) {
   return (
     <div
       onClick={onSelect}
-      className={`group p-3 rounded-lg border cursor-pointer transition-all duration-200 ${
-        isSelected
-          ? 'bg-blue-50 border-blue-300 shadow-sm'
-          : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-      }`}
+      className={`group p-3 rounded-lg border cursor-pointer transition-all duration-200 ${isSelected
+        ? 'bg-blue-50 border-blue-300 shadow-sm'
+        : 'bg-white border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+        }`}
     >
       {/* Header Row */}
       <div className="flex items-center justify-between mb-2">
@@ -98,13 +104,12 @@ function BusListItem({ bus, isSelected, onSelect, onFocus }: BusListItemProps) {
           {/* Bus Icon with status indicator */}
           <div className="relative">
             <div
-              className={`p-1.5 rounded-lg ${
-                isOnline
-                  ? isMoving
-                    ? 'bg-green-100'
-                    : 'bg-gray-100'
-                  : 'bg-red-100'
-              }`}
+              className={`p-1.5 rounded-lg ${isOnline
+                ? isMoving
+                  ? 'bg-green-100'
+                  : 'bg-gray-100'
+                : 'bg-red-100'
+                }`}
             >
               {isMoving ? (
                 <Navigation className={`h-4 w-4 ${isOnline ? 'text-green-600' : 'text-gray-400'}`} />
@@ -114,9 +119,8 @@ function BusListItem({ bus, isSelected, onSelect, onFocus }: BusListItemProps) {
             </div>
             {/* Online/Offline indicator dot */}
             <div
-              className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${
-                isOnline ? 'bg-green-500' : 'bg-red-500'
-              }`}
+              className={`absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-red-500'
+                }`}
             />
           </div>
 
@@ -152,9 +156,8 @@ function BusListItem({ bus, isSelected, onSelect, onFocus }: BusListItemProps) {
       <div className="flex flex-wrap gap-1.5 mb-2">
         {/* Device Status */}
         <span
-          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-            isOnline ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-          }`}
+          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${isOnline ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+            }`}
         >
           {isOnline ? <Wifi className="h-2.5 w-2.5" /> : <WifiOff className="h-2.5 w-2.5" />}
           {isOnline ? 'Online' : 'Offline'}
@@ -241,13 +244,15 @@ export function TrackingBusList({
   onBusFocus,
   isLoading,
   error,
+  isCollapsed = false,
+  onToggleCollapse,
 }: TrackingBusListProps) {
   // Group buses by status
   const groupedBuses = useMemo(() => {
     const online = buses.filter((b) => b.deviceStatus === 'online');
     const offline = buses.filter((b) => b.deviceStatus === 'offline');
     const delayed = buses.filter((b) => b.trip?.status === 'delayed');
-    
+
     return {
       online,
       offline,
@@ -257,33 +262,79 @@ export function TrackingBusList({
     };
   }, [buses]);
 
-  if (error) {
+  if (error && !isCollapsed) {
     return (
-      <div className="p-6 text-center">
-        <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-3" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Buses</h3>
-        <p className="text-gray-600 text-sm">{error}</p>
+      <div className="flex flex-col h-full bg-white relative">
+        <div className="flex justify-end p-2 border-b border-gray-100">
+          <button onClick={onToggleCollapse} className="p-1.5 hover:bg-gray-100 rounded text-gray-500">
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="p-6 text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-3" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Buses</h3>
+          <p className="text-gray-600 text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isCollapsed) {
+    return (
+      <div className="flex lg:flex-col items-center justify-between lg:justify-start h-full w-full bg-gray-50 p-2 lg:py-4 border-t lg:border-t-0 lg:border-l border-gray-200">
+        <button
+          onClick={onToggleCollapse}
+          className="p-2 bg-white hover:bg-gray-100 rounded-lg shadow-sm border border-gray-200 text-gray-600 transition-colors"
+          title="Expand Bus List"
+        >
+          <ChevronLeft className="h-5 w-5 hidden lg:block" />
+          <ChevronUp className="h-5 w-5 block lg:hidden" />
+        </button>
+        <div className="flex lg:flex-col items-center gap-2 lg:gap-4 text-gray-400 lg:mt-6">
+          <Bus className="h-5 w-5" />
+          <div className="text-xs font-medium lg:rotate-90 whitespace-nowrap lg:mt-8 tracking-widest uppercase hidden lg:block">
+            Tracked Buses
+          </div>
+          <div className="text-xs font-medium tracking-widest uppercase lg:hidden">
+            Tracked Buses
+          </div>
+        </div>
+        <div className="w-10 lg:hidden" /> {/* Spacer */}
       </div>
     );
   }
 
   if (isLoading && buses.length === 0) {
     return (
-      <div className="p-6 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent mx-auto mb-3" />
-        <p className="text-gray-600 text-sm">Loading buses...</p>
+      <div className="flex flex-col h-full bg-white relative">
+        <div className="flex justify-end p-2 border-b border-gray-100">
+          <button onClick={onToggleCollapse} className="p-1.5 hover:bg-gray-100 rounded text-gray-500">
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="p-6 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent mx-auto mb-3" />
+          <p className="text-gray-600 text-sm">Loading buses...</p>
+        </div>
       </div>
     );
   }
 
   if (buses.length === 0) {
     return (
-      <div className="p-6 text-center">
-        <Bus className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No Buses Found</h3>
-        <p className="text-gray-600 text-sm">
-          No buses match your current filters. Try adjusting your search criteria.
-        </p>
+      <div className="flex flex-col h-full bg-white relative">
+        <div className="flex justify-end p-2 border-b border-gray-100">
+          <button onClick={onToggleCollapse} className="p-1.5 hover:bg-gray-100 rounded text-gray-500">
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="p-6 text-center">
+          <Bus className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Buses Found</h3>
+          <p className="text-gray-600 text-sm">
+            No buses match your current filters. Try adjusting your search criteria.
+          </p>
+        </div>
       </div>
     );
   }
@@ -293,10 +344,16 @@ export function TrackingBusList({
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">Tracked Buses</h3>
-          <span className="text-sm text-gray-500">{buses.length} total</span>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-gray-900">Tracked Buses</h3>
+            <span className="text-sm text-gray-500">({buses.length})</span>
+          </div>
+          <button onClick={onToggleCollapse} className="p-1 hover:bg-gray-200 rounded text-gray-500 transition-colors">
+            <ChevronRight className="h-5 w-5 hidden lg:block" />
+            <ChevronDown className="h-5 w-5 block lg:hidden" />
+          </button>
         </div>
-        
+
         {/* Quick Stats */}
         <div className="flex items-center gap-3 mt-2 text-xs">
           <span className="flex items-center gap-1 text-green-600">

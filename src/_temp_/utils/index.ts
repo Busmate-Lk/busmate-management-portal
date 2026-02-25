@@ -7,6 +7,7 @@ export {
     calculateHeading,
     interpolateBetweenPoints,
     interpolatePositionOnPath,
+    decodePolyline,
 } from './geo';
 
 export {

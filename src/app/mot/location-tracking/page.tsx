@@ -111,6 +111,9 @@ export default function LocationTrackingPage() {
   // Search term state (managed locally, synced to filters on change)
   const [searchTerm, setSearchTerm] = useState(filters.search);
 
+  // Bus list collapsed state
+  const [busListCollapsed, setBusListCollapsed] = useState(false);
+
   // Handle search change
   const handleSearchChange = useCallback(
     (value: string) => {
@@ -183,35 +186,39 @@ export default function LocationTrackingPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col h-[calc(100vh-8rem)] gap-4 overflow-hidden">
       {/* Stats Cards - Collapsible */}
-      <TrackingStatsCards
-        metrics={statsMetrics}
-        loading={isLoading && statsMetrics.length === 0}
-        isCollapsed={statsCollapsed}
-        onToggleCollapse={() => setStatsCollapsed(!statsCollapsed)}
-        lastUpdate={lastUpdate}
-      />
+      <div className="flex-none">
+        <TrackingStatsCards
+          metrics={statsMetrics}
+          loading={isLoading && statsMetrics.length === 0}
+          isCollapsed={statsCollapsed}
+          onToggleCollapse={() => setStatsCollapsed(!statsCollapsed)}
+          lastUpdate={lastUpdate}
+        />
+      </div>
 
       {/* Search & Filters */}
-      <LocationTrackingAdvancedFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        filters={filters}
-        onFiltersChange={setFilters}
-        filterOptions={filterOptions}
-        loading={isLoading}
-        totalCount={buses.length}
-        filteredCount={filteredBuses.length}
-        loadedCount={filteredBuses.length}
-        onClearAll={handleClearAllFilters}
-        onSearch={handleSearchChange}
-      />
+      <div className="flex-none">
+        <LocationTrackingAdvancedFilters
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filters={filters}
+          onFiltersChange={setFilters}
+          filterOptions={filterOptions}
+          loading={isLoading}
+          totalCount={buses.length}
+          filteredCount={filteredBuses.length}
+          loadedCount={filteredBuses.length}
+          onClearAll={handleClearAllFilters}
+          onSearch={handleSearchChange}
+        />
+      </div>
 
       {/* Main Content: Map + Bus List */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        {/* Map - Takes 3 columns on large screens */}
-        <div className="lg:col-span-3">
+      <div className="flex-1 min-h-[300px] flex flex-col lg:flex-row gap-4 overflow-hidden">
+        {/* Map - Takes available space */}
+        <div className="flex-1 min-w-0 transition-all duration-300">
           <TrackingMap
             buses={filteredBuses}
             selectedBus={selectedBus}
@@ -229,18 +236,21 @@ export default function LocationTrackingPage() {
           />
         </div>
 
-        {/* Bus List Sidebar - Takes 1 column on large screens */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm h-[500px] lg:h-[600px] overflow-hidden">
-            <TrackingBusList
-              buses={filteredBuses}
-              selectedBus={selectedBus}
-              onBusSelect={setSelectedBus}
-              onBusFocus={focusOnBus}
-              isLoading={isLoading}
-              error={error}
-            />
-          </div>
+        {/* Bus List Sidebar - Collapsible to the right */}
+        <div
+          className={`transition-all duration-300 ease-in-out shrink-0 ${busListCollapsed ? 'w-full lg:w-16' : 'w-full lg:w-96'
+            } flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden h-full`}
+        >
+          <TrackingBusList
+            buses={filteredBuses}
+            selectedBus={selectedBus}
+            onBusSelect={setSelectedBus}
+            onBusFocus={focusOnBus}
+            isLoading={isLoading}
+            error={error}
+            isCollapsed={busListCollapsed}
+            onToggleCollapse={() => setBusListCollapsed(!busListCollapsed)}
+          />
         </div>
       </div>
     </div>

@@ -172,3 +172,36 @@ function toRadians(deg: number): number {
 function toDegrees(rad: number): number {
     return (rad * 180) / Math.PI;
 }
+
+/**
+ * Decodes an encoded polyline string into an array of {lat, lng} objects.
+ */
+export function decodePolyline(encoded: string): { lat: number; lng: number }[] {
+    const points: { lat: number; lng: number }[] = [];
+    let index = 0, len = encoded.length;
+    let lat = 0, lng = 0;
+
+    while (index < len) {
+        let b, shift = 0, result = 0;
+        do {
+            b = encoded.charCodeAt(index++) - 63;
+            result |= (b & 0x1f) << shift;
+            shift += 5;
+        } while (b >= 0x20);
+        const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lat += dlat;
+
+        shift = 0;
+        result = 0;
+        do {
+            b = encoded.charCodeAt(index++) - 63;
+            result |= (b & 0x1f) << shift;
+            shift += 5;
+        } while (b >= 0x20);
+        const dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lng += dlng;
+
+        points.push({ lat: lat / 1E5, lng: lng / 1E5 });
+    }
+    return points;
+}
