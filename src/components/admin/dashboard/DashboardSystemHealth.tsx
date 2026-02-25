@@ -94,7 +94,7 @@ export function DashboardSystemHealth({ services, loading = false }: DashboardSy
   const overallStatus = downSvc > 0 ? 'degraded' : degradedSvc > 0 ? 'degraded' : 'healthy';
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-5">
+    <div className="bg-white rounded-xl border border-gray-200 p-6 h-full flex flex-col gap-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-900 text-sm">System Health</h3>

@@ -41,9 +41,9 @@ export function DashboardTrendsChart({ trendHistory, loading = false }: Dashboar
 
   if (loading || trendHistory.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
-        <div className="h-5 bg-gray-200 rounded w-40 mb-4" />
-        <div className="h-52 bg-gray-100 rounded" />
+      <div className="bg-white rounded-xl border border-gray-200 p-6 h-full flex flex-col animate-pulse">
+        <div className="h-5 bg-gray-200 rounded w-40 mb-4 shrink-0" />
+        <div className="flex-1 min-h-[250px] bg-gray-100 rounded" />
       </div>
     );
   }
@@ -113,9 +113,9 @@ export function DashboardTrendsChart({ trendHistory, loading = false }: Dashboar
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-6 h-full flex flex-col">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 shrink-0">
         <div className="flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-blue-600" />
           <h3 className="font-semibold text-gray-900 text-sm">System Trends <span className="font-normal text-gray-400 text-xs ml-1">— last 24 h</span></h3>
@@ -151,7 +151,7 @@ export function DashboardTrendsChart({ trendHistory, loading = false }: Dashboar
       </div>
 
       {/* Chart */}
-      <div className="h-52">
+      <div className="flex-1 min-h-[250px]">
         <Line data={chartData} options={options} />
       </div>
     </div>

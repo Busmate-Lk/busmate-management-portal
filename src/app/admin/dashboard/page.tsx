@@ -71,7 +71,7 @@ export default function AdminDashboardPage() {
       <DashboardKPICards kpis={kpis} loading={loading} />
 
       {/* ── Row 2: Trends chart + System health ─────────────────── */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 min-h-[400px]">
         <div className="xl:col-span-2">
           <DashboardTrendsChart trendHistory={trendHistory} loading={loading} />
         </div>
@@ -80,11 +80,11 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* ── Row 3: Alerts + Service status + User distribution ───── */}
+      {/* ── Row 3: Service status + User distribution + Alerts ───── */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        <DashboardAlertsWidget alerts={activeAlerts} loading={loading} />
         <DashboardServiceStatus services={services} loading={loading} />
         <DashboardUserStats userDistribution={userDistribution} loading={loading} />
+        <DashboardAlertsWidget alerts={activeAlerts} loading={loading} />
       </div>
 
       {/* ── Row 4: Activity feed + Quick actions ─────────────────── */}

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Route, Bus, Users, Shield, Calendar, Activity, ChevronRight } from 'lucide-react';
+import { Route, Bus, Users, Shield, Calendar, Activity, ArrowUpRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { QuickAction } from '@/data/mot/dashboard';
 
@@ -14,13 +14,13 @@ const ICON_MAP: Record<string, LucideIcon> = {
   activity: Activity,
 };
 
-const COLOR_STYLES: Record<QuickAction['color'], { bg: string; border: string; icon: string }> = {
-  blue:   { bg: 'bg-blue-50', border: 'border-blue-100 hover:border-blue-300', icon: 'bg-blue-100 text-blue-600' },
-  green:  { bg: 'bg-green-50', border: 'border-green-100 hover:border-green-300', icon: 'bg-green-100 text-green-600' },
-  purple: { bg: 'bg-purple-50', border: 'border-purple-100 hover:border-purple-300', icon: 'bg-purple-100 text-purple-600' },
-  orange: { bg: 'bg-orange-50', border: 'border-orange-100 hover:border-orange-300', icon: 'bg-orange-100 text-orange-600' },
-  red:    { bg: 'bg-red-50', border: 'border-red-100 hover:border-red-300', icon: 'bg-red-100 text-red-600' },
-  teal:   { bg: 'bg-teal-50', border: 'border-teal-100 hover:border-teal-300', icon: 'bg-teal-100 text-teal-600' },
+const ICON_STYLES: Record<QuickAction['color'], string> = {
+  blue:   'bg-blue-100 text-blue-600',
+  green:  'bg-green-100 text-green-600',
+  purple: 'bg-purple-100 text-purple-600',
+  orange: 'bg-orange-100 text-orange-600',
+  red:    'bg-red-100 text-red-600',
+  teal:   'bg-teal-100 text-teal-600',
 };
 
 interface MOTDashboardQuickActionsProps {
@@ -31,11 +31,11 @@ interface MOTDashboardQuickActionsProps {
 export function MOTDashboardQuickActions({ actions, loading = false }: MOTDashboardQuickActionsProps) {
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="h-5 w-28 bg-gray-200 rounded mb-4 animate-pulse" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-4">
+        <div className="h-5 w-28 bg-gray-200 rounded animate-pulse" />
+        <div className="grid grid-cols-2 gap-2">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />
+            <div key={i} className="h-20 bg-gray-100 rounded-lg animate-pulse" />
           ))}
         </div>
       </div>
@@ -43,26 +43,32 @@ export function MOTDashboardQuickActions({ actions, loading = false }: MOTDashbo
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
-      <h3 className="text-sm font-semibold text-gray-900 mb-4">Quick Actions</h3>
+    <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-4">
+      {/* Header */}
+      <h3 className="font-semibold text-gray-900 text-sm">Quick Actions</h3>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      {/* Grid */}
+      <div className="grid grid-cols-2 gap-2">
         {actions.map((action) => {
           const IconComponent = ICON_MAP[action.icon] || Activity;
-          const colors = COLOR_STYLES[action.color];
+          const iconStyle = ICON_STYLES[action.color];
 
           return (
             <Link
               key={action.id}
               href={action.href}
-              className={`group flex flex-col items-center p-4 rounded-xl border transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${colors.bg} ${colors.border}`}
+              className="group flex flex-col gap-2 p-3 rounded-lg border border-gray-100 bg-gray-50 hover:bg-white hover:border-gray-200 hover:shadow-sm transition-all duration-150"
             >
-              <div className={`p-2.5 rounded-lg mb-2 ${colors.icon}`}>
-                <IconComponent className="h-5 w-5" />
+              <div className="flex items-center justify-between">
+                <div className={`p-1.5 rounded-md ${iconStyle}`}>
+                  <IconComponent className="h-3.5 w-3.5" />
+                </div>
+                <ArrowUpRight className="h-3 w-3 text-gray-300 group-hover:text-gray-500 transition-colors" />
               </div>
-              <span className="text-xs font-medium text-gray-900 text-center">{action.label}</span>
-              <span className="text-[10px] text-gray-500 text-center mt-0.5 line-clamp-1">{action.description}</span>
-              <ChevronRight className="h-3 w-3 text-gray-400 mt-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div>
+                <p className="text-xs font-semibold text-gray-900">{action.label}</p>
+                <p className="text-[10px] text-gray-500 leading-tight mt-0.5">{action.description}</p>
+              </div>
             </Link>
           );
         })}

@@ -19,9 +19,9 @@ interface MOTDashboardFleetStatusProps {
 export function MOTDashboardFleetStatus({ fleetStatus, loading = false }: MOTDashboardFleetStatusProps) {
   if (loading || fleetStatus.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+      <div className="bg-white rounded-xl border border-gray-200 p-6 h-full flex flex-col animate-pulse">
         <div className="h-5 w-28 bg-gray-200 rounded mb-4" />
-        <div className="flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center">
           <div className="w-40 h-40 bg-gray-100 rounded-full" />
         </div>
         <div className="mt-4 space-y-2">
@@ -68,11 +68,11 @@ export function MOTDashboardFleetStatus({ fleetStatus, loading = false }: MOTDas
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-6 h-full flex flex-col">
       <h3 className="text-sm font-semibold text-gray-900 mb-4">Fleet Status</h3>
 
       {/* Chart with center text */}
-      <div className="relative h-44 flex items-center justify-center">
+      <div className="relative flex-1 min-h-[220px] flex items-center justify-center">
         <Doughnut data={chartData} options={options} />
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <span className="text-2xl font-bold text-gray-900">{total.toLocaleString()}</span>
