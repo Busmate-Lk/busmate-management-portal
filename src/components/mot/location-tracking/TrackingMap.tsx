@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { GoogleMap, useJsApiLoader, OverlayView } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, OverlayView, Polyline } from '@react-google-maps/api';
 import {
   Maximize2,
   Minimize2,
@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { BusDetailPopup } from './BusDetailPopup';
 import type { TrackedBus, MapViewMode, MapCenter } from '@/types/location-tracking';
+import { ROUTE_PATHS, type RoutePathDefinition } from '@/_temp_/data/location-tracking-simulation';
 
 // ── Props ─────────────────────────────────────────────────────────
 
@@ -77,6 +78,55 @@ const mapOptions: google.maps.MapOptions = {
   ],
 };
 
+// ── Route Colors ──────────────────────────────────────────────────
+
+// Predefined colors for different routes
+const ROUTE_COLORS = [
+  '#2563EB', // Blue
+  '#DC2626', // Red
+  '#059669', // Green
+  '#D97706', // Orange
+  '#7C3AED', // Purple
+  '#DB2777', // Pink
+  '#0891B2', // Cyan
+  '#EA580C', // Deep Orange
+];
+
+function getRouteColor(routeId: string): string {
+  // Use route ID to deterministically assign a color
+  const hash = routeId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return ROUTE_COLORS[hash % ROUTE_COLORS.length];
+}
+
+// ── Route Polyline Component ──────────────────────────────────────
+
+interface RoutePolylineProps {
+  route: RoutePathDefinition;
+  color: string;
+  isHighlighted?: boolean;
+}
+
+function RoutePolyline({ route, color, isHighlighted = false }: RoutePolylineProps) {
+  const path = useMemo(
+    () => route.waypoints.map((wp) => ({ lat: wp.lat, lng: wp.lng })),
+    [route.waypoints]
+  );
+
+  const polylineOptions: google.maps.PolylineOptions = useMemo(
+    () => ({
+      strokeColor: color,
+      strokeOpacity: isHighlighted ? 0.8 : 0.6,
+      strokeWeight: isHighlighted ? 5 : 3,
+      geodesic: true,
+      clickable: false,
+      zIndex: isHighlighted ? 2 : 1,
+    }),
+    [color, isHighlighted]
+  );
+
+  return <Polyline path={path} options={polylineOptions} />;
+}
+
 // ── Bus Marker Component ──────────────────────────────────────────
 
 interface BusMarkerProps {
@@ -89,6 +139,7 @@ function BusMarker({ bus, isSelected, onClick }: BusMarkerProps) {
   const isOnline = bus.deviceStatus === 'online';
   const isMoving = bus.movementStatus === 'moving';
   const isDelayed = bus.trip?.status === 'delayed';
+  const heading = bus.location.heading || 0;
 
   // Determine marker color based on status
   const getMarkerColor = () => {
@@ -102,11 +153,14 @@ function BusMarker({ bus, isSelected, onClick }: BusMarkerProps) {
 
   return (
     <div
-      onClick={onClick}
-      className={`cursor-pointer transform transition-all duration-200 hover:scale-110 ${
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className={`cursor-pointer transition-all duration-200 hover:scale-110 ${
         isSelected ? 'scale-125 z-50' : 'z-10'
       }`}
-      style={{ transform: `rotate(${bus.location.heading || 0}deg)` }}
+      style={{ position: 'relative' }}
     >
       {/* Outer ring for selection */}
       {isSelected && (
@@ -131,6 +185,7 @@ function BusMarker({ bus, isSelected, onClick }: BusMarkerProps) {
             style={{
               width: isSelected ? '20px' : '16px',
               height: isSelected ? '20px' : '16px',
+              transform: `rotate(${heading}deg)`,
             }}
           />
         ) : (
@@ -139,7 +194,6 @@ function BusMarker({ bus, isSelected, onClick }: BusMarkerProps) {
             style={{
               width: isSelected ? '18px' : '14px',
               height: isSelected ? '18px' : '14px',
-              transform: `rotate(-${bus.location.heading || 0}deg)`, // Counter-rotate the icon
             }}
           />
         )}
@@ -149,7 +203,6 @@ function BusMarker({ bus, isSelected, onClick }: BusMarkerProps) {
       {isOnline && isMoving && (
         <div
           className="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-white px-1.5 py-0.5 rounded text-xs font-medium shadow whitespace-nowrap"
-          style={{ transform: `translateX(-50%) rotate(-${bus.location.heading || 0}deg)` }}
         >
           {bus.location.speed} km/h
         </div>
@@ -169,6 +222,8 @@ interface MapControlsProps {
   onResetView: () => void;
   showTraffic: boolean;
   onToggleTraffic: () => void;
+  showRoutes: boolean;
+  onToggleRoutes: () => void;
 }
 
 function MapControls({
@@ -180,6 +235,8 @@ function MapControls({
   onResetView,
   showTraffic,
   onToggleTraffic,
+  showRoutes,
+  onToggleRoutes,
 }: MapControlsProps) {
   return (
     <div className="absolute top-4 right-4 flex flex-col gap-2 z-10">
@@ -226,6 +283,15 @@ function MapControls({
           <Crosshair className="h-4 w-4 text-gray-700" />
         </button>
         <button
+          onClick={onToggleRoutes}
+          className={`p-2 hover:bg-gray-100 transition-colors border-b border-gray-100 ${
+            showRoutes ? 'bg-blue-50' : ''
+          }`}
+          title="Toggle route paths"
+        >
+          <MapIcon className={`h-4 w-4 ${showRoutes ? 'text-blue-600' : 'text-gray-700'}`} />
+        </button>
+        <button
           onClick={onToggleTraffic}
           className={`p-2 hover:bg-gray-100 rounded-b transition-colors ${
             showTraffic ? 'bg-blue-50' : ''
@@ -260,6 +326,36 @@ export function TrackingMap({
   const [showTraffic, setShowTraffic] = useState(false);
   const trafficLayerRef = useRef<google.maps.TrafficLayer | null>(null);
   const [popupPosition, setPopupPosition] = useState<{ x: number; y: number } | null>(null);
+  const isUserInteracting = useRef(false);
+  const centerUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [showRoutes, setShowRoutes] = useState(true);
+
+  // Get unique routes and their data for rendering
+  const activeRoutes = useMemo(() => {
+    const routeMap = new Map<string, { route: RoutePathDefinition; color: string; isHighlighted: boolean }>();
+    
+    buses.forEach((bus) => {
+      if (!bus.route) return; // Skip if route is undefined
+      
+      const routeId = bus.route.id;
+      if (!routeMap.has(routeId)) {
+        const routePath = ROUTE_PATHS.find((r) => r.routeId === routeId);
+        if (routePath) {
+          routeMap.set(routeId, {
+            route: routePath,
+            color: getRouteColor(routeId),
+            isHighlighted: selectedBus?.route?.id === routeId,
+          });
+        }
+      } else if (selectedBus?.route?.id === routeId) {
+        // Update highlight status if this route has the selected bus
+        const existing = routeMap.get(routeId)!;
+        routeMap.set(routeId, { ...existing, isHighlighted: true });
+      }
+    });
+    
+    return Array.from(routeMap.values());
+  }, [buses, selectedBus]);
 
   // Handle map load
   const onMapLoad = useCallback((map: google.maps.Map) => {
@@ -271,27 +367,41 @@ export function TrackingMap({
     mapRef.current = null;
   }, []);
 
-  // Handle center change
+  // Handle center change - debounced to not interfere with dragging
   const handleCenterChanged = useCallback(() => {
-    if (!mapRef.current) return;
-    const newCenter = mapRef.current.getCenter();
-    if (newCenter) {
-      const lat = newCenter.lat();
-      const lng = newCenter.lng();
-      // Only update if significantly different
-      if (Math.abs(lat - center.lat) > 0.0001 || Math.abs(lng - center.lng) > 0.0001) {
-        onCenterChange({ lat, lng });
-      }
+    if (!mapRef.current || isUserInteracting.current) return;
+    
+    // Clear any pending timeout
+    if (centerUpdateTimeout.current) {
+      clearTimeout(centerUpdateTimeout.current);
     }
+    
+    // Debounce the state update
+    centerUpdateTimeout.current = setTimeout(() => {
+      if (!mapRef.current) return;
+      const newCenter = mapRef.current.getCenter();
+      if (newCenter) {
+        const lat = newCenter.lat();
+        const lng = newCenter.lng();
+        // Only update if significantly different
+        if (Math.abs(lat - center.lat) > 0.0001 || Math.abs(lng - center.lng) > 0.0001) {
+          onCenterChange({ lat, lng });
+        }
+      }
+    }, 500);
   }, [center, onCenterChange]);
 
-  // Handle zoom change
+  // Handle zoom change - debounced to not interfere with user interaction
   const handleZoomChanged = useCallback(() => {
-    if (!mapRef.current) return;
-    const newZoom = mapRef.current.getZoom();
-    if (newZoom !== undefined && newZoom !== zoom) {
-      onZoomChange(newZoom);
-    }
+    if (!mapRef.current || isUserInteracting.current) return;
+    
+    setTimeout(() => {
+      if (!mapRef.current) return;
+      const newZoom = mapRef.current.getZoom();
+      if (newZoom !== undefined && newZoom !== zoom) {
+        onZoomChange(newZoom);
+      }
+    }, 300);
   }, [zoom, onZoomChange]);
 
   // Zoom controls
@@ -341,23 +451,61 @@ export function TrackingMap({
     });
   }, []);
 
+  // Toggle route paths
+  const handleToggleRoutes = useCallback(() => {
+    setShowRoutes((prev) => !prev);
+  }, []);
+
   // Handle bus marker click
   const handleBusClick = useCallback(
     (bus: TrackedBus) => {
-      onBusSelect(bus);
-      // Center map on selected bus
       const [lng, lat] = bus.location.location.coordinates;
+      const currentZoom = mapRef.current?.getZoom() || zoom;
+      
+      // If zoom is too low, zoom in first
+      if (currentZoom < 15 && mapRef.current) {
+        mapRef.current.setZoom(15);
+      }
+      
+      // Center map on bus first
       if (mapRef.current) {
         mapRef.current.panTo({ lat, lng });
       }
+      
+      // Select bus after a short delay to allow pan animation to start
+      setTimeout(() => {
+        onBusSelect(bus);
+      }, 100);
     },
-    [onBusSelect]
+    [onBusSelect, zoom]
   );
+
+  // Handle user interaction start
+  const handleDragStart = useCallback(() => {
+    isUserInteracting.current = true;
+  }, []);
+
+  // Handle user interaction end
+  const handleDragEnd = useCallback(() => {
+    // Wait a bit before allowing state updates again
+    setTimeout(() => {
+      isUserInteracting.current = false;
+    }, 300);
+  }, []);
 
   // Close popup when clicking on map
   const handleMapClick = useCallback(() => {
     onBusSelect(null);
   }, [onBusSelect]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (centerUpdateTimeout.current) {
+        clearTimeout(centerUpdateTimeout.current);
+      }
+    };
+  }, []);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -415,13 +563,29 @@ export function TrackingMap({
         mapContainerStyle={mapContainerStyle}
         center={center}
         zoom={zoom}
-        options={mapOptions}
+        options={{
+          ...mapOptions,
+          gestureHandling: 'greedy', // Allow single-finger drag on mobile
+          draggable: true, // Ensure dragging is enabled
+        }}
         onLoad={onMapLoad}
         onUnmount={onMapUnmount}
         onCenterChanged={handleCenterChanged}
         onZoomChanged={handleZoomChanged}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
         onClick={handleMapClick}
       >
+        {/* Route Polylines */}
+        {showRoutes && activeRoutes.map(({ route, color, isHighlighted }) => (
+          <RoutePolyline
+            key={route.routeId}
+            route={route}
+            color={color}
+            isHighlighted={isHighlighted}
+          />
+        ))}
+
         {/* Bus Markers */}
         {buses.map((bus) => {
           const [lng, lat] = bus.location.location.coordinates;
@@ -471,12 +635,15 @@ export function TrackingMap({
         onResetView={handleResetView}
         showTraffic={showTraffic}
         onToggleTraffic={handleToggleTraffic}
+        showRoutes={showRoutes}
+        onToggleRoutes={handleToggleRoutes}
       />
 
       {/* Legend */}
       <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg border border-gray-200 p-3 z-10">
         <h4 className="text-xs font-semibold text-gray-700 mb-2">Legend</h4>
         <div className="space-y-1.5 text-xs">
+          {/* Bus Status */}
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-green-500 border-2 border-green-600" />
             <span className="text-gray-600">Moving</span>
@@ -493,6 +660,17 @@ export function TrackingMap({
             <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-red-600" />
             <span className="text-gray-600">Offline</span>
           </div>
+          
+          {/* Route Paths */}
+          {showRoutes && activeRoutes.length > 0 && (
+            <>
+              <div className="border-t border-gray-200 my-1.5" />
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-0.5 bg-blue-500" />
+                <span className="text-gray-600">Route Path</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

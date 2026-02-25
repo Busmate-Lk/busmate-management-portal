@@ -18,15 +18,17 @@ import {
   DEFAULT_MAP_CENTER,
   DEFAULT_MAP_ZOOM,
   AUTO_REFRESH_INTERVAL,
-} from '@/data/mot/location-tracking';
+} from '@/_temp_/data/location-tracking';
 
 // ── Types ─────────────────────────────────────────────────────────
 
 interface UseLocationTrackingOptions {
-  /** Auto-refresh interval in milliseconds (default: 10000) */
+  /** Auto-refresh interval in milliseconds (default: 3000) */
   refreshInterval?: number;
   /** Enable auto-refresh by default (default: true) */
   autoRefreshEnabled?: boolean;
+  /** Enable smooth position interpolation between data updates */
+  enableInterpolation?: boolean;
 }
 
 interface UseLocationTrackingReturn {
@@ -36,15 +38,15 @@ interface UseLocationTrackingReturn {
   stats: TrackingStats;
   statsMetrics: TrackingStatsCardMetric[];
   filterOptions: TrackingFilterOptions;
-  
+
   // Filters
   filters: TrackingFilterState;
   setFilters: (filters: TrackingFilterState) => void;
-  
+
   // Selection
   selectedBus: TrackedBus | null;
   setSelectedBus: (bus: TrackedBus | null) => void;
-  
+
   // Map State
   mapCenter: MapCenter;
   setMapCenter: (center: MapCenter) => void;
@@ -52,15 +54,15 @@ interface UseLocationTrackingReturn {
   setMapZoom: (zoom: number) => void;
   viewMode: MapViewMode;
   setViewMode: (mode: MapViewMode) => void;
-  
+
   // UI State
   statsCollapsed: boolean;
   setStatsCollapsed: (collapsed: boolean) => void;
-  
+
   // Loading & Error
   isLoading: boolean;
   error: string | null;
-  
+
   // Refresh
   refresh: () => void;
   lastUpdate: Date | null;
@@ -68,10 +70,69 @@ interface UseLocationTrackingReturn {
   setAutoRefresh: (enabled: boolean) => void;
   refreshInterval: number;
   setRefreshInterval: (interval: number) => void;
-  
+
   // Actions
   focusOnBus: (bus: TrackedBus) => void;
   resetView: () => void;
+}
+
+// ── Interpolation Helpers ─────────────────────────────────────────
+
+interface BusPositionSnapshot {
+  lat: number;
+  lng: number;
+  heading: number;
+  speed: number;
+  timestamp: number;
+}
+
+/**
+ * Linearly interpolate between two coordinate snapshots.
+ */
+function lerpPosition(
+  from: BusPositionSnapshot,
+  to: BusPositionSnapshot,
+  t: number
+): { lat: number; lng: number; heading: number; speed: number } {
+  const clamped = Math.max(0, Math.min(1, t));
+  return {
+    lat: from.lat + (to.lat - from.lat) * clamped,
+    lng: from.lng + (to.lng - from.lng) * clamped,
+    heading: from.heading + (to.heading - from.heading) * clamped,
+    speed: from.speed + (to.speed - from.speed) * clamped,
+  };
+}
+
+/**
+ * Apply interpolated positions to an array of buses.
+ */
+function applyInterpolation(
+  buses: TrackedBus[],
+  prevSnapshots: Map<string, BusPositionSnapshot>,
+  currentSnapshots: Map<string, BusPositionSnapshot>,
+  progress: number
+): TrackedBus[] {
+  return buses.map((bus) => {
+    const prev = prevSnapshots.get(bus.id);
+    const curr = currentSnapshots.get(bus.id);
+
+    if (!prev || !curr) return bus;
+
+    const interp = lerpPosition(prev, curr, progress);
+
+    return {
+      ...bus,
+      location: {
+        ...bus.location,
+        location: {
+          ...bus.location.location,
+          coordinates: [interp.lng, interp.lat] as [number, number],
+        },
+        speed: Math.round(interp.speed),
+        heading: Math.round(interp.heading),
+      },
+    };
+  });
 }
 
 // ── Hook ──────────────────────────────────────────────────────────
@@ -82,6 +143,7 @@ export function useLocationTracking(
   const {
     refreshInterval: defaultInterval = AUTO_REFRESH_INTERVAL,
     autoRefreshEnabled = true,
+    enableInterpolation = true,
   } = options;
 
   // Data State
@@ -136,39 +198,122 @@ export function useLocationTracking(
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(autoRefreshEnabled);
   const [refreshInterval, setRefreshInterval] = useState(defaultInterval / 1000);
-  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Interpolation State
+  const [interpolatedBuses, setInterpolatedBuses] = useState<TrackedBus[]>([]);
+  const prevSnapshotsRef = useRef<Map<string, BusPositionSnapshot>>(new Map());
+  const currSnapshotsRef = useRef<Map<string, BusPositionSnapshot>>(new Map());
+  const lastDataTimestampRef = useRef<number>(0);
+  const animFrameRef = useRef<number | null>(null);
+
+  // Capture position snapshots from bus data
+  const captureSnapshots = useCallback(
+    (busList: TrackedBus[]): Map<string, BusPositionSnapshot> => {
+      const map = new Map<string, BusPositionSnapshot>();
+      for (const bus of busList) {
+        const [lng, lat] = bus.location.location.coordinates;
+        map.set(bus.id, {
+          lat,
+          lng,
+          heading: bus.location.heading,
+          speed: bus.location.speed,
+          timestamp: Date.now(),
+        });
+      }
+      return map;
+    },
+    []
+  );
 
   // Load data
-  const loadData = useCallback(async (forceRefresh: boolean = false) => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const loadData = useCallback(
+    async (forceRefresh: boolean = false) => {
+      try {
+        // Only show loading on initial load
+        if (!lastUpdate) {
+          setIsLoading(true);
+        }
+        setError(null);
 
-      // Simulate network delay for realistic feel
-      await new Promise((resolve) => setTimeout(resolve, 300));
+        // Minimal delay for smooth UI updates (simulation is instant)
+        await new Promise((resolve) => setTimeout(resolve, 50));
 
-      const loadedBuses = getTrackedBuses(forceRefresh);
-      const loadedStats = getTrackingStats();
-      const loadedMetrics = getTrackingStatsMetrics();
-      const loadedFilterOptions = getTrackingFilterOptions();
+        const loadedBuses = getTrackedBuses(forceRefresh);
+        const loadedStats = getTrackingStats();
+        const loadedMetrics = getTrackingStatsMetrics();
+        const loadedFilterOptions = getTrackingFilterOptions();
 
-      setBuses(loadedBuses);
-      setStats(loadedStats);
-      setStatsMetrics(loadedMetrics);
-      setFilterOptions(loadedFilterOptions);
-      setLastUpdate(new Date());
-    } catch (err) {
-      console.error('Error loading tracking data:', err);
-      setError('Failed to load tracking data. Please try again.');
-    } finally {
-      setIsLoading(false);
+        // Shift current snapshots to previous for interpolation
+        prevSnapshotsRef.current = currSnapshotsRef.current;
+        currSnapshotsRef.current = captureSnapshots(loadedBuses);
+        lastDataTimestampRef.current = Date.now();
+
+        setBuses(loadedBuses);
+        setStats(loadedStats);
+        setStatsMetrics(loadedMetrics);
+        setFilterOptions(loadedFilterOptions);
+        setLastUpdate(new Date());
+
+        // Update selected bus if one was selected
+        if (selectedBus) {
+          const updatedSelectedBus = loadedBuses.find(
+            (b) => b.id === selectedBus.id
+          );
+          if (updatedSelectedBus) {
+            setSelectedBus(updatedSelectedBus);
+          }
+        }
+      } catch (err) {
+        console.error('Error loading tracking data:', err);
+        setError('Failed to load tracking data. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [lastUpdate, selectedBus, captureSnapshots]
+  );
+
+  // Interpolation animation loop
+  useEffect(() => {
+    if (!enableInterpolation || buses.length === 0) {
+      setInterpolatedBuses(buses);
+      return;
     }
-  }, []);
+
+    const animate = () => {
+      const now = Date.now();
+      const elapsed = now - lastDataTimestampRef.current;
+      const interval = refreshInterval * 1000;
+      const progress = Math.min(1, elapsed / interval);
+
+      const interpolated = applyInterpolation(
+        buses,
+        prevSnapshotsRef.current,
+        currSnapshotsRef.current,
+        progress
+      );
+      setInterpolatedBuses(interpolated);
+
+      if (progress < 1) {
+        animFrameRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    animFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animFrameRef.current !== null) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+    };
+  }, [buses, enableInterpolation, refreshInterval]);
 
   // Initial load
   useEffect(() => {
     loadData(true);
-  }, [loadData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Auto-refresh
   useEffect(() => {
@@ -190,10 +335,12 @@ export function useLocationTracking(
     };
   }, [autoRefresh, refreshInterval, loadData]);
 
+  // The displayed buses — interpolated if enabled, raw otherwise
+  const displayBuses = enableInterpolation ? interpolatedBuses : buses;
+
   // Filter buses
   const filteredBuses = useMemo(() => {
-    return buses.filter((bus) => {
-      // Search filter
+    return displayBuses.filter((bus) => {
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
         const matchesSearch =
@@ -203,49 +350,16 @@ export function useLocationTracking(
           bus.bus.id?.toLowerCase().includes(searchLower);
         if (!matchesSearch) return false;
       }
-
-      // Route filter
-      if (filters.routeId !== 'all' && bus.route?.id !== filters.routeId) {
-        return false;
-      }
-
-      // Operator filter
-      if (filters.operatorId !== 'all' && bus.bus.operatorId !== filters.operatorId) {
-        return false;
-      }
-
-      // Trip status filter
-      if (filters.tripStatus !== 'all' && bus.trip?.status !== filters.tripStatus) {
-        return false;
-      }
-
-      // Device status filter
-      if (filters.deviceStatus !== 'all' && bus.deviceStatus !== filters.deviceStatus) {
-        return false;
-      }
-
-      // Movement status filter
-      if (filters.movementStatus !== 'all' && bus.movementStatus !== filters.movementStatus) {
-        return false;
-      }
-
-      // Show only active filter
-      if (
-        filters.showOnlyActive &&
-        bus.trip?.status !== 'in_transit' &&
-        bus.trip?.status !== 'on_time'
-      ) {
-        return false;
-      }
-
-      // Show offline devices filter
-      if (!filters.showOfflineDevices && bus.deviceStatus === 'offline') {
-        return false;
-      }
-
+      if (filters.routeId !== 'all' && bus.route?.id !== filters.routeId) return false;
+      if (filters.operatorId !== 'all' && bus.bus.operatorId !== filters.operatorId) return false;
+      if (filters.tripStatus !== 'all' && bus.trip?.status !== filters.tripStatus) return false;
+      if (filters.deviceStatus !== 'all' && bus.deviceStatus !== filters.deviceStatus) return false;
+      if (filters.movementStatus !== 'all' && bus.movementStatus !== filters.movementStatus) return false;
+      if (filters.showOnlyActive && bus.trip?.status !== 'in_transit' && bus.trip?.status !== 'on_time') return false;
+      if (!filters.showOfflineDevices && bus.deviceStatus === 'offline') return false;
       return true;
     });
-  }, [buses, filters]);
+  }, [displayBuses, filters]);
 
   // Focus on a specific bus
   const focusOnBus = useCallback((bus: TrackedBus) => {
@@ -268,46 +382,31 @@ export function useLocationTracking(
   }, [loadData]);
 
   return {
-    // Data
-    buses,
+    buses: displayBuses,
     filteredBuses,
     stats,
     statsMetrics,
     filterOptions,
-
-    // Filters
     filters,
     setFilters,
-
-    // Selection
     selectedBus,
     setSelectedBus,
-
-    // Map State
     mapCenter,
     setMapCenter,
     mapZoom,
     setMapZoom,
     viewMode,
     setViewMode,
-
-    // UI State
     statsCollapsed,
     setStatsCollapsed,
-
-    // Loading & Error
     isLoading,
     error,
-
-    // Refresh
     refresh,
     lastUpdate,
     autoRefresh,
     setAutoRefresh,
     refreshInterval,
     setRefreshInterval,
-
-    // Actions
     focusOnBus,
     resetView,
   };

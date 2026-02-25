@@ -242,49 +242,6 @@ export default function LocationTrackingPage() {
           </div>
         </div>
       </div>
-
-      {/* Development Info - Only in dev mode */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-amber-800 mb-2 flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Development Info
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-amber-700">
-            <div>
-              <span className="font-medium">Total Buses:</span> {buses.length}
-            </div>
-            <div>
-              <span className="font-medium">Filtered:</span> {filteredBuses.length}
-            </div>
-            <div>
-              <span className="font-medium">Maps Loaded:</span>{' '}
-              {isLoaded ? 'Yes' : 'Loading...'}
-            </div>
-            <div>
-              <span className="font-medium">Auto-refresh:</span>{' '}
-              {autoRefresh ? `Every ${refreshInterval}s` : 'Disabled'}
-            </div>
-            <div>
-              <span className="font-medium">Selected:</span>{' '}
-              {selectedBus?.bus.registrationNumber || 'None'}
-            </div>
-            <div>
-              <span className="font-medium">View Mode:</span> {viewMode}
-            </div>
-            <div>
-              <span className="font-medium">Last Update:</span>{' '}
-              {lastUpdate?.toLocaleTimeString() || 'Never'}
-            </div>
-            <div>
-              <span className="font-medium">Active Filters:</span>{' '}
-              {Object.values(filters).filter(
-                (v) => v !== 'all' && v !== '' && v !== true && v !== false
-              ).length}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
