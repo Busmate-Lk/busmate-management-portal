@@ -88,7 +88,7 @@ function SkeletonRow({
         <td key={ci} className="px-4 py-3">
           <div
             className="h-3.5 bg-gray-200 rounded animate-pulse"
-            style={{ width: `${50 + Math.random() * 40}%` }}
+            style={{ width: `${50 + ((index * 7 + ci * 11) % 40)}%` }}
           />
         </td>
       ))}

@@ -406,8 +406,11 @@ export function SelectFilter({
         `}
       >
         <option value="all">{allLabel}</option>
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
+        {options.map((opt, idx) => (
+          // include index in key to guard against duplicate values coming from
+          // server data; this prevents the React warning seen when two
+          // options share the same `value`.
+          <option key={`${opt.value}-${idx}`} value={opt.value}>
             {opt.label ?? opt.value}
           </option>
         ))}

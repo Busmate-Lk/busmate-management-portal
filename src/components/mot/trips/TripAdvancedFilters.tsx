@@ -89,6 +89,16 @@ const STATUS_LABELS: Record<string, string> = {
 
 // ── Component ─────────────────────────────────────────────────────
 
+// remove duplicate option entries (by value) before rendering select lists
+function uniqueOptions<T extends { value: string }>(options: T[]): T[] {
+  const seen = new Set<string>();
+  return options.filter((opt) => {
+    if (seen.has(opt.value)) return false;
+    seen.add(opt.value);
+    return true;
+  });
+}
+
 export default function TripAdvancedFilters({
   searchTerm,
   setSearchTerm,
@@ -299,60 +309,72 @@ export default function TripAdvancedFilters({
           <SelectFilter
             value={statusFilter}
             onChange={setStatusFilter}
-            options={filterOptions.statuses.map((s) => ({
-              value: s,
-              label: STATUS_LABELS[s] || s,
-            }))}
+            options={uniqueOptions(
+              filterOptions.statuses.map((s) => ({
+                value: s,
+                label: STATUS_LABELS[s] || s,
+              })),
+            )}
             allLabel="All Statuses"
             icon={<AlertCircle className="h-3.5 w-3.5" />}
           />
           <SelectFilter
             value={routeFilter}
             onChange={setRouteFilter}
-            options={filterOptions.routes.map((r) => ({
-              value: r.id,
-              label: r.routeGroup ? `${r.name} (${r.routeGroup})` : r.name,
-            }))}
+            options={uniqueOptions(
+              filterOptions.routes.map((r) => ({
+                value: r.id,
+                label: r.routeGroup ? `${r.name} (${r.routeGroup})` : r.name,
+              })),
+            )}
             allLabel="All Routes"
             icon={<Route className="h-3.5 w-3.5" />}
           />
           <SelectFilter
             value={operatorFilter}
             onChange={setOperatorFilter}
-            options={filterOptions.operators.map((o) => ({
-              value: o.id,
-              label: o.name,
-            }))}
+            options={uniqueOptions(
+              filterOptions.operators.map((o) => ({
+                value: o.id,
+                label: o.name,
+              })),
+            )}
             allLabel="All Operators"
             icon={<User className="h-3.5 w-3.5" />}
           />
           <SelectFilter
             value={scheduleFilter}
             onChange={setScheduleFilter}
-            options={filterOptions.schedules.map((s) => ({
-              value: s.id,
-              label: s.name,
-            }))}
+            options={uniqueOptions(
+              filterOptions.schedules.map((s) => ({
+                value: s.id,
+                label: s.name,
+              })),
+            )}
             allLabel="All Schedules"
             icon={<Clock className="h-3.5 w-3.5" />}
           />
           <SelectFilter
             value={busFilter}
             onChange={setBusFilter}
-            options={filterOptions.buses.map((b) => ({
-              value: b.id,
-              label: b.registrationNumber,
-            }))}
+            options={uniqueOptions(
+              filterOptions.buses.map((b) => ({
+                value: b.id,
+                label: b.registrationNumber,
+              })),
+            )}
             allLabel="All Buses"
             icon={<Bus className="h-3.5 w-3.5" />}
           />
           <SelectFilter
             value={pspFilter}
             onChange={setPspFilter}
-            options={filterOptions.passengerServicePermits.map((p) => ({
-              value: p.id,
-              label: p.permitNumber,
-            }))}
+            options={uniqueOptions(
+              filterOptions.passengerServicePermits.map((p) => ({
+                value: p.id,
+                label: p.permitNumber,
+              })),
+            )}
             allLabel="All PSPs"
             icon={<Users className="h-3.5 w-3.5" />}
           />
