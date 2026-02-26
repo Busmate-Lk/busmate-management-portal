@@ -263,11 +263,11 @@ const AddressPicker = ({
     }
   }, [initialLocation]);
 
-  if (mapError) {
+  if (loadError) {
     return (
       <div className="bg-gray-50 rounded-lg p-6 text-center">
         <MapPin className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-        <p className="text-sm text-gray-600">{mapError}</p>
+        <p className="text-sm text-gray-600">{loadError.message || 'Failed to load map'}</p>
       </div>
     );
   }
@@ -293,7 +293,7 @@ const AddressPicker = ({
           style={{ minHeight: '256px' }}
         />
         
-        {!isMapLoaded && (
+        {!isLoaded && (
           <div className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
@@ -303,7 +303,7 @@ const AddressPicker = ({
         )}
 
         {/* Map Controls */}
-        {isMapLoaded && initialLocation && (
+        {isLoaded && initialLocation && (
           <div className="absolute top-2 right-2">
             <button
               onClick={resetMapView}
