@@ -10,7 +10,7 @@ import {
   OperatorsTable 
 } from '@/components/mot/operators';
 import { DataPagination } from '@/components/shared/DataPagination';
-import { OperatorManagementService, OperatorResponse } from '../../../../../generated/api-clients/route-management';
+import { OperatorManagementService, OperatorResponse } from '../../../../generated/api-clients/route-management';
 import DeleteOperatorModal from '@/components/mot/users/operator/DeleteOperatorModal';
 
 interface QueryParams {
@@ -255,11 +255,11 @@ export default function OperatorsPage() {
   }, []);
 
   const handleAddNewOperator = () => {
-    router.push('/mot/users/operators/add-new');
+    router.push('/mot/operators/add-new');
   };
 
   const handleImportOperators = () => {
-    router.push('/mot/users/operators/import');
+    router.push('/mot/operators/import');
   };
 
   const handleExportAll = async () => {
@@ -310,11 +310,11 @@ export default function OperatorsPage() {
   };
 
   const handleView = (operatorId: string) => {
-    router.push(`/mot/users/operators/${operatorId}`);
+    router.push(`/mot/operators/${operatorId}`);
   };
 
   const handleEdit = (operatorId: string) => {
-    router.push(`/mot/users/operators/${operatorId}/edit`);
+    router.push(`/mot/operators/${operatorId}/edit`);
   };
 
   const handleDelete = (operatorId: string, operatorName: string) => {

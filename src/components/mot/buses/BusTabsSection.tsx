@@ -458,7 +458,7 @@ export function BusTabsSection({
         </div>
         {operator && (
           <button
-            onClick={() => window.open(`/mot/users/operators/${operator.id}`, '_blank')}
+            onClick={() => window.open(`/mot/operators/${operator.id}`, '_blank')}
             className="flex items-center bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg transition-colors"
           >
             <ExternalLink className="w-4 h-4 mr-2" />

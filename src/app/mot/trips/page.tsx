@@ -443,7 +443,7 @@ export default function TripsPage() {
   };
 
   const handleGenerateTrips = () => {
-    router.push('/mot/trip-assignment');
+    router.push('/mot/trips/assignment');
   };
 
   const handleExportAll = async () => {

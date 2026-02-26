@@ -17,7 +17,7 @@ import {
   BusManagementService,
   OperatorResponse, 
   BusResponse 
-} from '../../../../../../generated/api-clients/route-management';
+} from '../../../../../generated/api-clients/route-management';
 import DeleteOperatorModal from '@/components/mot/users/operator/DeleteOperatorModal';
 
 export default function OperatorDetailsPage() {
@@ -92,7 +92,7 @@ export default function OperatorDetailsPage() {
 
   // Handlers
   const handleEdit = () => {
-    router.push(`/mot/users/operators/${operatorId}/edit`);
+    router.push(`/mot/operators/${operatorId}/edit`);
   };
 
   const handleAddBus = () => {
@@ -116,7 +116,7 @@ export default function OperatorDetailsPage() {
       await OperatorManagementService.deleteOperator(operator.id);
       
       // Navigate back to operators list after successful deletion
-      router.push('/mot/users/operators');
+      router.push('/mot/operators');
       
     } catch (error) {
       console.error('Error deleting operator:', error);
@@ -145,7 +145,7 @@ export default function OperatorDetailsPage() {
     activeItem: 'operators',
     showBreadcrumbs: true,
     breadcrumbs: [
-      { label: 'Operators', href: '/mot/users/operators' },
+      { label: 'Operators', href: '/mot/operators' },
       { label: operator?.name || 'Operator Details' },
     ],
   });

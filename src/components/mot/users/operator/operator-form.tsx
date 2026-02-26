@@ -178,7 +178,7 @@ export default function OperatorForm({ operatorId, onSuccess, onCancel }: Operat
         if (onSuccess) {
           onSuccess(result);
         } else {
-          router.push(`/mot/users/operators/${result.id}`);
+          router.push(`/mot/operators/${result.id}`);
         }
       } else {
         setErrors({ general: `Failed to ${isEditMode ? 'update' : 'create'} operator` });
@@ -209,9 +209,9 @@ export default function OperatorForm({ operatorId, onSuccess, onCancel }: Operat
     if (onCancel) {
       onCancel();
     } else if (isEditMode && operatorId) {
-      router.push(`/mot/users/operators/${operatorId}`);
+      router.push(`/mot/operators/${operatorId}`);
     } else {
-      router.push('/mot/users/operators');
+      router.push('/mot/operators');
     }
   };
 

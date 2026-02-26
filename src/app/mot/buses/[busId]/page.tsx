@@ -154,7 +154,7 @@ export default function BusDetailsPage() {
 
   const handleViewOperator = () => {
     if (operator?.id) {
-      router.push(`/mot/users/operators/${operator.id}`);
+      router.push(`/mot/operators/${operator.id}`);
     }
   };
 

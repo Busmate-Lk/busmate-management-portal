@@ -113,7 +113,7 @@ export function Sidebar({
       icon: Users,
       label: 'Operator Management',
       active: activeItem === 'operators',
-      href: '/mot/users/operators',
+      href: '/mot/operators',
     },
     {
       icon: Bus,

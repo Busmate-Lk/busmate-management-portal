@@ -206,14 +206,14 @@ export function PermitTabsSection({
                 <h4 className="font-medium text-gray-900 mb-2">Actions</h4>
                 <div className="space-y-2">
                   <Link
-                    href={`/mot/users/operators/${operator.id}`}
+                    href={`/mot/operators/${operator.id}`}
                     className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm"
                   >
                     <Eye className="w-4 h-4" />
                     View Full Operator Profile
                   </Link>
                   <Link
-                    href={`/mot/users/operators/${operator.id}/edit`}
+                    href={`/mot/operators/${operator.id}/edit`}
                     className="flex items-center gap-2 text-green-600 hover:text-green-700 text-sm"
                   >
                     <Edit2 className="w-4 h-4" />
