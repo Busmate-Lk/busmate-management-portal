@@ -4,6 +4,7 @@ import React, { useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { RefreshCw } from 'lucide-react';
 import { useJsApiLoader } from '@react-google-maps/api';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 
 // Page Context
 import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
@@ -42,11 +43,7 @@ export default function LocationTrackingPage() {
   });
 
   // Load Google Maps API
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    libraries: GOOGLE_MAPS_LIBRARIES,
-  });
+  const { isLoaded } = useGoogleMaps();
 
   // Use custom hook for all state management
   const {

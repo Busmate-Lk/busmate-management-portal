@@ -10,6 +10,8 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import type { StopResponse } from '../../../../generated/api-clients/route-management';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
+// import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 
 /* ─── Props ─────────────────────────────────────────────────────────────── */
 
@@ -161,9 +163,10 @@ export function BusStopsMapView({ busStops, loading, onDelete }: BusStopsMapView
   const infoWindowRef   = useRef<google.maps.InfoWindow | null>(null);
   const activeMarkerRef = useRef<google.maps.Marker | null>(null);
 
-  /* state */
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [mapError,    setMapError]    = useState<string | null>(null);
+  /* Use centralized Google Maps loader */
+  const { isLoaded, loadError } = useGoogleMaps();
+  const [isMapInitialized, setIsMapInitialized] = useState(false);
+  const mapError = loadError ? 'Google Maps failed to load. Check your API key.' : null;
 
   /* derived */
   const validBusStops = useMemo(
@@ -197,6 +200,8 @@ export function BusStopsMapView({ busStops, loading, onDelete }: BusStopsMapView
 
   /* ── initialise Google Maps once ─────────────────────────────────────────── */
   useEffect(() => {
+    if (!isLoaded || isMapInitialized) return;
+
     const createMap = () => {
       if (!mapRef.current || !window.google) return;
       try {
@@ -232,39 +237,24 @@ export function BusStopsMapView({ busStops, loading, onDelete }: BusStopsMapView
           }
         });
 
-        setIsMapLoaded(true);
+        setIsMapInitialized(true);
       } catch {
-        setMapError('Failed to create the map. Please refresh the page.');
+        console.error('Failed to create the map. Please refresh the page.');
       }
     };
 
-    if (typeof window !== 'undefined' && typeof window.google !== 'undefined') {
-      createMap();
-    } else {
-      const existing = document.querySelector('script[src*="maps.googleapis.com"]');
-      if (existing) {
-        existing.addEventListener('load', createMap);
-      } else {
-        const script    = document.createElement('script');
-        script.src      = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=geometry`;
-        script.async    = true;
-        script.defer    = true;
-        script.onload   = createMap;
-        script.onerror  = () => setMapError('Google Maps failed to load. Check your API key.');
-        document.head.appendChild(script);
-      }
-    }
+    createMap();
 
     return () => {
       markersRef.current.forEach((m) => m.setMap(null));
       markersRef.current = [];
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isLoaded, isMapInitialized]);
 
   /* ── refresh markers whenever the stops list changes ────────────────────── */
   useEffect(() => {
-    if (!isMapLoaded || !googleMapRef.current || !window.google) return;
+    if (!isMapInitialized || !googleMapRef.current || !window.google) return;
 
     // Close any open popup and reset active marker
     infoWindowRef.current?.close();
@@ -322,7 +312,7 @@ export function BusStopsMapView({ busStops, loading, onDelete }: BusStopsMapView
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMapLoaded, validBusStops]);
+  }, [isMapInitialized, validBusStops]);
 
   /* ── wire global action bridge (View Details / Edit popup buttons) ───────── */
   useEffect(() => {
@@ -400,7 +390,7 @@ export function BusStopsMapView({ busStops, loading, onDelete }: BusStopsMapView
         <div ref={mapRef} className="absolute inset-0" />
 
         {/* ── Top-left: live stop count badge ──────────────────────── */}
-        {isMapLoaded && !loading && (
+        {isMapInitialized && !loading && (
           <div className="absolute top-4 left-4 z-10 flex items-center gap-1.5
                           bg-white/90 backdrop-blur-sm border border-gray-100
                           rounded-xl shadow-md px-3 py-1.5 pointer-events-none">
@@ -450,18 +440,18 @@ export function BusStopsMapView({ busStops, loading, onDelete }: BusStopsMapView
         </div>
 
         {/* ── Loading / initialising overlay ────────────────────────── */}
-        {(loading || !isMapLoaded) && (
+        {(loading || !isMapInitialized) && (
           <div className="absolute inset-0 z-20 bg-white/80 backdrop-blur-[2px]
                           flex flex-col items-center justify-center gap-3">
             <div className="w-10 h-10 rounded-full border-2 border-blue-100 border-t-blue-600 animate-spin" />
             <p className="text-sm font-medium text-gray-500">
-              {!isMapLoaded ? 'Loading map…' : 'Updating stops…'}
+              {!isMapInitialized ? 'Loading map…' : 'Updating stops…'}
             </p>
           </div>
         )}
 
         {/* ── Empty state: stops exist but none have coords ─────────── */}
-        {isMapLoaded && !loading && busStops.length > 0 && validBusStops.length === 0 && (
+        {isMapInitialized && !loading && busStops.length > 0 && validBusStops.length === 0 && (
           <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
             <div className="bg-white/90 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-lg px-8 py-6 text-center">
               <AlertTriangle className="w-8 h-8 text-amber-400 mx-auto mb-2" />
@@ -472,7 +462,7 @@ export function BusStopsMapView({ busStops, loading, onDelete }: BusStopsMapView
         )}
 
         {/* ── Empty state: no stops on this page ───────────────────── */}
-        {isMapLoaded && !loading && busStops.length === 0 && (
+        {isMapInitialized && !loading && busStops.length === 0 && (
           <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
             <div className="bg-white/90 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-lg px-8 py-6 text-center">
               <p className="text-sm font-semibold text-gray-700">No stops on this page</p>

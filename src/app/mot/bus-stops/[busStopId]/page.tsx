@@ -23,6 +23,7 @@ import {
 import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import { StopResponse, BusStopManagementService } from '../../../../../generated/api-clients/route-management';
 import { useToast } from '@/hooks/use-toast';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import DeleteBusStopModal from '@/components/mot/bus-stops/DeleteBusStopModal';
 
 interface BusStopDetailsPageProps {
@@ -46,107 +47,75 @@ const BusStopMiniMap = ({
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<google.maps.Map | null>(null);
   const markerRef = useRef<google.maps.Marker | null>(null);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [mapError, setMapError] = useState<string | null>(null);
+  const [isMapInitialized, setIsMapInitialized] = useState(false);
+  
+  // Use centralized Google Maps loader
+  const { isLoaded, loadError } = useGoogleMaps();
 
-  // Initialize Google Maps
+  // Initialize map when Google Maps is loaded
   useEffect(() => {
-    const initializeMap = async () => {
-      try {
-        // Check if Google Maps is available
-        if (typeof window === 'undefined' || !window.google) {
-          // Load Google Maps script
-          const script = document.createElement('script');
-          script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
-          script.async = true;
-          script.defer = true;
-          
-          script.onload = () => {
-            createMap();
-          };
-          
-          script.onerror = () => {
-            setMapError('Failed to load Google Maps');
-          };
-          
-          document.head.appendChild(script);
-        } else {
-          createMap();
-        }
-      } catch (error) {
-        console.error('Error initializing map:', error);
-        setMapError('Error initializing map');
-      }
-    };
+    if (!isLoaded || !mapRef.current || isMapInitialized) return;
 
-    const createMap = () => {
-      if (!mapRef.current || !window.google) return;
+    try {
+      const mapOptions: google.maps.MapOptions = {
+        center: { lat: latitude, lng: longitude },
+        zoom: 16,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        streetViewControl: false,
+        mapTypeControl: true,
+        mapTypeControlOptions: {
+          style: google.maps.MapTypeControlStyle.DEFAULT,
+          position: google.maps.ControlPosition.TOP_RIGHT,
+        },
+        zoomControl: true,
+        zoomControlOptions: {
+          position: google.maps.ControlPosition.RIGHT_CENTER,
+        },
+        fullscreenControl: false,
+        gestureHandling: 'cooperative',
+      };
 
-      try {
-        const mapOptions: google.maps.MapOptions = {
-          center: { lat: latitude, lng: longitude },
-          zoom: 16,
-          mapTypeId: google.maps.MapTypeId.ROADMAP,
-          streetViewControl: false,
-          mapTypeControl: true,
-          mapTypeControlOptions: {
-            style: google.maps.MapTypeControlStyle.DEFAULT,
-            position: google.maps.ControlPosition.TOP_RIGHT,
-          },
-          zoomControl: true,
-          zoomControlOptions: {
-            position: google.maps.ControlPosition.RIGHT_CENTER,
-          },
-          fullscreenControl: false,
-          gestureHandling: 'cooperative',
-        };
+      // Create map
+      googleMapRef.current = new google.maps.Map(mapRef.current, mapOptions);
 
-        // Create map
-        googleMapRef.current = new google.maps.Map(mapRef.current, mapOptions);
+      // Create marker
+      markerRef.current = new google.maps.Marker({
+        position: { lat: latitude, lng: longitude },
+        map: googleMapRef.current,
+        title: name,
+        icon: {
+          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#dc2626">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            </svg>
+          `),
+          scaledSize: new google.maps.Size(32, 32),
+          anchor: new google.maps.Point(16, 32),
+        },
+      });
 
-        // Create marker
-        markerRef.current = new google.maps.Marker({
-          position: { lat: latitude, lng: longitude },
-          map: googleMapRef.current,
-          title: name,
-          icon: {
-            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#dc2626">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-              </svg>
-            `),
-            scaledSize: new google.maps.Size(32, 32),
-            anchor: new google.maps.Point(16, 32),
-          },
-        });
-
-        // Create info window
-        const infoWindow = new google.maps.InfoWindow({
-          content: `
-            <div style="padding: 8px; max-width: 200px;">
-              <h4 style="margin: 0 0 4px 0; font-weight: 600; color: #1f2937;">${name}</h4>
-              ${address ? `<p style="margin: 0; font-size: 12px; color: #6b7280;">${address}</p>` : ''}
-              <div style="margin-top: 8px;">
-                <small style="color: #9ca3af;">Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}</small>
-              </div>
+      // Create info window
+      const infoWindow = new google.maps.InfoWindow({
+        content: `
+          <div style="padding: 8px; max-width: 200px;">
+            <h4 style="margin: 0 0 4px 0; font-weight: 600; color: #1f2937;">${name}</h4>
+            ${address ? `<p style="margin: 0; font-size: 12px; color: #6b7280;">${address}</p>` : ''}
+            <div style="margin-top: 8px;">
+              <small style="color: #9ca3af;">Lat: ${latitude.toFixed(6)}, Lng: ${longitude.toFixed(6)}</small>
             </div>
-          `,
-        });
+          </div>
+        `,
+      });
 
-        // Add click listener to marker
-        markerRef.current.addListener('click', () => {
-          infoWindow.open(googleMapRef.current, markerRef.current);
-        });
+      // Add click listener to marker
+      markerRef.current.addListener('click', () => {
+        infoWindow.open(googleMapRef.current, markerRef.current);
+      });
 
-        setIsMapLoaded(true);
-        setMapError(null);
-      } catch (error) {
-        console.error('Error creating map:', error);
-        setMapError('Error creating map');
-      }
-    };
-
-    initializeMap();
+      setIsMapInitialized(true);
+    } catch (error) {
+      console.error('Error creating map:', error);
+    }
 
     // Cleanup
     return () => {
@@ -154,7 +123,7 @@ const BusStopMiniMap = ({
         markerRef.current.setMap(null);
       }
     };
-  }, [latitude, longitude, name, address]);
+  }, [isLoaded, latitude, longitude, name, address, isMapInitialized]);
 
   // Reset map view
   const resetMapView = useCallback(() => {
@@ -170,11 +139,11 @@ const BusStopMiniMap = ({
     window.open(url, '_blank');
   }, [latitude, longitude]);
 
-  if (mapError) {
+  if (loadError) {
     return (
       <div className="bg-gray-50 rounded-lg p-6 text-center">
         <MapPin className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-        <p className="text-sm text-gray-600 mb-3">{mapError}</p>
+        <p className="text-sm text-gray-600 mb-3">Failed to load Google Maps</p>
         <button
           onClick={openInFullMaps}
           className="text-blue-600 hover:text-blue-700 text-sm underline"
@@ -193,7 +162,7 @@ const BusStopMiniMap = ({
         style={{ minHeight: '256px' }}
       />
       
-      {!isMapLoaded && (
+      {!isLoaded && (
         <div className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
@@ -203,7 +172,7 @@ const BusStopMiniMap = ({
       )}
 
       {/* Map Controls */}
-      {isMapLoaded && (
+      {isMapInitialized && (
         <div className="absolute top-2 right-2 flex flex-col gap-1">
           <button
             onClick={resetMapView}

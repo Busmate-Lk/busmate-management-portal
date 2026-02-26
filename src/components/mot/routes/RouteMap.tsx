@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { AlertCircle, RotateCcw, Maximize2, ExternalLink, Maximize } from 'lucide-react';
 import type { RouteResponse, LocationDto } from '../../../../generated/api-clients/route-management';
 import { RouteMapFullscreen } from './RouteMapFullscreen';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 
 interface RouteMapProps {
   route: RouteResponse;
@@ -32,10 +33,13 @@ export function RouteMap({ route, className = "" }: RouteMapProps) {
   const markersRef = useRef<google.maps.Marker[]>([]);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
   
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [mapError, setMapError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isMapInitialized, setIsMapInitialized] = useState(false);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
+  
+  // Use centralized Google Maps loader
+  const { isLoaded, loadError } = useGoogleMaps();
+  const mapError = loadError ? 'Failed to load Google Maps' : null;
+  const isLoading = !isLoaded;
 
   // Process route stops and add start/end stops
   const getOrderedStops = useCallback((): RouteStop[] => {
@@ -96,47 +100,15 @@ export function RouteMap({ route, className = "" }: RouteMapProps) {
     );
   }, [route]);
 
-  // Initialize Google Maps
+  // Initialize Google Maps when loaded
   useEffect(() => {
-    const initializeMap = async () => {
+    if (!isLoaded || isMapInitialized) return;
+
+    const initializeMap = () => {
       try {
-        setIsLoading(true);
-        setMapError(null);
-
-        // Check if Google Maps is already loaded
-        if (window.google && window.google.maps) {
-          createMap();
-          return;
-        }
-
-        // Load Google Maps script
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=geometry,places&callback=initMap`;
-        script.async = true;
-        script.defer = true;
-        
-        script.onload = () => {
-          createMap();
-        };
-        
-        script.onerror = () => {
-          setMapError('Failed to load Google Maps');
-          setIsLoading(false);
-        };
-
-        document.head.appendChild(script);
-
-        // Cleanup function
-        return () => {
-          const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`);
-          if (existingScript && existingScript.parentNode) {
-            existingScript.parentNode.removeChild(existingScript);
-          }
-        };
+        createMap();
       } catch (error) {
         console.error('Error initializing map:', error);
-        setMapError('Failed to initialize map');
-        setIsLoading(false);
       }
     };
 
@@ -271,8 +243,6 @@ export function RouteMap({ route, className = "" }: RouteMapProps) {
         const stops = getOrderedStops();
         
         if (stops.length === 0) {
-          setMapError('No valid stops found for this route');
-          setIsLoading(false);
           return;
         }
 
@@ -387,13 +357,10 @@ export function RouteMap({ route, className = "" }: RouteMapProps) {
         const padding = { top: 50, right: 50, bottom: 50, left: 50 };
         map.fitBounds(bounds, padding);
 
-        setIsMapLoaded(true);
-        setIsLoading(false);
+        setIsMapInitialized(true);
 
       } catch (error) {
         console.error('Error creating map:', error);
-        setMapError('Failed to create map');
-        setIsLoading(false);
       }
     };
 
@@ -417,7 +384,7 @@ export function RouteMap({ route, className = "" }: RouteMapProps) {
         polylineRef.current = null;
       }
     };
-  }, [route, getOrderedStops]);
+  }, [isLoaded, route, getOrderedStops, isMapInitialized]);
 
   // Reset map view
   const resetMapView = useCallback(() => {
@@ -512,7 +479,7 @@ export function RouteMap({ route, className = "" }: RouteMapProps) {
           style={{ minHeight: '720px' }}
         />
         
-        {(isLoading || !isMapLoaded) && (
+        {(isLoading || !isMapInitialized) && (
           <div className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -522,7 +489,7 @@ export function RouteMap({ route, className = "" }: RouteMapProps) {
         )}
 
         {/* Map Controls */}
-        {isMapLoaded && (
+        {isMapInitialized && (
           <div className="absolute top-2 right-2 flex flex-col gap-1">
             <button
               onClick={resetMapView}
@@ -549,7 +516,7 @@ export function RouteMap({ route, className = "" }: RouteMapProps) {
         )}
 
         {/* Coordinates overlay */}
-        {isMapLoaded && stops.length > 0 && (() => {
+        {isMapInitialized && stops.length > 0 && (() => {
           const firstStop = stops[0];
           const lastStop = stops[stops.length - 1];
           
