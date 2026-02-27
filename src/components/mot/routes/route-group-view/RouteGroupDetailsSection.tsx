@@ -33,9 +33,9 @@ function formatDate(dateString?: string): string {
 
 export function RouteGroupDetailsSection({ routeGroup }: RouteGroupDetailsSectionProps) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-lg border-l-3 border-blue-600 shadow-sm overflow-hidden">
       {/* Gradient header bar */}
-      <div className="h-1 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600" />
+      {/* <div className="h-1 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600" /> */}
       
       <div className="p-4">
         {/* Main header row */}

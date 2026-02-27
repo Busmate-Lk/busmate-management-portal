@@ -29,14 +29,6 @@ export default function PermitDetailsPage() {
   const params = useParams();
   const permitId = params.permitId as string;
 
-  useSetPageMetadata({
-    title: permit?.permitNumber || 'Permit Details',
-    description: 'Detailed view of permit information',
-    activeItem: 'passenger-service-permits',
-    showBreadcrumbs: true,
-    breadcrumbs: [{ label: 'Permits', href: '/mot/passenger-service-permits' }, { label: permit?.permitNumber || 'Permit Details' }],
-  });
-
   // State
   const [permit, setPermit] = useState<PassengerServicePermitResponse | null>(null);
   const [operator, setOperator] = useState<OperatorResponse | null>(null);
@@ -53,6 +45,14 @@ export default function PermitDetailsPage() {
   // Delete modal states
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useSetPageMetadata({
+    title: permit?.permitNumber || 'Permit Details',
+    description: 'Detailed view of permit information',
+    activeItem: 'passenger-service-permits',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Permits', href: '/mot/passenger-service-permits' }, { label: permit?.permitNumber || 'Permit Details' }],
+  });
 
   // Load permit details
   const loadPermitDetails = useCallback(async () => {

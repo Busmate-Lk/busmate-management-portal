@@ -46,7 +46,7 @@ export function RouteTabs({ route }: RouteTabsProps) {
   const [activeTab, setActiveTab] = useState<TabId>('overview');
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-xl border-l-3 border-blue-600 shadow-sm overflow-hidden">
       {/* Tab navigation */}
       <div className="border-b border-gray-200">
         <div className="flex overflow-x-auto scrollbar-hide">
@@ -92,7 +92,7 @@ export function RouteTabs({ route }: RouteTabsProps) {
 
 export function RouteTabsEmpty() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12">
+    <div className="bg-white rounded-xl border-l-3 border-blue-600 shadow-sm p-12">
       <div className="text-center">
         <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
           <RouteIcon className="w-8 h-8 text-gray-400" />

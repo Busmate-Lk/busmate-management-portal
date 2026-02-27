@@ -99,6 +99,23 @@ export default function TripDetailsPage() {
     loadTripDetails();
   }, [loadTripDetails]);
 
+  // Trip status helper functions
+  const canStart = (status?: string) => {
+    return status === 'pending';
+  };
+
+  const canComplete = (status?: string) => {
+    return status === 'active' || status === 'in_transit' || status === 'departed';
+  };
+
+  const canCancel = (status?: string) => {
+    return status === 'pending' || status === 'active' || status === 'delayed';
+  };
+
+  const canEdit = (status?: string) => {
+    return status === 'pending' || status === 'active';
+  };
+
   // Handlers
   const handleBack = () => {
     router.back();
@@ -111,56 +128,6 @@ export default function TripDetailsPage() {
   const handleRefresh = () => {
     loadTripDetails();
   };
-
-  useSetPageMetadata({
-    title: trip ? `Trip Details - ${trip.routeName || 'Unknown Route'}` : 'Trip Details',
-    description: trip ? `${trip.tripDate ? new Date(trip.tripDate).toLocaleDateString() : 'No Date'} - ${trip.scheduledDepartureTime || 'No Time'}` : 'Loading trip details...',
-    activeItem: 'trips',
-    showBreadcrumbs: true,
-    breadcrumbs: [{ label: 'Trips', href: '/mot/trips' }, { label: 'Trip Details' }],
-  });
-
-  useSetPageActions(
-    <div className="flex items-center space-x-2">
-      <Button variant="outline" onClick={handleBack}>
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back
-      </Button>
-      <Button variant="outline" size="sm" onClick={handleRefresh}>
-        <RefreshCw className="h-4 w-4" />
-      </Button>
-      {trip && canStart(trip.status) && (
-        <Button size="sm" onClick={handleStart}>
-          <Play className="h-4 w-4 mr-2" />
-          Start Trip
-        </Button>
-      )}
-      {trip && canComplete(trip.status) && (
-        <Button size="sm" onClick={handleComplete}>
-          <CheckCircle className="h-4 w-4 mr-2" />
-          Complete Trip
-        </Button>
-      )}
-      {trip && canCancel(trip.status) && (
-        <Button variant="outline" size="sm" onClick={handleCancel}>
-          <Square className="h-4 w-4 mr-2" />
-          Cancel Trip
-        </Button>
-      )}
-      {trip && canEdit(trip.status) && (
-        <Button variant="outline" size="sm" onClick={handleEdit}>
-          <Edit2 className="h-4 w-4 mr-2" />
-          Edit
-        </Button>
-      )}
-      {trip && (
-        <Button variant="outline" size="sm" onClick={handleDelete}>
-          <Trash2 className="h-4 w-4 mr-2" />
-          Delete
-        </Button>
-      )}
-    </div>
-  );
 
   // Trip status action handlers
   const handleStart = async () => {
@@ -227,22 +194,55 @@ export default function TripDetailsPage() {
     }
   };
 
-  // Helper functions
-  const canStart = (status?: string) => {
-    return status === 'pending';
-  };
+  useSetPageMetadata({
+    title: trip ? `Trip Details - ${trip.routeName || 'Unknown Route'}` : 'Trip Details',
+    description: trip ? `${trip.tripDate ? new Date(trip.tripDate).toLocaleDateString() : 'No Date'} - ${trip.scheduledDepartureTime || 'No Time'}` : 'Loading trip details...',
+    activeItem: 'trips',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Trips', href: '/mot/trips' }, { label: 'Trip Details' }],
+  });
 
-  const canComplete = (status?: string) => {
-    return status === 'active' || status === 'in_transit' || status === 'departed';
-  };
-
-  const canCancel = (status?: string) => {
-    return status === 'pending' || status === 'active' || status === 'delayed';
-  };
-
-  const canEdit = (status?: string) => {
-    return status === 'pending' || status === 'active';
-  };
+  useSetPageActions(
+    <div className="flex items-center space-x-2">
+      <Button variant="outline" onClick={handleBack}>
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back
+      </Button>
+      <Button variant="outline" size="sm" onClick={handleRefresh}>
+        <RefreshCw className="h-4 w-4" />
+      </Button>
+      {trip && canStart(trip.status) && (
+        <Button size="sm" onClick={handleStart}>
+          <Play className="h-4 w-4 mr-2" />
+          Start Trip
+        </Button>
+      )}
+      {trip && canComplete(trip.status) && (
+        <Button size="sm" onClick={handleComplete}>
+          <CheckCircle className="h-4 w-4 mr-2" />
+          Complete Trip
+        </Button>
+      )}
+      {trip && canCancel(trip.status) && (
+        <Button variant="outline" size="sm" onClick={handleCancel}>
+          <Square className="h-4 w-4 mr-2" />
+          Cancel Trip
+        </Button>
+      )}
+      {trip && canEdit(trip.status) && (
+        <Button variant="outline" size="sm" onClick={handleEdit}>
+          <Edit2 className="h-4 w-4 mr-2" />
+          Edit
+        </Button>
+      )}
+      {trip && (
+        <Button variant="outline" size="sm" onClick={handleDelete}>
+          <Trash2 className="h-4 w-4 mr-2" />
+          Delete
+        </Button>
+      )}
+    </div>
+  );
 
   // Loading state
   if (isLoading) {
