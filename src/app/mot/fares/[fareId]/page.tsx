@@ -18,6 +18,21 @@ export default function FareDetailPage() {
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+    const handleEdit = useCallback(() => {
+        router.push(`/mot/fares/${fareId}/edit`);
+    }, [router, fareId]);
+
+    const handleDelete = useCallback(() => {
+        setShowDeleteModal(true);
+    }, []);
+
+    const handleConfirmDelete = useCallback(() => {
+        // TODO: Replace with API call
+        alert(`Fare ${fareId} deleted (simulated)`);
+        setShowDeleteModal(false);
+        router.push('/mot/fares');
+    }, [fareId, router]);
+
     useSetPageMetadata({
         title: fare ? `Fare ${fare.id}` : 'Fare Not Found',
         description: fare?.route || '',
@@ -53,21 +68,6 @@ export default function FareDetailPage() {
             </>
         ) : null
     );
-
-    const handleEdit = useCallback(() => {
-        router.push(`/mot/fares/${fareId}/edit`);
-    }, [router, fareId]);
-
-    const handleDelete = useCallback(() => {
-        setShowDeleteModal(true);
-    }, []);
-
-    const handleConfirmDelete = useCallback(() => {
-        // TODO: Replace with API call
-        alert(`Fare ${fareId} deleted (simulated)`);
-        setShowDeleteModal(false);
-        router.push('/mot/fares');
-    }, [fareId, router]);
 
     if (!fare) {
         return (

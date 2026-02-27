@@ -113,7 +113,7 @@ function DetailRow({
 
 // ── Page component ────────────────────────────────────────────────
 
-function NotificationDetailContent() {
+export default function NotificationDetailContent() {
     const params = useParams();
     const router = useRouter();
     const searchParams = useSearchParams();
