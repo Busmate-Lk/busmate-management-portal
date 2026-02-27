@@ -133,7 +133,7 @@ export interface BackupStats {
 const defaultGeneralSettings: GeneralSettings = {
   siteName: 'BUSMATE LK',
   siteTagline: 'Sri Lanka\'s Digital Bus Transit Platform',
-  logoUrl: '/busmate-logo-icon.png',
+  logoUrl: '/images/logo/busmate-icon.png',
   faviconUrl: '/favicon.ico',
   contactEmail: 'info@busmate.lk',
   contactPhone: '+94 11 234 5678',

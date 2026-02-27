@@ -294,14 +294,14 @@ export function Sidebar({
           {!isCollapsed ? (
             <div className="flex items-center gap-0">
               <Image
-                src="/busmate-logo-icon.png"
+                src="/images/logo/busmate-icon.png"
                 alt="Busmate LK"
                 width={1408}
                 height={768}
                 className="w-18 h-8 object-cover shrink-0"
               />
               <Image
-                src="/busmate-logo-text.png"
+                src="/images/logo/busmate-text.png"
                 alt="Busmate LK"
                 width={1408}
                 height={768}
@@ -310,7 +310,7 @@ export function Sidebar({
             </div>
           ) : (
             <Image
-              src="/busmate-logo-icon.png"
+              src="/images/logo/busmate-icon.png"
               alt="Busmate LK"
               width={1408}
               height={768}

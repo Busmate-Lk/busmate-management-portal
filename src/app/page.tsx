@@ -56,7 +56,7 @@ export default function Home() {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-95 "
           style={{
-            backgroundImage: 'url(/bg-image-c.png)',
+            backgroundImage: 'url(/images/background/landing-page-background.png)',
           }}
         ></div>
 
@@ -69,7 +69,7 @@ export default function Home() {
         {/* Logo and Title */}
         <div className="flex items-center justify-center mb-2">
           <Image
-            src="/Busmate Lk.svg"
+            src="/images/logo/busmate-icon-old.svg"
             alt="Busmate LK"
             width={32}
             height={32}
