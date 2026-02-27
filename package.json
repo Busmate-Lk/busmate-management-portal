@@ -12,6 +12,8 @@
     "analyze:save": "node scripts/analyze-codebase.js --save",
     "analyze:json": "node scripts/analyze-codebase.js --save --json",
     "analyze:quiet": "node scripts/analyze-codebase.js --save --quiet",
+    "analyze-pages:console": "node scripts/analyze-pages.js",
+    "analyze-pages:file": "node scripts/analyze-pages.js --file",
     "generate:api-route:cloud": "npx openapi-typescript-codegen --input http://18.140.161.237:8080/v3/api-docs  --output ./generated/api-clients/route-management",
     "generate:api-route:local": "npx openapi-typescript-codegen --input http://localhost:8080/v3/api-docs  --output ./generated/api-clients/route-management",
     "generate:api-location:local": "npx openapi-typescript-codegen --input http://localhost:4000/api-spec  --output ./generated/api-clients/location-tracking",
