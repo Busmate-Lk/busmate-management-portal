@@ -3,7 +3,12 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
-import { UserStatsCards, UserFilters, UsersTable, ConfirmDialog } from '@/components/admin/users';
+import { UserStatsCards } from '@/components/admin/users/UserStatsCards';
+import { UserActionButtons } from '@/components/admin/users/UserActionButtons';
+import { UserAdvancedFilters } from '@/components/admin/users/UserAdvancedFilters';
+import { UsersTable } from '@/components/admin/users/UsersTable';
+import { ConfirmDialog } from '@/components/admin/users/ConfirmDialog';
+import { DataPagination } from '@/components/shared/DataPagination';
 import {
   getUserStatsData,
   getFilteredUsers,
@@ -12,38 +17,29 @@ import {
   getUserDisplayName,
 } from '@/data/admin/users';
 import type { SystemUser, UserType, UserStatus, UserFiltersState } from '@/data/admin/users';
-import { Plus } from 'lucide-react';
-import Link from 'next/link';
+
+// ── Main Component ────────────────────────────────────────────────
 
 export default function UsersPage() {
-  useSetPageMetadata({
-    title: 'User Management',
-    description: 'Manage users, permissions, and account settings across the platform',
-    activeItem: 'users',
-    showBreadcrumbs: true,
-    breadcrumbs: [{ label: 'User Management' }],
-  });
-
-  useSetPageActions(
-    <Link
-      href="/admin/users/create"
-      className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-    >
-      <Plus className="h-4 w-4" />
-      Add User
-    </Link>
-  );
-
   const router = useRouter();
 
-  // Filters state
+  // ── State ───────────────────────────────────────────────────────
+
+  // Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [userTypeFilter, setUserTypeFilter] = useState<UserType | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<UserStatus | 'all'>('all');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Dialogs
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+
+  // Loading states
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Dialog state
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     type: 'delete' | 'toggle';
@@ -51,9 +47,12 @@ export default function UsersPage() {
   }>({ open: false, type: 'delete', user: null });
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Data
+  // ── Data computation ────────────────────────────────────────────
+
+  // Get statistics
   const stats = useMemo(() => getUserStatsData(), []);
 
+  // Build filters object
   const filters: UserFiltersState = useMemo(
     () => ({
       search: searchTerm,
@@ -65,10 +64,40 @@ export default function UsersPage() {
     [searchTerm, userTypeFilter, statusFilter, sortBy, sortOrder]
   );
 
-  const filteredUsers = useMemo(() => getFilteredUsers(filters), [filters]);
-  const allUsers = useMemo(() => getFilteredUsers({ search: '', userType: 'all', status: 'all', sortBy: 'createdAt', sortOrder: 'desc' }), []);
+  // Get all filtered users
+  const allFilteredUsers = useMemo(() => getFilteredUsers(filters), [filters]);
 
-  // Handlers
+  // Get all users (for total count)
+  const allUsers = useMemo(
+    () => getFilteredUsers({ search: '', userType: 'all', status: 'all', sortBy: 'createdAt', sortOrder: 'desc' }),
+    []
+  );
+
+  // Pagination calculations
+  const totalPages = Math.ceil(allFilteredUsers.length / pageSize);
+  const startIndex = currentPage * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedUsers = allFilteredUsers.slice(startIndex, endIndex);
+
+  // ── Page metadata and actions ───────────────────────────────────
+
+  useSetPageMetadata({
+    title: 'User Management',
+    description: 'Manage users, permissions, and account settings across the platform',
+    activeItem: 'users',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'User Management' }],
+  });
+
+  useSetPageActions(
+    <UserActionButtons
+      onAddUser={() => router.push('/admin/users/create')}
+      isLoading={isLoading}
+    />
+  );
+
+  // ── Handlers ────────────────────────────────────────────────────
+
   const handleSort = useCallback((column: string) => {
     setSortBy((prev) => {
       if (prev === column) {
@@ -78,15 +107,22 @@ export default function UsersPage() {
       setSortOrder('asc');
       return column;
     });
+    setCurrentPage(0); // Reset to first page on sort change
   }, []);
 
-  const handleView = useCallback((user: SystemUser) => {
-    router.push(`/admin/users/${user.id}`);
-  }, [router]);
+  const handleView = useCallback(
+    (user: SystemUser) => {
+      router.push(`/admin/users/${user.id}`);
+    },
+    [router]
+  );
 
-  const handleEdit = useCallback((user: SystemUser) => {
-    router.push(`/admin/users/${user.id}/edit`);
-  }, [router]);
+  const handleEdit = useCallback(
+    (user: SystemUser) => {
+      router.push(`/admin/users/${user.id}/edit`);
+    },
+    [router]
+  );
 
   const handleToggleStatus = useCallback((user: SystemUser) => {
     setConfirmDialog({ open: true, type: 'toggle', user });
@@ -100,6 +136,16 @@ export default function UsersPage() {
     setSearchTerm('');
     setUserTypeFilter('all');
     setStatusFilter('all');
+    setCurrentPage(0);
+  }, []);
+
+  const handlePageChange = useCallback((page: number) => {
+    setCurrentPage(page);
+  }, []);
+
+  const handlePageSizeChange = useCallback((size: number) => {
+    setPageSize(size);
+    setCurrentPage(0); // Reset to first page when page size changes
   }, []);
 
   const handleConfirmAction = useCallback(async () => {
@@ -140,34 +186,74 @@ export default function UsersPage() {
     };
   };
 
+  // Reset to first page when filters change
+  const handleSearchChange = useCallback((value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(0);
+  }, []);
+
+  const handleUserTypeChange = useCallback((value: UserType | 'all') => {
+    setUserTypeFilter(value);
+    setCurrentPage(0);
+  }, []);
+
+  const handleStatusChange = useCallback((value: UserStatus | 'all') => {
+    setStatusFilter(value);
+    setCurrentPage(0);
+  }, []);
+
+  // ── Render ──────────────────────────────────────────────────────
+
   return (
     <div className="space-y-6">
-      {/* Stats */}
-      <UserStatsCards stats={stats} />
+      {/* Statistics Cards */}
+      <UserStatsCards stats={stats} loading={isLoading} />
 
-      {/* Filters */}
-      <UserFilters
+      {/* Advanced Filters */}
+      <UserAdvancedFilters
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        setSearchTerm={handleSearchChange}
         userTypeFilter={userTypeFilter}
-        onUserTypeChange={setUserTypeFilter}
+        setUserTypeFilter={handleUserTypeChange}
         statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        onClearAll={handleClearAll}
+        setStatusFilter={handleStatusChange}
+        loading={isLoading}
         totalCount={allUsers.length}
-        filteredCount={filteredUsers.length}
+        filteredCount={allFilteredUsers.length}
+        onClearAll={handleClearAll}
       />
 
-      {/* Table */}
-      <UsersTable
-        users={filteredUsers}
-        currentSort={{ sortBy, sortOrder }}
-        onSort={handleSort}
-        onView={handleView}
-        onEdit={handleEdit}
-        onToggleStatus={handleToggleStatus}
-        onDelete={handleDelete}
-      />
+      {/* Users Table with Pagination */}
+      <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        <UsersTable
+          users={paginatedUsers}
+          loading={isLoading}
+          currentSort={{ sortBy, sortOrder }}
+          onSort={handleSort}
+          onView={handleView}
+          onEdit={handleEdit}
+          onToggleStatus={handleToggleStatus}
+          onDelete={handleDelete}
+          activeFilters={{
+            search: searchTerm,
+            userType: userTypeFilter !== 'all' ? userTypeFilter : undefined,
+            status: statusFilter !== 'all' ? statusFilter : undefined,
+          }}
+        />
+
+        {/* Pagination */}
+        {allFilteredUsers.length > 0 && (
+          <DataPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalElements={allFilteredUsers.length}
+            pageSize={pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            loading={isLoading}
+          />
+        )}
+      </div>
 
       {/* Confirm Dialog */}
       <ConfirmDialog
@@ -180,3 +266,4 @@ export default function UsersPage() {
     </div>
   );
 }
+
