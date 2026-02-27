@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromToken, isTokenExpired } from '@/lib/utils/jwtHandler';
 
-// Dummy middleware function to satisfy Next.js requirement
-// export async function middleware(){}
+// Dummy proxy function to satisfy Next.js requirement
+// export async function proxy(){}
 
-export async function middleware(request: NextRequest) {
-  console.log('Middleware triggered for:', request.nextUrl.pathname);
+export async function proxy(request: NextRequest) {
+  console.log('Proxy triggered for:', request.nextUrl.pathname);
   
   // Get token from cookies or headers
   const token = request.cookies.get('access_token')?.value || 
                 request.headers.get('Authorization')?.split(' ')[1];
 
-  console.log('Token in middleware:', token ? 'Present' : 'Missing');
+  console.log('Token in proxy:', token ? 'Present' : 'Missing');
   
   const { pathname } = request.nextUrl;
 
@@ -20,7 +20,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Skip middleware for static assets and API routes
+  // Skip proxy for static assets and API routes
   if (
     pathname.startsWith('/_next/') ||
     pathname.startsWith('/api/') ||
