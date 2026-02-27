@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:turbo": "next dev --turbopack",
     "build": "next build",
     "lint": "next lint",
-    "start": "next start",
+    "start": "next start --port 5000",
+    "info": "next info",
     "analyze": "node scripts/analyze-codebase.js",
     "analyze:save": "node scripts/analyze-codebase.js --save",
     "analyze:json": "node scripts/analyze-codebase.js --save --json",
