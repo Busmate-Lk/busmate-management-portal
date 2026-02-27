@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
@@ -11,7 +11,7 @@ interface EditBusStopPageProps {
   params: { busStopId: string };
 }
 
-export default function EditBusStopPage({ params }: EditBusStopPageProps) {
+function EditBusStopContent({ params }: EditBusStopPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -92,5 +92,13 @@ export default function EditBusStopPage({ params }: EditBusStopPageProps) {
         onCancel={handleCancel}
       />
     </div>
+  );
+}
+
+export default function EditBusStopPage({ params }: EditBusStopPageProps) {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-64">Loading...</div>}>
+      <EditBusStopContent params={params} />
+    </Suspense>
   );
 }

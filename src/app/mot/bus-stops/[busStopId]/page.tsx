@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
@@ -196,7 +196,7 @@ const BusStopMiniMap = ({
   );
 };
 
-export default function BusStopDetailsPage({ params }: BusStopDetailsPageProps) {
+function BusStopDetailsContent({ params }: BusStopDetailsPageProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -882,5 +882,13 @@ export default function BusStopDetailsPage({ params }: BusStopDetailsPageProps) 
           isDeleting={isDeleting}
         />
       </div>
+  );
+}
+
+export default function BusStopDetailsPage({ params }: BusStopDetailsPageProps) {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-64">Loading...</div>}>
+      <BusStopDetailsContent params={params} />
+    </Suspense>
   );
 }

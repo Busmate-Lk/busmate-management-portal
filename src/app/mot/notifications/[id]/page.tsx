@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useCallback } from 'react';
+import { useMemo, useState, useCallback, Suspense } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
     ArrowLeft,
@@ -113,7 +113,7 @@ function DetailRow({
 
 // ── Page component ────────────────────────────────────────────────
 
-export default function NotificationDetailPage() {
+function NotificationDetailContent() {
     const params = useParams();
     const router = useRouter();
     const searchParams = useSearchParams();

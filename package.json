@@ -96,6 +96,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
+    "baseline-browser-mapping": "^2.10.0",
     "eslint": "9.31.0",
     "eslint-config-next": "15.4.2",
     "openapi-typescript-codegen": "^0.29.0",

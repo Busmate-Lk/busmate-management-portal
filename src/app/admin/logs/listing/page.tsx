@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSetPageMetadata } from '@/context/PageContext';
 import {
@@ -37,7 +37,7 @@ const TABS: { key: TabKey; label: string; icon: React.ReactNode; color: string }
 
 const ITEMS_PER_PAGE = 15;
 
-export default function LogsListingPage() {
+function LogsListingContent() {
   useSetPageMetadata({
     title: 'Log Explorer',
     description: 'Browse and filter all system logs',
@@ -367,5 +367,13 @@ export default function LogsListingPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function LogsListingPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-64">Loading...</div>}>
+      <LogsListingContent />
+    </Suspense>
   );
 }
