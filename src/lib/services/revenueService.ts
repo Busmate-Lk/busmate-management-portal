@@ -1,8 +1,8 @@
-import { TicketControllerService } from '@/lib/api-client/ticketing-management';
-import { BusOperatorOperationsService } from '@/lib/api-client/route-management/services/BusOperatorOperationsService';
-import type { TripSummaryDTO } from '@/lib/api-client/ticketing-management/models/TripSummaryDTO';
-import type { ConductorLogTicketDTO } from '@/lib/api-client/ticketing-management/models/ConductorLogTicketDTO';
-import type { BusResponse } from '@/lib/api-client/route-management/models/BusResponse';
+import { TicketControllerService } from '../../../generated/api-clients/ticketing-management';
+import { BusOperatorOperationsService } from '../../../generated/api-clients/route-management/services/BusOperatorOperationsService';
+import type { TripSummaryDTO } from '../../../generated/api-clients/ticketing-management/models/TripSummaryDTO';
+import type { ConductorLogTicketDTO } from '../../../generated/api-clients/ticketing-management/models/ConductorLogTicketDTO';
+import type { BusResponse } from '../../../generated/api-clients/route-management/models/BusResponse';
 
 export interface BusRevenueData {
     busId: string;

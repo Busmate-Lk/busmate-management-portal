@@ -9,7 +9,7 @@ import {
   applyBulkSearchResultsToRouteStops,
   BulkStopExistenceSearchResult 
 } from '@/services/routeWorkspaceValidation';
-import { BusStopManagementService, StopRequest, RouteManagementService, RouteGroupRequest, RouteRequest } from '@/lib/api-client/route-management';
+import { BusStopManagementService, StopRequest, RouteManagementService, RouteGroupRequest, RouteRequest } from '../../../../../generated/api-clients/route-management';
 import { 
   RouteGroup, 
   Route, 
@@ -660,10 +660,10 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
     return (
       <div className={`p-4 rounded-lg border-2 ${getStatusColor()} transition-all duration-300`}>
         <div className="flex items-center gap-3">
-          <div className="flex-shrink-0">
+          <div className="shrink-0">
             {getIcon()}
           </div>
-          <div className="flex-grow">
+          <div className="grow">
             <div className="flex items-center gap-2">
               <span className="font-medium text-gray-700">Step {stepNumber}:</span>
               <span className="font-semibold text-gray-900">{label}</span>
@@ -732,7 +732,7 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
 
         <div className={`mt-4 p-4 border rounded-lg ${mode === 'edit' ? 'bg-yellow-50 border-yellow-200' : 'bg-blue-50 border-blue-200'}`}>
           <div className="flex gap-3">
-            <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${mode === 'edit' ? 'text-yellow-600' : 'text-blue-600'}`} />
+            <AlertCircle className={`w-5 h-5 shrink-0 mt-0.5 ${mode === 'edit' ? 'text-yellow-600' : 'text-blue-600'}`} />
             <div className={`text-sm ${mode === 'edit' ? 'text-yellow-800' : 'text-blue-800'}`}>
               <p className="font-medium mb-1">{mode === 'edit' ? 'Update Process:' : 'Submission Process:'}</p>
               <ol className="list-decimal list-inside space-y-1">
@@ -813,7 +813,7 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
         {state.createdRouteGroupId && (
           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex gap-3">
-              <CheckCircle2 className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
               <div className="text-sm text-blue-800">
                 <p className="font-medium">{mode === 'edit' ? 'Route Group Updated' : 'Route Group Created'}</p>
                 <p>ID: {state.createdRouteGroupId}</p>
@@ -862,7 +862,7 @@ export default function RouteSubmissionModal({ isOpen, onClose }: RouteSubmissio
         {state.error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
             <div className="flex gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
               <p className="text-sm text-red-800">{state.error}</p>
             </div>
           </div>

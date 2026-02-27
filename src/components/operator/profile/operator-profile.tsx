@@ -1,14 +1,14 @@
 "use client"
 import { ChangeEvent, useRef, useState } from "react"
-import { Button } from "@/components/operator/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/operator/ui/card"
-import { Badge } from "@/components/operator/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/operator/ui/avatar"
-import { Input } from "@/components/operator/ui/input"
-import { Label } from "@/components/operator/ui/label"
-import { Switch } from "@/components/operator/ui/switch"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 import { ArrowLeft, Edit, Save, Shield, Clock, Activity, Settings, Bus, Users, Route } from "lucide-react"
-import { uploadImage } from "@/supabase/storage/clients"
+// import { uploadImage } from "@/supabase/storage/clients"
 
 
 
@@ -22,13 +22,14 @@ export function OperatorProfile() {
     if (file) {
       setUploading(true);
       // Replace 'avatars' with your Supabase bucket name, and 'profile' with your folder if needed
-      const { imageUrl, error } = await uploadImage({ file, bucket: "profile-photos", folder: "profile_photo" });
+      // const { imageUrl, error } = await uploadImage({ file, bucket: "profile-photos", folder: "profile_photo" });
+      const imageUrl = 'https://busmate-profile-photos.s3.amazonaws.com/profile_photo/avatar-12345.png'; // Mock URL for testing
       setUploading(false);
       if (imageUrl) {
         console.log("Avatar image URL:", imageUrl);
         setAvatarUrl(imageUrl);
       } else {
-        alert(error || "Upload failed");
+        alert("Upload failed");
       }
     }
   };

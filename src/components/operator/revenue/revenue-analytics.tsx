@@ -270,20 +270,6 @@ export function RevenueAnalytics() {
               <option value="day">Day Wise</option>
               <option value="trip">Trip Wise</option>
             </select>
-
-            <button
-              onClick={loadRevenueData}
-              disabled={loading}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
-
-            <button className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-              <Download className="w-4 h-4" />
-              Export
-            </button>
           </div>
         </div>
       </div>

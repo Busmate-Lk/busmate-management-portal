@@ -64,14 +64,23 @@ export interface ScheduleException {
 
 /**
  * Stop timing information within a schedule
+ * 
+ * IMPORTANT: All route stops should be stored as schedule stops, even if times are not set.
+ * This is essential for:
+ * 1. Automatic time calculation via database triggers
+ * 2. Passenger information querying (Find My Bus feature)
+ * 3. Maintaining complete route structure integrity
+ * 
+ * Times can be undefined/null - the backend will calculate them automatically
+ * using triggers based on distance and average speed.
  */
 export interface ScheduleStop {
   id?: string; // UUID - used for updates
   stopId: string; // UUID of the bus stop
   stopName?: string; // Display name (populated from route or stop data)
   stopOrder: number; // 0-based order in the route
-  arrivalTime?: string; // HH:mm:ss format
-  departureTime?: string; // HH:mm:ss format
+  arrivalTime?: string; // HH:mm:ss format - can be undefined for automatic calculation
+  departureTime?: string; // HH:mm:ss format - can be undefined for automatic calculation
 }
 
 // ============================================================================
@@ -180,8 +189,9 @@ export function createEmptyScheduleStop(stopOrder: number): ScheduleStop {
     stopId: '',
     stopName: '',
     stopOrder,
-    arrivalTime: '',
-    departureTime: '',
+    // Leave times undefined for automatic calculation by database triggers
+    arrivalTime: undefined,
+    departureTime: undefined,
   };
 }
 
@@ -300,8 +310,16 @@ export function isScheduleValid_OLD(schedule: Schedule): { valid: boolean; error
 // ============================================================================
 
 /**
- * Converts workspace schedule data to API request format
- * Note: Filters out schedule stops with no timing data (both arrival and departure are empty)
+ * Converts workspace schedule data to API request format.
+ * 
+ * IMPORTANT: Now includes ALL schedule stops, even those without times.
+ * Times are optional - if not set (null/undefined), the backend database triggers 
+ * will calculate them automatically based on distance and average speed.
+ * 
+ * This ensures:
+ * - Complete route structure is maintained in schedule_stop table
+ * - Passenger queries (Find My Bus) can access all stops
+ * - Automatic time calculation via DB triggers works correctly
  */
 export function scheduleToApiRequest(schedule: Schedule): {
   name: string;
@@ -333,16 +351,23 @@ export function scheduleToApiRequest(schedule: Schedule): {
     exceptionType: 'ADDED' | 'REMOVED';
   }[];
 } {
-  // Filter schedule stops to only include those with at least one timing value
-  // and ensure all times are in HH:mm:ss format
-  const scheduleStopsWithTimings = schedule.scheduleStops
-    .filter(stop => stop.arrivalTime || stop.departureTime)
+  // Include ALL schedule stops, even those without timing information.
+  // This is essential for automatic time calculation via database triggers
+  // and passenger information queries.
+  // Times can be null - the database will calculate them automatically.
+  const allScheduleStops = schedule.scheduleStops
     .map(stop => ({
       id: stop.id,
       stopId: stop.stopId,
       stopOrder: stop.stopOrder,
-      arrivalTime: stop.arrivalTime ? formatTimeForApi(stop.arrivalTime) : undefined,
-      departureTime: stop.departureTime ? formatTimeForApi(stop.departureTime) : undefined,
+      // Only include times if they are actually set (not empty string)
+      // Otherwise, leave undefined so DB triggers can calculate them
+      arrivalTime: stop.arrivalTime && stop.arrivalTime.trim() 
+        ? formatTimeForApi(stop.arrivalTime) 
+        : undefined,
+      departureTime: stop.departureTime && stop.departureTime.trim() 
+        ? formatTimeForApi(stop.departureTime) 
+        : undefined,
     }));
 
   return {
@@ -354,7 +379,7 @@ export function scheduleToApiRequest(schedule: Schedule): {
     status: schedule.status,
     description: schedule.description || undefined,
     generateTrips: schedule.generateTrips,
-    scheduleStops: scheduleStopsWithTimings,
+    scheduleStops: allScheduleStops,
     calendar: schedule.calendar,
     exceptions: schedule.exceptions.map(exc => ({
       exceptionDate: exc.exceptionDate,
@@ -369,8 +394,9 @@ export function scheduleToApiRequest(schedule: Schedule): {
 
 /**
  * Formats time string to HH:mm:ss format
+ * Handles undefined/null values by returning empty string
  */
-export function formatTimeForApi(time: string): string {
+export function formatTimeForApi(time: string | undefined): string {
   if (!time) return '';
   
   // If already in HH:mm:ss format
@@ -388,8 +414,9 @@ export function formatTimeForApi(time: string): string {
 
 /**
  * Formats time string to HH:mm format for display
+ * Handles undefined/null values by returning empty string
  */
-export function formatTimeForDisplay(time: string): string {
+export function formatTimeForDisplay(time: string | undefined): string {
   if (!time) return '';
   
   // Extract HH:mm from HH:mm:ss
@@ -475,8 +502,9 @@ export function createScheduleForRoute(
       stopId: stop.id,
       stopName: stop.name,
       stopOrder: stop.stopOrder,
-      arrivalTime: '',
-      departureTime: '',
+      // Leave times undefined for automatic calculation by database triggers
+      arrivalTime: undefined,
+      departureTime: undefined,
     })),
     calendar: createEmptyCalendar(),
     exceptions: [],
@@ -561,6 +589,7 @@ export function scheduleResponseToWorkspace(response: ScheduleResponseType, rout
   } : createEmptyCalendar();
 
   // Convert schedule stops from API
+  // Preserve all schedule stops including those without times (for automatic calculation)
   const apiScheduleStops: ScheduleStop[] = (response.scheduleStops || [])
     .sort((a, b) => (a.stopOrder ?? 0) - (b.stopOrder ?? 0))
     .map(stop => ({
@@ -568,8 +597,9 @@ export function scheduleResponseToWorkspace(response: ScheduleResponseType, rout
       stopId: stop.stopId || '',
       stopName: stop.stopName || '',
       stopOrder: stop.stopOrder ?? 0,
-      arrivalTime: stop.arrivalTime || '',
-      departureTime: stop.departureTime || '',
+      // Keep times as undefined if not set (null or empty) for automatic calculation
+      arrivalTime: stop.arrivalTime || undefined,
+      departureTime: stop.departureTime || undefined,
     }));
 
   // If route stops are provided, merge schedule timings with all route stops
@@ -627,7 +657,8 @@ export function mergeScheduleWithRouteStops(
     }
   });
 
-  // Create schedule stops for all route stops
+  // Create schedule stops for ALL route stops, preserving times from API where available
+  // and leaving undefined where not set (for automatic calculation)
   return routeStops.map(routeStop => {
     // Try to find matching schedule stop by stopOrder first, then by stopId
     let matchingStop = scheduleStopsByOrder.get(routeStop.stopOrder);
@@ -641,8 +672,10 @@ export function mergeScheduleWithRouteStops(
       stopId: routeStop.id,
       stopName: routeStop.name,
       stopOrder: routeStop.stopOrder,
-      arrivalTime: matchingStop?.arrivalTime || '',
-      departureTime: matchingStop?.departureTime || '',
+      // Preserve times from API if available, otherwise leave undefined
+      // Empty strings are converted to undefined for consistency
+      arrivalTime: matchingStop?.arrivalTime || undefined,
+      departureTime: matchingStop?.departureTime || undefined,
     };
   });
 }

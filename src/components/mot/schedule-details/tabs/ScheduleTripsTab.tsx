@@ -1,7 +1,7 @@
 'use client';
 
 import { Bus, Plus, RefreshCw, Eye, Edit, Play, Square } from 'lucide-react';
-import { ScheduleResponse, TripResponse } from '@/lib/api-client/route-management';
+import { ScheduleResponse, TripResponse } from '../../../../../generated/api-clients/route-management';
 
 interface ScheduleTripsTabProps {
   schedule: ScheduleResponse;

@@ -2,8 +2,9 @@
 
 import { X, RotateCcw, Maximize2, ExternalLink } from 'lucide-react';
 import { useRef, useState, useEffect, useCallback } from 'react';
-import type { RouteResponse, LocationDto } from '@/lib/api-client/route-management';
+import type { RouteResponse, LocationDto } from '../../../../generated/api-clients/route-management';
 import { AlertCircle } from 'lucide-react';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 
 interface RouteMapFullscreenProps {
   route: RouteResponse;
@@ -33,9 +34,12 @@ export function RouteMapFullscreen({ route, isOpen, onClose }: RouteMapFullscree
   const markersRef = useRef<google.maps.Marker[]>([]);
   const polylineRef = useRef<google.maps.Polyline | null>(null);
   
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [mapError, setMapError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isMapInitialized, setIsMapInitialized] = useState(false);
+  
+  // Use centralized Google Maps loader
+  const { isLoaded, loadError } = useGoogleMaps();
+  const mapError = loadError ? 'Failed to load Google Maps' : null;
+  const isLoading = !isLoaded;
 
   // Process route stops and add start/end stops
   const getOrderedStops = useCallback((): RouteStop[] => {
@@ -96,42 +100,15 @@ export function RouteMapFullscreen({ route, isOpen, onClose }: RouteMapFullscree
     );
   }, [route]);
 
-  // Initialize Google Maps when modal opens
+  // Initialize Google Maps when modal opens and API is loaded
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !isLoaded || isMapInitialized) return;
 
-    const initializeMap = async () => {
+    const initializeMap = () => {
       try {
-        setIsLoading(true);
-        setMapError(null);
-
-        // Check if Google Maps is already loaded
-        if (window.google && window.google.maps) {
-          await createMap();
-          return;
-        }
-
-        // Load Google Maps script if not already loaded
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=geometry,places&callback=initMap`;
-        script.async = true;
-        script.defer = true;
-
-        window.initMap = async () => {
-          await createMap();
-        };
-
-        script.onerror = () => {
-          setMapError('Failed to load Google Maps');
-          setIsLoading(false);
-        };
-
-        document.head.appendChild(script);
-
+        createMap();
       } catch (error) {
         console.error('Error initializing map:', error);
-        setMapError('Failed to initialize map');
-        setIsLoading(false);
       }
     };
 
@@ -336,14 +313,10 @@ export function RouteMapFullscreen({ route, isOpen, onClose }: RouteMapFullscree
           map.fitBounds(bounds, padding);
         }
 
-        setIsMapLoaded(true);
-        setMapError(null);
+        setIsMapInitialized(true);
 
       } catch (error) {
         console.error('Error creating map:', error);
-        setMapError(error instanceof Error ? error.message : 'Failed to create map');
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -360,7 +333,7 @@ export function RouteMapFullscreen({ route, isOpen, onClose }: RouteMapFullscree
         polylineRef.current = null;
       }
     };
-  }, [isOpen, route, getOrderedStops]);
+  }, [isOpen, isLoaded, route, getOrderedStops, isMapInitialized]);
 
   // Reset map view
   const resetMapView = useCallback(() => {
@@ -456,7 +429,7 @@ export function RouteMapFullscreen({ route, isOpen, onClose }: RouteMapFullscree
             </div>
             <div className="flex items-center gap-2">
               {/* Reset view button */}
-              {isMapLoaded && (
+              {isMapInitialized && (
                 <button
                   onClick={resetMapView}
                   className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
@@ -467,7 +440,7 @@ export function RouteMapFullscreen({ route, isOpen, onClose }: RouteMapFullscree
               )}
               
               {/* Open in Google Maps button */}
-              {isMapLoaded && (
+              {isMapInitialized && (
                 <button
                   onClick={openInFullMaps}
                   className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
@@ -515,7 +488,7 @@ export function RouteMapFullscreen({ route, isOpen, onClose }: RouteMapFullscree
                   className="w-full h-full bg-gray-200"
                 />
                 
-                {(isLoading || !isMapLoaded) && (
+                {(isLoading || !isMapInitialized) && (
                   <div className="absolute inset-0 bg-gray-100 flex items-center justify-center">
                     <div className="text-center">
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -538,7 +511,7 @@ export function RouteMapFullscreen({ route, isOpen, onClose }: RouteMapFullscree
                 <div key={index} className="bg-white rounded-lg p-3 shadow-sm border border-gray-200">
                   <div className="flex items-center gap-3">
                     <div 
-                      className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                      className={`w-3 h-3 rounded-full shrink-0 ${
                         index === 0 ? 'bg-green-500' : 
                         index === stops.length - 1 ? 'bg-red-500' : 
                         route.direction === 'INBOUND' ? 'bg-purple-500' : 'bg-blue-500'

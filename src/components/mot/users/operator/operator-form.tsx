@@ -13,7 +13,7 @@ import {
   User,
   Activity,
 } from 'lucide-react';
-import { OperatorRequest, OperatorResponse, OperatorManagementService } from '@/lib/api-client/route-management';
+import { OperatorRequest, OperatorResponse, OperatorManagementService } from '../../../../../generated/api-clients/route-management';
 
 interface OperatorFormProps {
   operatorId?: string;
@@ -178,7 +178,7 @@ export default function OperatorForm({ operatorId, onSuccess, onCancel }: Operat
         if (onSuccess) {
           onSuccess(result);
         } else {
-          router.push(`/mot/users/operators/${result.id}`);
+          router.push(`/mot/operators/${result.id}`);
         }
       } else {
         setErrors({ general: `Failed to ${isEditMode ? 'update' : 'create'} operator` });
@@ -209,9 +209,9 @@ export default function OperatorForm({ operatorId, onSuccess, onCancel }: Operat
     if (onCancel) {
       onCancel();
     } else if (isEditMode && operatorId) {
-      router.push(`/mot/users/operators/${operatorId}`);
+      router.push(`/mot/operators/${operatorId}`);
     } else {
-      router.push('/mot/users/operators');
+      router.push('/mot/operators');
     }
   };
 
@@ -245,7 +245,7 @@ export default function OperatorForm({ operatorId, onSuccess, onCancel }: Operat
       {errors.general && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex items-start">
-            <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 mr-3 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 mr-3 shrink-0" />
             <div className="flex-1">
               <h3 className="text-sm font-medium text-red-800">Error</h3>
               <p className="text-sm text-red-700 mt-1">{errors.general}</p>

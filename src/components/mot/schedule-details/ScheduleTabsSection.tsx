@@ -9,7 +9,7 @@ import {
   Plus,
   RefreshCw
 } from 'lucide-react';
-import { ScheduleResponse, RouteResponse, TripResponse } from '@/lib/api-client/route-management';
+import { ScheduleResponse, RouteResponse, TripResponse } from '../../../../generated/api-clients/route-management';
 import { 
   ScheduleStopsTab,
   ScheduleCalendarTab,

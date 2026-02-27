@@ -147,7 +147,7 @@ function calculateReversedDistances(
 ): RouteStop[] {
   return routeStops.map(stop => ({
     ...stop,
-    distanceFromStart: Math.max(0, totalDistance - stop.distanceFromStart),
+    distanceFromStart: stop.distanceFromStart !== null ? Math.max(0, totalDistance - stop.distanceFromStart) : null,
   }));
 }
 
@@ -253,8 +253,11 @@ export function generateRouteFromCorresponding(
   }
 
   // Calculate total distance for reversing distances
+  const distances = sourceRoute.routeStops
+    .map(s => s.distanceFromStart)
+    .filter((d): d is number => d !== null);
   const totalDistance = sourceRoute.distanceKm ||
-    Math.max(...sourceRoute.routeStops.map(s => s.distanceFromStart || 0), 0);
+    (distances.length > 0 ? Math.max(...distances) : 0);
 
   // Clone and reverse the route stops
   const reversedStops = [...sourceRoute.routeStops]

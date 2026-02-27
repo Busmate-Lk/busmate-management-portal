@@ -21,11 +21,11 @@ export default function Home() {
           case 'operator':
             return '/operator/dashboard';
           case 'timekeeper':
-            return '/timeKeeper/dashboard';
+            return '/timekeeper/dashboard';
           case 'admin':
           case 'systemadmin':
           case 'system-admin':
-            return '/admin';
+            return '/admin/dashboard';
           default:
             return '/operator/dashboard';
         }
@@ -36,7 +36,7 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-900 to-purple-900">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-900 to-purple-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
           <div className="text-white text-lg">Loading...</div>
@@ -56,12 +56,12 @@ export default function Home() {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-95 "
           style={{
-            backgroundImage: 'url(/bg-image-c.png)',
+            backgroundImage: 'url(/images/background/landing-page-background.png)',
           }}
         ></div>
 
         {/* Enhanced overlay for better contrast on the right side */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-gray-900/70"></div>
+        <div className="absolute inset-0 bg-linear-to-r from-transparent via-transparent to-gray-900/70"></div>
       </div>
 
       {/* Login Form - positioned on the right with enhanced visibility */}
@@ -69,7 +69,7 @@ export default function Home() {
         {/* Logo and Title */}
         <div className="flex items-center justify-center mb-2">
           <Image
-            src="/Busmate Lk.svg"
+            src="/images/logo/busmate-icon-old.svg"
             alt="Busmate LK"
             width={32}
             height={32}

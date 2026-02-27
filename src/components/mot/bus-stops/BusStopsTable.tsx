@@ -1,19 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   Eye,
-  Edit,
+  Edit2,
   Trash2,
-  ChevronUp,
-  ChevronDown,
   MapPin,
-  CheckCircle,
+  CheckCircle2,
   XCircle,
-  Calendar,
-  Loader2
+  Navigation2,
 } from 'lucide-react';
-import type { StopResponse } from '@/lib/api-client/route-management';
+import { DataTable } from '@/components/shared/DataTable';
+import type { DataTableColumn } from '@/components/shared/DataTable';
+import type { StopResponse } from '../../../../generated/api-clients/route-management';
 
 interface BusStopsTableProps {
   busStops: StopResponse[];
@@ -26,226 +25,192 @@ interface BusStopsTableProps {
   currentSort: { field: string; direction: 'asc' | 'desc' };
 }
 
+// ── Helpers ───────────────────────────────────────────────────────
+
+function formatDate(dateString?: string): string {
+  if (!dateString) return '—';
+  try {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  } catch {
+    return '—';
+  }
+}
+
+function formatLocation(location?: any): { primary: string; secondary?: string } {
+  if (!location) return { primary: '—' };
+  const cityState = [location.city, location.state].filter(Boolean).join(', ');
+  const address = location.address || '';
+  if (cityState && address) return { primary: cityState, secondary: address };
+  if (cityState) return { primary: cityState };
+  if (address) return { primary: address };
+  if (location.latitude != null && location.longitude != null) {
+    return { primary: `${Number(location.latitude).toFixed(4)}, ${Number(location.longitude).toFixed(4)}` };
+  }
+  return { primary: '—' };
+}
+
+// ── Main component ────────────────────────────────────────────────
+
+/**
+ * Bus-stop data table.
+ *
+ * Delegates rendering to the shared `<DataTable>` component with
+ * bus-stop-specific column definitions and custom cell renderers.
+ */
 export function BusStopsTable({
   busStops,
   onView,
   onEdit,
   onDelete,
   onSort,
-  activeFilters,
   loading,
-  currentSort
+  currentSort,
 }: BusStopsTableProps) {
-  const getSortIcon = (field: string) => {
-    if (currentSort.field !== field) {
-      return <ChevronUp className="w-4 h-4 text-gray-300" />;
-    }
-    return currentSort.direction === 'asc' 
-      ? <ChevronUp className="w-4 h-4 text-blue-600" />
-      : <ChevronDown className="w-4 h-4 text-blue-600" />;
-  };
-
-  const handleSort = (field: string) => {
-    const newDirection = currentSort.field === field && currentSort.direction === 'asc' ? 'desc' : 'asc';
-    onSort(field, newDirection);
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'N/A';
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-    } catch {
-      return 'Invalid date';
-    }
-  };
-
-  const getAccessibilityIcon = (isAccessible?: boolean) => {
-    return isAccessible ? 
-      <CheckCircle className="w-4 h-4 text-green-500" /> : 
-      <XCircle className="w-4 h-4 text-red-500" />;
-  };
-
-  const getAccessibilityLabel = (isAccessible?: boolean) => {
-    return isAccessible ? 'Accessible' : 'Not Accessible';
-  };
-
-  const getAccessibilityColor = (isAccessible?: boolean) => {
-    return isAccessible 
-      ? 'bg-green-100 text-green-800 border-green-200'
-      : 'bg-red-100 text-red-800 border-red-200';
-  };
-
-  const formatLocation = (location?: any) => {
-    if (!location) return 'No location';
-    
-    const parts = [];
-    if (location.address) parts.push(location.address);
-    if (location.city) parts.push(location.city);
-    if (location.state) parts.push(location.state);
-    
-    return parts.length > 0 ? parts.join(', ') : 'No address';
-  };
-
-  if (loading && busStops.length === 0) {
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 p-8">
-        <div className="flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-          <span className="ml-2 text-gray-600">Loading bus stops...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (busStops.length === 0) {
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 p-8">
-        <div className="text-center">
-          <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No bus stops found</h3>
-          <p className="text-gray-500">Try adjusting your search criteria or filters.</p>
-        </div>
-      </div>
-    );
-  }
+  const columns: DataTableColumn<StopResponse>[] = useMemo(
+    () => [
+      {
+        key: 'name',
+        header: 'Stop Name',
+        sortable: true,
+        minWidth: 'min-w-[160px]',
+        render: (stop) => (
+          <div className="flex items-center gap-3">
+            <div className="shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center ring-1 ring-blue-200/60">
+              <MapPin className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
+                {stop.name || 'Unnamed Stop'}
+              </p>
+              <p className="text-[11px] text-gray-400 font-mono leading-tight mt-0.5 truncate">
+                #{stop.id?.slice(0, 8)}
+              </p>
+            </div>
+          </div>
+        ),
+      },
+      {
+        key: 'location',
+        header: 'Location',
+        minWidth: 'min-w-[140px]',
+        render: (stop) => {
+          const loc = formatLocation(stop.location);
+          return (
+            <div className="flex items-start gap-1.5">
+              <Navigation2 className="w-3.5 h-3.5 text-gray-300 mt-0.5 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm text-gray-700 truncate leading-tight">{loc.primary}</p>
+                {loc.secondary && (
+                  <p className="text-[11px] text-gray-400 truncate leading-tight mt-0.5" title={loc.secondary}>
+                    {loc.secondary}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        key: 'isAccessible',
+        header: 'Accessibility',
+        sortable: true,
+        cellClassName: 'whitespace-nowrap',
+        render: (stop) =>
+          stop.isAccessible ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Accessible
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-red-50 text-red-600 border border-red-200">
+              <XCircle className="w-3.5 h-3.5" />
+              Not Accessible
+            </span>
+          ),
+      },
+      {
+        key: 'description',
+        header: 'Description',
+        cellClassName: 'max-w-[200px]',
+        render: (stop) =>
+          stop.description ? (
+            <p className="text-sm text-gray-600 truncate" title={stop.description}>
+              {stop.description}
+            </p>
+          ) : (
+            <span className="text-xs text-gray-300 italic">—</span>
+          ),
+      },
+      {
+        key: 'createdAt',
+        header: 'Created',
+        sortable: true,
+        cellClassName: 'whitespace-nowrap',
+        render: (stop) => (
+          <span className="text-xs text-gray-500 tabular-nums">
+            {formatDate(stop.createdAt)}
+          </span>
+        ),
+      },
+      {
+        key: 'actions',
+        header: 'Actions',
+        headerClassName: 'text-center',
+        cellClassName: 'text-center whitespace-nowrap',
+        render: (stop) => (
+          <div className="inline-flex items-center gap-1">
+            <button
+              onClick={() => onView(stop.id!)}
+              title="View details"
+              className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors duration-100"
+            >
+              <Eye className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => onEdit(stop.id!)}
+              title="Edit stop"
+              className="p-1.5 rounded-lg text-amber-500 hover:bg-amber-50 transition-colors duration-100"
+            >
+              <Edit2 className="h-3.5 w-3.5" />
+            </button>
+            <button
+              onClick={() => onDelete(stop.id!, stop.name || 'Unknown Stop')}
+              title="Delete stop"
+              className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors duration-100"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ),
+      },
+    ],
+    [onView, onEdit, onDelete],
+  );
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th 
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                onClick={() => handleSort('name')}
-              >
-                <div className="flex items-center space-x-1">
-                  <span>Stop Name</span>
-                  {getSortIcon('name')}
-                </div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Location
-              </th>
-              <th 
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                onClick={() => handleSort('isAccessible')}
-              >
-                <div className="flex items-center space-x-1">
-                  <span>Accessibility</span>
-                  {getSortIcon('isAccessible')}
-                </div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Description
-              </th>
-              <th 
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
-                onClick={() => handleSort('createdAt')}
-              >
-                <div className="flex items-center space-x-1">
-                  <span>Created</span>
-                  {getSortIcon('createdAt')}
-                </div>
-              </th>
-              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {busStops.map((stop) => (
-              <tr key={stop.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10">
-                      <div className="h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <MapPin className="h-5 w-5 text-blue-600" />
-                      </div>
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">
-                        {stop.name || 'Unnamed Stop'}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        ID: {stop.id}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">
-                    {formatLocation(stop.location)}
-                  </div>
-                  {stop.location?.latitude && stop.location?.longitude && (
-                    <div className="text-xs text-gray-500">
-                      {stop.location.latitude.toFixed(6)}, {stop.location.longitude.toFixed(6)}
-                    </div>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getAccessibilityColor(stop.isAccessible)}`}>
-                    {getAccessibilityIcon(stop.isAccessible)}
-                    <span className="ml-1">{getAccessibilityLabel(stop.isAccessible)}</span>
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900 max-w-xs truncate">
-                    {stop.description || 'No description'}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    {formatDate(stop.createdAt)}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex items-center justify-end space-x-2">
-                    <button
-                      onClick={() => onView(stop.id!)}
-                      className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
-                      title="View details"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => onEdit(stop.id!)}
-                      className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50 transition-colors"
-                      title="Edit stop"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => onDelete(stop.id!, stop.name || 'Unknown Stop')}
-                      className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                      title="Delete stop"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      
-      {loading && busStops.length > 0 && (
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-          <div className="flex items-center justify-center">
-            <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
-            <span className="ml-2 text-sm text-gray-600">Updating...</span>
+    <DataTable<StopResponse>
+      columns={columns}
+      data={busStops}
+      loading={loading}
+      currentSort={currentSort}
+      onSort={onSort}
+      rowKey={(stop) => stop.id!}
+      showRefreshing
+      emptyState={
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
+            <MapPin className="w-7 h-7 text-blue-400" />
           </div>
+          <h3 className="text-base font-semibold text-gray-900 mb-1">No bus stops found</h3>
+          <p className="text-sm text-gray-500 max-w-xs">
+            Try adjusting your search or filters to find what you&apos;re looking for.
+          </p>
         </div>
-      )}
-    </div>
+      }
+    />
   );
 }

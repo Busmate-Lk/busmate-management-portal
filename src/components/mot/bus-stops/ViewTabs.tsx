@@ -1,101 +1,38 @@
 'use client';
 
 import React from 'react';
-import { Table, Map } from 'lucide-react';
+import { LayoutList, Map } from 'lucide-react';
+import { SwitchableTabs } from '@/components/shared/SwitchableTabs';
+import type { TabItem } from '@/components/shared/SwitchableTabs';
 
 export type ViewType = 'table' | 'map';
 
 interface ViewTabsProps {
   activeView: ViewType;
   onViewChange: (view: ViewType) => void;
-  tableCount?: number;
-  mapCount?: number;
 }
 
-export function ViewTabs({ 
-  activeView, 
-  onViewChange, 
-  tableCount = 0, 
-  mapCount = 0 
-}: ViewTabsProps) {
-  const tabs = [
-    {
-      id: 'table' as ViewType,
-      name: 'Table View',
-      icon: Table,
-      count: tableCount,
-      description: 'Table view with detailed information and pagination'
-    },
-    {
-      id: 'map' as ViewType,
-      name: 'Map View',
-      icon: Map,
-      count: mapCount,
-      description: 'Interactive map showing bus stop locations'
-    }
-  ];
+const TABS: TabItem<ViewType>[] = [
+  { id: 'table', label: 'List View', icon: LayoutList },
+  { id: 'map',   label: 'Map View',  icon: Map },
+];
 
+/**
+ * Bus-stop view switcher — table / map.
+ *
+ * Wraps `<SwitchableTabs>` with bus-stop-specific tab definitions.
+ * Result counts are intentionally omitted here — they are shown in the
+ * search/filter bar instead.
+ */
+export function ViewTabs({
+  activeView,
+  onViewChange,
+}: ViewTabsProps) {
   return (
-    <div className="border-b border-gray-200">
-      <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-        {tabs.map((tab) => {
-          const isActive = activeView === tab.id;
-          const Icon = tab.icon;
-          
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onViewChange(tab.id)}
-              className={`
-                group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors
-                ${isActive
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }
-              `}
-              aria-current={isActive ? 'page' : undefined}
-            >
-              <Icon 
-                className={`
-                  -ml-0.5 mr-2 h-5 w-5 transition-colors
-                  ${isActive 
-                    ? 'text-blue-500' 
-                    : 'text-gray-400 group-hover:text-gray-500'
-                  }
-                `}
-                aria-hidden="true" 
-              />
-              <span>{tab.name}</span>
-              {tab.count > 0 && (
-                <span 
-                  className={`
-                    ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                    ${isActive
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-gray-100 text-gray-800 group-hover:bg-gray-200'
-                    }
-                  `}
-                >
-                  {tab.count.toLocaleString()}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </nav>
-      
-      {/* Tab descriptions */}
-      <div className="mt-2 mb-4">
-        {tabs.map((tab) => {
-          if (activeView !== tab.id) return null;
-          
-          return (
-            <p key={tab.id} className="text-sm text-gray-600">
-              {tab.description}
-            </p>
-          );
-        })}
-      </div>
-    </div>
+    <SwitchableTabs<ViewType>
+      tabs={TABS}
+      activeTab={activeView}
+      onTabChange={onViewChange}
+    />
   );
 }

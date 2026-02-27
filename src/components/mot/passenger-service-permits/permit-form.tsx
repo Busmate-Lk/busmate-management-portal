@@ -18,7 +18,7 @@ import type {
   PassengerServicePermitResponse, 
   OperatorResponse,
   RouteGroupResponse
-} from '@/lib/api-client/route-management';
+} from '../../../../generated/api-clients/route-management';
 
 interface PermitFormProps {
   permit?: PassengerServicePermitResponse;
@@ -193,7 +193,7 @@ export function PermitForm({
       {submitError && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex items-start">
-            <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 mr-3 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 mr-3 shrink-0" />
             <div className="flex-1">
               <h3 className="text-sm font-medium text-red-800">Submission Error</h3>
               <p className="text-sm text-red-700 mt-1">{submitError}</p>
@@ -494,7 +494,7 @@ export function PermitForm({
         {formData.issueDate && formData.expiryDate && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4">
             <div className="flex items-start">
-              <Info className="w-5 h-5 text-green-400 mt-0.5 mr-3 flex-shrink-0" />
+              <Info className="w-5 h-5 text-green-400 mt-0.5 mr-3 shrink-0" />
               <div className="text-sm text-green-700">
                 <p className="font-medium mb-1">Permit Validity Period</p>
                 <p>
@@ -545,7 +545,7 @@ export function PermitForm({
       {!isFormValid && Object.keys(errors).length > 0 && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex items-start">
-            <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5 mr-3 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-yellow-400 mt-0.5 mr-3 shrink-0" />
             <div>
               <h3 className="text-sm font-medium text-yellow-800 mb-2">
                 Please fix the following errors:
@@ -563,7 +563,7 @@ export function PermitForm({
       {/* Info Alert */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <div className="flex items-start">
-          <Info className="w-5 h-5 text-blue-400 mt-0.5 mr-3 flex-shrink-0" />
+          <Info className="w-5 h-5 text-blue-400 mt-0.5 mr-3 shrink-0" />
           <div className="text-sm text-blue-700">
             <p className="font-medium mb-1">About Passenger Service Permits</p>
             <p>

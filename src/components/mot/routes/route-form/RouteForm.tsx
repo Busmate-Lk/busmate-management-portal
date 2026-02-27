@@ -5,8 +5,8 @@ import { AlertCircle, AlertTriangle, CheckCircle, XCircle, Info } from 'lucide-r
 import { RouteGroupInfo } from './RouteGroupInfo';
 import { RouteTabsContainer } from './RouteTabsContainer';
 import { MapPreviewPlaceholder } from './MapPreviewPlaceholder';
-import { BusStopManagementService } from '@/lib/api-client/route-management';
-import type { RouteGroupResponse, StopResponse } from '@/lib/api-client/route-management';
+import { BusStopManagementService } from '../../../../../generated/api-clients/route-management';
+import type { RouteGroupResponse, StopResponse } from '../../../../../generated/api-clients/route-management';
 
 export interface RouteStop {
   stopId: string;
@@ -118,7 +118,7 @@ function Alert({ type, title, message, onDismiss, dismissible = true, actions }:
   return (
     <div className={`border rounded-lg p-4 ${styles.container} animate-fadeIn`}>
       <div className="flex items-start">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           {styles.icon}
         </div>
         <div className="ml-3 flex-1">

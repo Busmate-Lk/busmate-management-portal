@@ -1,5 +1,6 @@
-export { UserStats } from './user-stats'
-export { UserFilters } from './user-filters'
-export { UserTable } from './user-table'
-export { UserManagementHeader } from './user-management-header'
-export { AddMotForm } from './add-mot-form'
+export { UserStatsCards } from './UserStatsCards';
+export { UserFilters } from './UserFilters';
+export { UsersTable } from './UsersTable';
+export { UserDetailPanel } from './UserDetailPanel';
+export { UserForm } from './UserForm';
+export { ConfirmDialog } from './ConfirmDialog';

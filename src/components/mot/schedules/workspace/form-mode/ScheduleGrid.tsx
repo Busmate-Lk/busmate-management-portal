@@ -200,10 +200,10 @@ export default function ScheduleGrid() {
                                         <div className="flex items-center gap-1.5">
                                             <span className="text-sm font-medium text-slate-800 truncate">{stop.name}</span>
                                             {isFirst && (
-                                                <span className="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-md flex-shrink-0 font-medium">START</span>
+                                                <span className="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded-md shrink-0 font-medium">START</span>
                                             )}
                                             {isLast && (
-                                                <span className="text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded-md flex-shrink-0 font-medium">END</span>
+                                                <span className="text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded-md shrink-0 font-medium">END</span>
                                             )}
                                         </div>
                                     </td>

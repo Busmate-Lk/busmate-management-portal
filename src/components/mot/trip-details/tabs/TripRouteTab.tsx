@@ -10,8 +10,8 @@ import {
   Navigation,
   ExternalLink
 } from 'lucide-react';
-import type { TripResponse } from '@/lib/api-client/route-management/models/TripResponse';
-import type { RouteResponse } from '@/lib/api-client/route-management/models/RouteResponse';
+import type { TripResponse } from '../../../../../generated/api-clients/route-management/models/TripResponse';
+import type { RouteResponse } from '../../../../../generated/api-clients/route-management/models/RouteResponse';
 
 interface TripRouteTabProps {
   trip: TripResponse;
@@ -102,7 +102,7 @@ export function TripRouteTab({ trip, route }: TripRouteTabProps) {
             <h4 className="text-md font-medium text-gray-900 mb-4">Route Summary</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="flex items-center space-x-3">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <RouteIcon className="h-8 w-8 text-blue-500" />
                 </div>
                 <div>
@@ -112,7 +112,7 @@ export function TripRouteTab({ trip, route }: TripRouteTabProps) {
               </div>
 
               <div className="flex items-center space-x-3">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <Ruler className="h-8 w-8 text-green-500" />
                 </div>
                 <div>
@@ -122,7 +122,7 @@ export function TripRouteTab({ trip, route }: TripRouteTabProps) {
               </div>
 
               <div className="flex items-center space-x-3">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <Clock className="h-8 w-8 text-orange-500" />
                 </div>
                 <div>
@@ -132,7 +132,7 @@ export function TripRouteTab({ trip, route }: TripRouteTabProps) {
               </div>
 
               <div className="flex items-center space-x-3">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <Navigation className="h-8 w-8 text-purple-500" />
                 </div>
                 <div>
@@ -155,7 +155,7 @@ export function TripRouteTab({ trip, route }: TripRouteTabProps) {
             {/* Start Point */}
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-center space-x-3 mb-3">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
                     <MapPin className="w-4 h-4 text-green-600" />
                   </div>
@@ -177,7 +177,7 @@ export function TripRouteTab({ trip, route }: TripRouteTabProps) {
             {/* End Point */}
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
               <div className="flex items-center space-x-3 mb-3">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
                     <MapPin className="w-4 h-4 text-red-600" />
                   </div>
@@ -206,7 +206,7 @@ export function TripRouteTab({ trip, route }: TripRouteTabProps) {
                   {orderedStops.map((stop, index) => (
                     <div key={stop.stopId || index} className="border-b border-gray-200 last:border-b-0">
                       <div className="p-4 flex items-center space-x-4">
-                        <div className="flex-shrink-0">
+                        <div className="shrink-0">
                           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
                             <span className="text-xs font-medium text-gray-600">{index + 1}</span>
                           </div>

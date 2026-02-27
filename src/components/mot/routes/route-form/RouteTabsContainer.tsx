@@ -3,7 +3,7 @@
 import { Navigation, Plus, X, Wand2, GripVertical, Edit3, Check, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import type { RouteGroupFormData, RouteFormData, RouteStop } from './RouteForm';
-import type { StopResponse } from '@/lib/api-client/route-management';
+import type { StopResponse } from '../../../../../generated/api-clients/route-management';
 
 interface RouteTabsContainerProps {
   formData: RouteGroupFormData;
@@ -388,7 +388,7 @@ export function RouteTabsContainer({
                   </div>
 
                   {/* Stop Order Badge */}
-                  <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
+                  <div className="shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium">
                     {index + 1}
                   </div>
 
@@ -450,7 +450,7 @@ export function RouteTabsContainer({
                   {/* Remove Button */}
                   <button
                     onClick={() => onRemoveIntermediateStop(index)}
-                    className="text-red-600 hover:text-red-800 flex-shrink-0"
+                    className="text-red-600 hover:text-red-800 shrink-0"
                     title="Remove stop"
                   >
                     <X className="w-4 h-4" />

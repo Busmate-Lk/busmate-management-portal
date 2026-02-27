@@ -14,8 +14,9 @@ import {
   RotateCcw,
   Maximize2,
 } from 'lucide-react';
-import { StopRequest, StopResponse, LocationDto, BusStopManagementService } from '@/lib/api-client/route-management';
+import { StopRequest, StopResponse, LocationDto, BusStopManagementService } from '../../../../generated/api-clients/route-management';
 import { useToast } from '@/hooks/use-toast';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 
 interface BusStopFormProps {
   busStopId?: string;
@@ -73,34 +74,20 @@ const AddressPicker = ({
   const markerRef = useRef<google.maps.Marker | null>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [mapError, setMapError] = useState<string | null>(null);
+  const [isMapInitialized, setIsMapInitialized] = useState(false);
+  
+  // Use centralized Google Maps loader
+  const { isLoaded, loadError } = useGoogleMaps();
 
-  // Initialize Google Maps
+  // Initialize Google Maps when loaded
   useEffect(() => {
-    const initializeMap = async () => {
+    if (!isLoaded || isMapInitialized) return;
+
+    const initializeMap = () => {
       try {
-        if (typeof window === 'undefined' || !window.google) {
-          const script = document.createElement('script');
-          script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
-          script.async = true;
-          script.defer = true;
-          
-          script.onload = () => {
-            createMap();
-          };
-          
-          script.onerror = () => {
-            setMapError('Failed to load Google Maps');
-          };
-          
-          document.head.appendChild(script);
-        } else {
-          createMap();
-        }
+        createMap();
       } catch (error) {
         console.error('Error initializing map:', error);
-        setMapError('Error initializing map');
       }
     };
 
@@ -173,11 +160,9 @@ const AddressPicker = ({
           }
         });
 
-        setIsMapLoaded(true);
-        setMapError(null);
+        setIsMapInitialized(true);
       } catch (error) {
         console.error('Error creating map:', error);
-        setMapError('Error creating map');
       }
     };
 
@@ -188,7 +173,7 @@ const AddressPicker = ({
         markerRef.current.setMap(null);
       }
     };
-  }, [initialLocation]);
+  }, [isLoaded, initialLocation, isMapInitialized]);
 
   const updateMapLocation = useCallback((lat: number, lng: number, address?: string) => {
     if (googleMapRef.current && markerRef.current) {
@@ -278,11 +263,11 @@ const AddressPicker = ({
     }
   }, [initialLocation]);
 
-  if (mapError) {
+  if (loadError) {
     return (
       <div className="bg-gray-50 rounded-lg p-6 text-center">
         <MapPin className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-        <p className="text-sm text-gray-600">{mapError}</p>
+        <p className="text-sm text-gray-600">{loadError.message || 'Failed to load map'}</p>
       </div>
     );
   }
@@ -308,7 +293,7 @@ const AddressPicker = ({
           style={{ minHeight: '256px' }}
         />
         
-        {!isMapLoaded && (
+        {!isLoaded && (
           <div className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
@@ -318,7 +303,7 @@ const AddressPicker = ({
         )}
 
         {/* Map Controls */}
-        {isMapLoaded && initialLocation && (
+        {isLoaded && initialLocation && (
           <div className="absolute top-2 right-2">
             <button
               onClick={resetMapView}
@@ -601,7 +586,7 @@ export default function BusStopForm({ busStopId, onSuccess, onCancel }: BusStopF
       {errors.general && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex items-start">
-            <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 mr-3 flex-shrink-0" />
+            <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 mr-3 shrink-0" />
             <div className="flex-1">
               <h3 className="text-sm font-medium text-red-800">Error</h3>
               <p className="text-sm text-red-700 mt-1">{errors.general}</p>

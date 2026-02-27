@@ -13,7 +13,7 @@ import {
   Bus,
   Users
 } from 'lucide-react';
-import { ScheduleResponse, RouteResponse } from '@/lib/api-client/route-management';
+import { ScheduleResponse, RouteResponse } from '../../../../generated/api-clients/route-management';
 
 interface ScheduleOverviewProps {
   schedule: ScheduleResponse;

@@ -2,350 +2,163 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import Link from 'next/link';
-import {
-    ArrowLeft,
-    ChevronRight,
-    AlertCircle,
-    RefreshCw,
-    Download,
-    Eye
-} from 'lucide-react';
-import { OperatorPermitSummary } from '@/components/operator/permits/OperatorPermitSummary';
-import { OperatorPermitTabsSection } from '@/components/operator/permits/OperatorPermitTabsSection';
-import {
-    BusOperatorOperationsService,
-    RouteManagementService,
-    PassengerServicePermitResponse,
-    OperatorResponse,
-    RouteGroupResponse,
-    BusResponse
-} from '@/lib/api-client/route-management';
-import { Header } from '@/components/operator/header';
-import { useAuth } from '@/context/AuthContext';
+import { ArrowLeft, RefreshCw, AlertCircle, Download, ChevronRight, Plus } from 'lucide-react';
+import { useSetPageMetadata, usePageContext, useSetPageActions } from '@/context/PageContext';
+import { PermitSummaryCard } from '@/components/operator/permits/PermitSummaryCard';
+import { PermitInfoPanel } from '@/components/operator/permits/PermitInfoPanel';
+import { getMockPermitById, type OperatorPermitDetail } from '@/data/operator/permits';
 
-export default function OperatorPermitDetailsPage() {
-    const router = useRouter();
-    const params = useParams();
-    const permitId = params.permitId as string;
-    const { user } = useAuth();
+export default function ServicePermitDetailPage() {
+  useSetPageMetadata({
+    title: 'Service Permit Details',
+    description: 'Passenger service permit – read-only view',
+    activeItem: 'passenger-service-permits',
+    showBreadcrumbs: true,
+    breadcrumbs: [
+      { label: 'Service Permits', href: '/operator/passenger-service-permits' },
+      { label: 'Permit Details' },
+    ],
+    padding: 0,
+  });
 
-    // State
-    const [permit, setPermit] = useState<PassengerServicePermitResponse | null>(null);
-    const [operator, setOperator] = useState<OperatorResponse | null>(null);
-    const [routeGroup, setRouteGroup] = useState<RouteGroupResponse | null>(null);
-    const [assignedBuses, setAssignedBuses] = useState<BusResponse[]>([]);
+  const { setMetadata } = usePageContext();
+  const router = useRouter();
+  const params = useParams();
+  const permitId = params.permitId as string;
 
-    // Loading states
-    const [isLoading, setIsLoading] = useState(true);
-    const [operatorLoading, setOperatorLoading] = useState(false);
-    const [routeGroupLoading, setRouteGroupLoading] = useState(false);
-    const [busesLoading, setBusesLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+  // ── State ─────────────────────────────────────────────────────────────────
+  const [permit, setPermit] = useState<OperatorPermitDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    // Get operator ID from authenticated user
-    const operatorId = user?.id;
+  // ── Data loading ──────────────────────────────────────────────────────────
+  const loadPermit = useCallback(() => {
+    if (!permitId) return;
+    setIsLoading(true);
+    setError(null);
 
-    // Load permit details - operator-specific
-    const loadPermitDetails = useCallback(async () => {
-        if (!permitId || !operatorId) return;
-
-        try {
-            setIsLoading(true);
-            setError(null);
-
-            // Use operator-specific API to get permit details
-            const permitData = await BusOperatorOperationsService.getOperatorPermitById(
-                operatorId,
-                permitId
-            );
-            setPermit(permitData);
-
-            return permitData;
-        } catch (err) {
-            console.error('Error loading permit details:', err);
-            setError('Failed to load permit details. Please try again.');
-            return null;
-        } finally {
-            setIsLoading(false);
+    // Simulate async delay (replace with real API call)
+    const timer = setTimeout(() => {
+      try {
+        const data = getMockPermitById(permitId);
+        if (data) {
+          setPermit(data);
+        } else {
+          setError(`Permit "${permitId}" was not found.`);
         }
-    }, [permitId, operatorId]);
+      } catch {
+        setError('An unexpected error occurred while loading the permit.');
+      } finally {
+        setIsLoading(false);
+      }
+    }, 250);
 
-    // Load operator profile
-    const loadOperatorDetails = useCallback(async () => {
-        if (!operatorId) return;
+    return () => clearTimeout(timer);
+  }, [permitId]);
 
-        try {
-            setOperatorLoading(true);
-            const operatorData = await BusOperatorOperationsService.getOperatorProfile(operatorId);
-            setOperator(operatorData);
-        } catch (err) {
-            console.error('Error loading operator details:', err);
-            // Don't set main error for operator loading failure
-        } finally {
-            setOperatorLoading(false);
-        }
-    }, [operatorId]);
+  useEffect(() => {
+    loadPermit();
+  }, [loadPermit]);
 
-    // Load route group details
-    const loadRouteGroupDetails = useCallback(async (routeGroupId: string) => {
-        try {
-            setRouteGroupLoading(true);
-            const routeGroupData = await RouteManagementService.getRouteGroupById(routeGroupId);
-            setRouteGroup(routeGroupData);
-        } catch (err) {
-            console.error('Error loading route group details:', err);
-            // Don't set main error for route group loading failure
-        } finally {
-            setRouteGroupLoading(false);
-        }
-    }, []);
-
-    // Load assigned buses for this operator
-    const loadAssignedBuses = useCallback(async () => {
-        if (!operatorId) return;
-
-        try {
-            setBusesLoading(true);
-            // Get operator's buses (filtered by permit assignment in real implementation)
-            const busesResponse = await BusOperatorOperationsService.getOperatorBuses(
-                operatorId,
-                0, // page
-                100, // size
-                'ntcRegistrationNumber', // sortBy
-                'asc', // sortDir
-                'active' // status - only active buses
-            );
-
-            setAssignedBuses(busesResponse.content || []);
-        } catch (err) {
-            console.error('Error loading assigned buses:', err);
-            // Don't set main error for buses loading failure
-        } finally {
-            setBusesLoading(false);
-        }
-    }, [operatorId]);
-
-    // Load related data when permit is loaded
-    useEffect(() => {
-        if (permit) {
-            // Load route group details if routeGroupId exists
-            if (permit.routeGroupId) {
-                loadRouteGroupDetails(permit.routeGroupId);
-            }
-        }
-    }, [permit, loadRouteGroupDetails]);
-
-    // Initial load
-    useEffect(() => {
-        Promise.all([
-            loadPermitDetails(),
-            loadOperatorDetails(),
-            loadAssignedBuses()
-        ]);
-    }, [loadPermitDetails, loadOperatorDetails, loadAssignedBuses]);
-
-    // Handlers
-    const handleBack = () => {
-        router.push('/operator/passenger-service-permits');
-    };
-
-    const handleRefresh = async () => {
-        const permitData = await loadPermitDetails();
-        if (permitData) {
-            await Promise.all([
-                loadOperatorDetails(),
-                loadAssignedBuses()
-            ]);
-
-            if (permitData.routeGroupId) {
-                await loadRouteGroupDetails(permitData.routeGroupId);
-            }
-        }
-    };
-
-    const handleExportPermit = () => {
-        // TODO: Implement permit export functionality
-        console.log('Export permit:', permitId);
-    };
-
-    const handleViewInPortal = () => {
-        // Navigate to MoT portal view if operator has access
-        window.open(`/mot/passenger-service-permits/${permitId}`, '_blank');
-    };
-
-    // Loading state
-    if (isLoading) {
-        return (
-            <div className="min-h-screen bg-gray-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="flex items-center justify-center py-12">
-                        <div className="text-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                            <p className="text-gray-600">Loading permit details...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
+  // Update header when permit data is loaded
+  useEffect(() => {
+    if (permit) {
+      setMetadata({
+        title: 'Service Permit Details',
+        description: permit.permitNumber,
+        breadcrumbs: [
+          { label: 'Service Permits', href: '/operator/passenger-service-permits' },
+          { label: permit.permitNumber },
+        ],
+      });
     }
+  }, [permit, setMetadata]);
 
-    // Authentication check
-    if (!user || !operatorId) {
-        return (
-            <div className="min-h-screen bg-gray-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="text-center py-12">
-                        <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-                        <div className="text-red-600 text-lg mb-4">
-                            Authentication required
-                        </div>
-                        <p className="text-gray-600 mb-4">
-                            Please log in to view permit details.
-                        </p>
-                        <button
-                            onClick={() => router.push('/')}
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                        >
-                            Go to Login
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+  // ── Handlers ─────────────────────────────────────────────────────────────
+  const handleBack = () => {
+    router.push('/operator/passenger-service-permits');
+  };
 
-    // Error state
-    if (error || !permit) {
-        return (
-            <div className="min-h-screen bg-gray-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                    <div className="text-center py-12">
-                        <AlertCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-                        <div className="text-red-600 text-lg mb-4">
-                            {error || 'Permit not found'}
-                        </div>
-                        <button
-                            onClick={handleBack}
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-                        >
-                            Go Back
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+  const handleRefresh = () => {
+    loadPermit();
+  };
 
+  const handleExport = () => {
+    // Placeholder: implement PDF/print when needed
+    window.print();
+  };
+
+  useSetPageActions(
+    <>
+      <button
+        onClick={handleRefresh}
+        className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+      >
+        <RefreshCw className="w-4 h-4" />
+        <span className="hidden sm:inline">Refresh</span>
+      </button>
+
+      <button
+        onClick={handleExport}
+        className="flex items-center gap-2 px-4 py-2.5 text-sm text-white bg-blue-600 rounded-lg hover:bg-blue-700 font-semibold shadow-sm transition-colors"
+      >
+        <Download className="w-4 h-4" />
+        <span className="hidden sm:inline">Export</span>
+      </button>
+    </>
+  );
+
+  // ── Loading state ─────────────────────────────────────────────────────────
+  if (isLoading) {
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Header
-                pageTitle="Permit Details"
-                pageDescription="View detailed information about your passenger service permit, including route coverage, fleet assignment, and compliance status"
-            />
-            <div className="mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                <div className="space-y-6">
-                    {/* Back Button */}
-                    <div className="mb-4">
-                        <Link
-                            href="/operator/passenger-service-permits"
-                            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900"
-                        >
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back to Service Permits
-                        </Link>
-                    </div>
-
-                    {/* Error Alert */}
-                    {error && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                            <div className="flex items-start">
-                                <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 mr-3 flex-shrink-0" />
-                                <div className="flex-1">
-                                    <h3 className="text-sm font-medium text-red-800">Error</h3>
-                                    <p className="text-sm text-red-700 mt-1">{error}</p>
-                                    <button
-                                        onClick={() => setError(null)}
-                                        className="text-sm text-red-600 hover:text-red-800 underline mt-2"
-                                    >
-                                        Dismiss
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Header Section - Breadcrumbs + Actions */}
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        {/* Breadcrumbs */}
-                        <div className="flex items-center space-x-2 text-sm text-gray-600">
-                            <button
-                                onClick={() => router.push('/operator/dashboard')}
-                                className="hover:text-blue-600 transition-colors"
-                            >
-                                Dashboard
-                            </button>
-                            <ChevronRight className="w-4 h-4" />
-                            <button
-                                onClick={() => router.push('/operator/passenger-service-permits')}
-                                className="hover:text-blue-600 transition-colors"
-                            >
-                                Service Permits
-                            </button>
-                            <ChevronRight className="w-4 h-4" />
-                            <span className="text-gray-900 font-medium">
-                                {permit.permitNumber || 'Permit Details'}
-                            </span>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <button
-                                onClick={handleRefresh}
-                                className="flex items-center gap-2 px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                                <RefreshCw className="w-4 h-4" />
-                                Refresh
-                            </button>
-                            <button
-                                onClick={handleExportPermit}
-                                className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50 transition-colors"
-                            >
-                                <Download className="w-4 h-4" />
-                                Export
-                            </button>
-                            {/* Operator can view in MoT portal if they have access */}
-                            <button
-                                onClick={handleViewInPortal}
-                                className="flex items-center gap-2 px-4 py-2 text-green-600 border border-green-300 rounded-lg hover:bg-green-50 transition-colors"
-                            >
-                                <Eye className="w-4 h-4" />
-                                View in Portal
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Permit Summary Card */}
-                    <OperatorPermitSummary
-                        permit={permit}
-                        operator={operator}
-                        routeGroup={routeGroup}
-                        assignedBuses={assignedBuses}
-                    />
-
-                    {/* Permit Tabs Section */}
-                    <OperatorPermitTabsSection
-                        permit={permit}
-                        operator={operator}
-                        routeGroup={routeGroup}
-                        assignedBuses={assignedBuses}
-                        operatorLoading={operatorLoading}
-                        routeGroupLoading={routeGroupLoading}
-                        busesLoading={busesLoading}
-                        onRefresh={handleRefresh}
-                    />
-                </div>
-            </div>
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="text-center">
+          <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" style={{ borderWidth: 3 }} />
+          <p className="text-gray-500 text-sm">Loading permit details…</p>
         </div>
+      </div>
     );
+  }
+
+  // ── Error state ───────────────────────────────────────────────────────────
+  if (error || !permit) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="text-center max-w-md">
+          <div className="bg-red-100 text-red-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8" />
+          </div>
+          <h2 className="text-lg font-semibold text-gray-900 mb-2">Permit not found</h2>
+          <p className="text-sm text-gray-500 mb-6">{error ?? 'The requested permit could not be found.'}</p>
+          <button
+            onClick={handleBack}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Permits
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Main render
+  return (
+    <main className="px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Read-only notice */}
+        <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+          <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>
+            This permit is issued and managed by the Ministry of Transport. All information is
+            read-only. Contact the MOT to request any modifications.
+          </span>
+        </div>
+
+        {/* Permit summary card */}
+        <PermitSummaryCard permit={permit} />
+
+        {/* Tabbed detail panel */}
+        <PermitInfoPanel permit={permit} />
+    </main>
+  );
 }

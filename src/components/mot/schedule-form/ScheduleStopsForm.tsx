@@ -10,7 +10,7 @@ import {
   Clock,
   AlertCircle
 } from 'lucide-react';
-import { RouteResponse } from '@/lib/api-client/route-management';
+import { RouteResponse } from '../../../../generated/api-clients/route-management';
 import { ScheduleFormData } from './ScheduleForm';
 
 interface ScheduleStopsFormProps {
@@ -267,7 +267,7 @@ export function ScheduleStopsForm({
                 >
                   <div className="flex items-center space-x-4">
                     {/* Stop Order */}
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                         isFirstStop ? 'bg-green-600 text-white' : 
                         isLastStop ? 'bg-red-600 text-white' : 
@@ -410,7 +410,7 @@ export function ScheduleStopsForm({
                     </div>
 
                     {/* Actions */}
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       {scheduleStop && (
                         <button
                           type="button"

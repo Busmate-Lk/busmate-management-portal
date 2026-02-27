@@ -1,6 +1,3 @@
 export { AdminProfile } from './admin-profile'
-export { ConductorProfile } from './conductor-profile'
-export { PassengerProfile } from './passenger-profile'
-export { FleetProfile } from './fleet-profile'
-export { TimekeeperProfile } from './timekeeper-profile'
-export { MotAdminProfile } from './mot-admin-profile'
+// Note: User-type-specific profile components (ConductorProfile, PassengerProfile, etc.)
+// have been removed. Use UserDetailPanel from @/components/admin/users instead.

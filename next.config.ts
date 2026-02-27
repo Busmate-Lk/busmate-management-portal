@@ -10,10 +10,7 @@ const nextConfig: NextConfig = {
     }
   },
 
-  // ✅ Ignore lint & TS errors during build (only for deployment)
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // ✅ Ignore TS errors during build (only for deployment)
   typescript: {
     ignoreBuildErrors: true,
   },

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { Header } from "@/components/operator/header"
+import { useSetPageMetadata } from "@/context/PageContext"
 import { 
   KPICards,
   LiveFleetStatus,
@@ -26,6 +26,15 @@ import {
 } from "./data"
 
 export default function Dashboard() {
+  useSetPageMetadata({
+    title: 'Operator Dashboard',
+    description: 'Comprehensive overview of your fleet operations, revenue, and performance metrics',
+    activeItem: 'dashboard',
+    showBreadcrumbs: true,
+    breadcrumbs: [{ label: 'Dashboard' }],
+    padding: 0,
+  })
+
   const [alerts, setAlerts] = useState(liveAlerts)
 
   // Handle alert resolution
@@ -40,16 +49,9 @@ export default function Dashboard() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header 
-        pageTitle="Operator Dashboard" 
-        pageDescription="Comprehensive overview of your fleet operations, revenue, and performance metrics"
-      />
-      
-      <div className="p-4 lg:p-6 space-y-6">
+    <div className="p-4 lg:p-6 space-y-6">
         {/* KPI Cards - Top Section */}
         <section>
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Key Performance Indicators</h2>
           <KPICards kpis={operatorKPIs} />
         </section>
 
@@ -91,7 +93,6 @@ export default function Dashboard() {
             <MaintenanceAlerts alerts={maintenanceAlerts} />
           </div>
         </div>
-      </div>
     </div>
   )
 }

@@ -4,7 +4,17 @@ import { Bus, ChevronDown, Bell, User, LogOut } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { useAuth } from "@/context/AuthContext"
 import { usePathname, useRouter } from "next/navigation"
-import { listNotifications, type NotificationListItem } from "@/lib/services/notificationService"
+// NotificationListItem type for header notification dropdown
+interface NotificationListItem {
+  notificationId: string
+  title: string
+  body: string
+  messageType?: string
+  senderRole?: string
+  targetAudience?: string
+  adminId?: string
+  createdAt?: string
+}
 
 interface HeaderProps {
   pageTitle?: string
@@ -93,7 +103,7 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
             message: n.body,
             time: toRelativeTime(n.createdAt),
             type: (n.messageType || 'info') as any,
-            redirectUrl: `${pathname?.startsWith('/mot') ? '/mot' : '/admin'}/notifications/detail/${n.notificationId}`,
+            redirectUrl: `${pathname?.startsWith('/mot') ? '/mot' : '/admin/dashboard'}/notifications/${n.notificationId}`,
             isRead: false // We can track this locally or from backend if available
           }))
 
@@ -214,8 +224,8 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
   }
 
   const handleViewAllNotifications = () => {
-    const base = pathname?.startsWith('/mot') ? '/mot' : '/admin'
-    router.push(`${base}/notifications/received`)
+    const base = pathname?.startsWith('/mot') ? '/mot' : '/admin/dashboard'
+    router.push(`${base}/notifications`)
     setIsNotificationOpen(false)
   }
 
@@ -354,7 +364,7 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
                         onClick={() => handleNotificationClick(notification)}
                       >
                         <div className="flex items-start gap-3">
-                          <span className="text-lg flex-shrink-0">{getNotificationIcon(notification.type)}</span>
+                          <span className="text-lg shrink-0">{getNotificationIcon(notification.type)}</span>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between">
                               <p className={`text-sm font-medium line-clamp-1 ${notification.isRead ? 'text-gray-600' : 'text-gray-900'
@@ -362,7 +372,7 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
                                 {notification.title}
                               </p>
                               {!notification.isRead && (
-                                <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 ml-2"></div>
+                                <div className="w-2 h-2 bg-blue-500 rounded-full shrink-0 ml-2"></div>
                               )}
                             </div>
                             <p className={`text-xs mt-1 line-clamp-2 ${notification.isRead ? 'text-gray-400' : 'text-gray-600'
@@ -402,7 +412,7 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
               aria-label="User menu"
             >
               <div className="relative">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
+                <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
                   <span className="text-white text-sm font-semibold">{getUserInitials()}</span>
                 </div>
                 <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full border-2 border-white"></div>
@@ -420,7 +430,7 @@ export function Header({ pageTitle, pageDescription }: HeaderProps) {
               <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                 <div className="px-4 py-3 border-b border-gray-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                       <span className="text-white text-sm font-semibold">{getUserInitials()}</span>
                     </div>
                     <div>

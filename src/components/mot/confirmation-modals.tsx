@@ -25,7 +25,7 @@ export function DeleteConfirmationModal({
       <div className="bg-white/95 backdrop-blur-sm rounded-xl max-w-md w-full shadow-2xl border border-gray-200">
         <div className="p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-100 to-red-50 rounded-full flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 bg-linear-to-br from-red-100 to-red-50 rounded-full flex items-center justify-center shadow-sm">
               <AlertTriangle className="h-5 w-5 text-red-600" />
             </div>
             <div>
@@ -53,7 +53,7 @@ export function DeleteConfirmationModal({
             <button
               onClick={onConfirm}
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-600 to-red-700 border border-transparent rounded-lg hover:from-red-700 hover:to-red-800 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 inline-flex items-center gap-2"
+              className="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-red-600 to-red-700 border border-transparent rounded-lg hover:from-red-700 hover:to-red-800 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 inline-flex items-center gap-2"
             >
               {isLoading ? (
                 <>
@@ -89,7 +89,7 @@ export function SendConfirmationModal({
       <div className="bg-white/95 backdrop-blur-sm rounded-xl max-w-md w-full shadow-2xl border border-gray-200">
         <div className="p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-green-100 to-emerald-50 rounded-full flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 bg-linear-to-br from-green-100 to-emerald-50 rounded-full flex items-center justify-center shadow-sm">
               <Send className="h-5 w-5 text-green-600" />
             </div>
             <div>
@@ -117,7 +117,7 @@ export function SendConfirmationModal({
             <button
               onClick={onConfirm}
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-emerald-700 border border-transparent rounded-lg hover:from-green-700 hover:to-emerald-800 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 inline-flex items-center gap-2"
+              className="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-green-600 to-emerald-700 border border-transparent rounded-lg hover:from-green-700 hover:to-emerald-800 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 inline-flex items-center gap-2"
             >
               {isLoading ? (
                 <>
@@ -153,7 +153,7 @@ export function DeactivationConfirmationModal({
       <div className="bg-white/95 backdrop-blur-sm rounded-xl max-w-md w-full shadow-2xl border border-gray-200">
         <div className="p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-yellow-100 to-amber-50 rounded-full flex items-center justify-center shadow-sm">
+            <div className="w-10 h-10 bg-linear-to-br from-yellow-100 to-amber-50 rounded-full flex items-center justify-center shadow-sm">
               <Power className="h-5 w-5 text-yellow-600" />
             </div>
             <div>
@@ -181,7 +181,7 @@ export function DeactivationConfirmationModal({
             <button
               onClick={onConfirm}
               disabled={isLoading}
-              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-yellow-600 to-amber-700 border border-transparent rounded-lg hover:from-yellow-700 hover:to-amber-800 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 inline-flex items-center gap-2"
+              className="px-4 py-2 text-sm font-medium text-white bg-linear-to-r from-yellow-600 to-amber-700 border border-transparent rounded-lg hover:from-yellow-700 hover:to-amber-800 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 inline-flex items-center gap-2"
             >
               {isLoading ? (
                 <>

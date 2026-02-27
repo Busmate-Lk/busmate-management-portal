@@ -1,0 +1,11 @@
+{
+  "reports": [
+    {
+      "filename": "codebase-analysis-2026-02-18T18-55-29.txt",
+      "timestamp": "2026-02-18T18:55:29.316Z",
+      "totalFiles": 462,
+      "totalLines": 104474,
+      "totalCodeLines": 92738
+    }
+  ]
+}

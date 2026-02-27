@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, AlertTriangle, Trash2, ArrowLeft, Route, MapPin } from 'lucide-react';
-import type { RouteGroupResponse, RouteResponse } from '@/lib/api-client/route-management';
+import type { RouteGroupResponse, RouteResponse } from '../../../../generated/api-clients/route-management';
 
 interface DeleteRouteConfirmationProps {
   isOpen: boolean;
@@ -98,7 +98,7 @@ export default function DeleteRouteConfirmation({
             <div className="bg-white px-8 py-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <div className="flex-shrink-0">
+                  <div className="shrink-0">
                     <AlertTriangle className="h-6 w-6 text-red-600" />
                   </div>
                   <div className="ml-3">
@@ -267,7 +267,7 @@ export default function DeleteRouteConfirmation({
                       <ul className="space-y-2">
                         {routeGroup.routes.slice(0, 5).map((route, index) => (
                           <li key={route.id || index} className="flex items-center text-sm text-orange-700">
-                            <MapPin className="h-3 w-3 mr-2 flex-shrink-0" />
+                            <MapPin className="h-3 w-3 mr-2 shrink-0" />
                             <span className="truncate">
                               {route.name || `Route ${index + 1}`}
                               {route.direction && ` (${route.direction})`}
@@ -308,7 +308,7 @@ export default function DeleteRouteConfirmation({
             </div>
 
             {/* Footer */}
-            <div className="flex-shrink-0 border-t border-gray-200 px-6 py-4">
+            <div className="shrink-0 border-t border-gray-200 px-6 py-4">
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={onClose}

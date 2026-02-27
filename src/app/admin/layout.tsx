@@ -1,10 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "../globals.css"
-import { Toaster } from "@/components/admin/ui/toaster"
-
-const inter = Inter({ subsets: ["latin"] })
+import { Toaster } from "@/components/ui/toaster"
+import { AdminLayoutClient } from "./layout-client"
 
 export const metadata: Metadata = {
   title: "BUSMATE LK Admin Portal",
@@ -12,17 +9,17 @@ export const metadata: Metadata = {
   generator: 'v0.dev'
 }
 
-export default function RootLayout({
+export default function AdminRootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${inter.className} h-full antialiased`}>
+    <>
+      <AdminLayoutClient>
         {children}
-        <Toaster />
-      </body>
-    </html>
+      </AdminLayoutClient>
+      <Toaster />
+    </>
   )
 }

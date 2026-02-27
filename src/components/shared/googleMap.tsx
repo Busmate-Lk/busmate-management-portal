@@ -1,7 +1,8 @@
 "use client";
 
-import { GoogleMap, useJsApiLoader, Marker, DirectionsService, DirectionsRenderer } from '@react-google-maps/api';
+import { GoogleMap, Marker, DirectionsService, DirectionsRenderer } from '@react-google-maps/api';
 import { useState, useCallback } from 'react';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 
 const containerStyle = {
   width: '100vw',
@@ -17,11 +18,7 @@ const center = {
 
 
 export default function GoogleMapComponent() {
-  const { isLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    libraries: ['geometry', 'places'],
-  });
+  const { isLoaded } = useGoogleMaps();
   const [directions, setDirections] = useState(null);
 
   const directionsCallback = useCallback((result: any, status: string) => {

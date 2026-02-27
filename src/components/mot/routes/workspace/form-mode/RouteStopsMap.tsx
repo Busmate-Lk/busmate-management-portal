@@ -1,6 +1,7 @@
 'use client';
 
-import { GoogleMap, useLoadScript, Marker, DirectionsRenderer } from '@react-google-maps/api';
+import { GoogleMap, Marker, DirectionsRenderer } from '@react-google-maps/api';
+import { useGoogleMaps } from '@/hooks/useGoogleMaps';
 import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { useRouteWorkspace } from '@/context/RouteWorkspace/useRouteWorkspace';
 import {
@@ -42,9 +43,7 @@ export default function RouteStopsMap({ onToggle, collapsed, routeIndex }: Route
   const mapRef = useRef<google.maps.Map | null>(null);
 
   // Load Google Maps script
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-  });
+  const { isLoaded, loadError } = useGoogleMaps();
 
   // Get route stops from context
   const route = data.routeGroup.routes[routeIndex];

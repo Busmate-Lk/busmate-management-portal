@@ -5,7 +5,7 @@
  * in the Route Workspace, including stop existence checks against the backend.
  */
 
-import { BusStopManagementService } from "@/lib/api-client/route-management";
+import { BusStopManagementService } from "../../generated/api-clients/route-management";
 import { Stop, RouteStop, Location, StopExistenceType } from "@/types/RouteWorkspaceData";
 
 // ============================================================================

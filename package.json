@@ -4,15 +4,21 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:turbo": "next dev --turbopack",
     "build": "next build",
     "lint": "next lint",
-    "start": "next start",
-    "generate:api-route:cloud": "npx openapi-typescript-codegen --input http://18.140.161.237:8080/v3/api-docs  --output ./src/lib/api-client/route-management",
-    "generate:api-route:local": "npx openapi-typescript-codegen --input http://localhost:8080/v3/api-docs  --output ./src/lib/api-client/route-management",
-    "generate:api-location:local": "npx openapi-typescript-codegen --input http://localhost:4000/api-spec  --output ./src/lib/api-client/location-tracking",
-    "generate:api-ticketing:cloud": "npx openapi-typescript-codegen --input http://54.91.217.117:8083/v3/api-docs  --output ./src/lib/api-client/ticketing-management",
-    "generate:api-ticketing:local": "npx openapi-typescript-codegen --input http://localhost:8083/v3/api-docs  --output ./src/lib/api-client/ticketing-management"
+    "start": "next start --port 5000",
+    "info": "next info",
+    "analyze": "node scripts/analyze-codebase.js",
+    "analyze:save": "node scripts/analyze-codebase.js --save",
+    "analyze:json": "node scripts/analyze-codebase.js --save --json",
+    "analyze:quiet": "node scripts/analyze-codebase.js --save --quiet",
+    "analyze-pages:console": "node scripts/analyze-pages.js",
+    "analyze-pages:file": "node scripts/analyze-pages.js --file",
+    "generate:api-route:cloud": "npx openapi-typescript-codegen --input http://18.140.161.237:8080/v3/api-docs  --output ./generated/api-clients/route-management",
+    "generate:api-route:local": "npx openapi-typescript-codegen --input http://localhost:8080/v3/api-docs  --output ./generated/api-clients/route-management",
+    "generate:api-location:local": "npx openapi-typescript-codegen --input http://localhost:4000/api-spec  --output ./generated/api-clients/location-tracking",
+    "generate:api-ticketing:cloud": "npx openapi-typescript-codegen --input http://54.91.217.117:8083/v3/api-docs  --output ./generated/api-clients/ticketing-management",
+    "generate:api-ticketing:local": "npx openapi-typescript-codegen --input http://localhost:8083/v3/api-docs  --output ./generated/api-clients/ticketing-management"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -79,22 +85,24 @@
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
-    "vaul": "^0.9.6",
+    "vaul": "^1.1.2",
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.1.18",
     "@types/js-yaml": "^4.0.9",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/uuid": "^10.0.0",
+    "baseline-browser-mapping": "^2.10.0",
     "eslint": "9.31.0",
     "eslint-config-next": "15.4.2",
     "openapi-typescript-codegen": "^0.29.0",
     "postcss": "^8.5",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5",
+    "unimported": "^1.31.1"
   }
 }

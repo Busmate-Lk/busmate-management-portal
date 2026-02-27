@@ -1,7 +1,7 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/operator/ui/card";
-import { Button } from "@/components/operator/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -233,7 +233,7 @@ export function DashboardCharts({
       </Card>
 
       {/* Quick Analytics Actions */}
-      <Card className="bg-gradient-to-br from-blue-50 to-indigo-100 border-blue-200">
+      <Card className="bg-linear-to-br from-blue-50 to-indigo-100 border-blue-200">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
             <BarChart3 className="h-5 w-5 mr-2 text-blue-600" />

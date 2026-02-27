@@ -221,7 +221,7 @@ export function parseFromYaml(yamlText: string): Partial<RouteWorkspaceData> {
                 id: stopData.id ? String(stopData.id) : undefined,
                 orderNumber: stopData.order_number !== undefined ? Number(stopData.order_number) : 0,
                 distanceFromStart: stopData.distance_from_start !== undefined ? Number(stopData.distance_from_start) : 
-                                   stopData.distance_from_start_km !== undefined ? Number(stopData.distance_from_start_km) : 0,
+                                   stopData.distance_from_start_km !== undefined ? Number(stopData.distance_from_start_km) : null,
                 stop: stop
               };
 
@@ -461,7 +461,7 @@ export function parseFromJson(jsonText: string): Partial<RouteWorkspaceData> {
                 id: stopData.id ? String(stopData.id) : undefined,
                 orderNumber: stopData.order_number !== undefined ? Number(stopData.order_number) : 0,
                 distanceFromStart: stopData.distance_from_start !== undefined ? Number(stopData.distance_from_start) : 
-                                   stopData.distance_from_start_km !== undefined ? Number(stopData.distance_from_start_km) : 0,
+                                   stopData.distance_from_start_km !== undefined ? Number(stopData.distance_from_start_km) : null,
                 stop: stop
               };
 
