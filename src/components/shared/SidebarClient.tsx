@@ -3,7 +3,6 @@
 import {
   Bus,
   Users,
-  BarChart3,
   Calendar,
   MapPin,
   Route,
@@ -191,7 +190,7 @@ export function SidebarClient({
 
   const operatorSidebarItems: SidebarItem[] = [
     {
-      icon: BarChart3,
+      icon: LayoutDashboard,
       label: 'Dashboard',
       active: activeItem === 'dashboard',
       href: '/operator/dashboard',
@@ -325,7 +324,7 @@ export function SidebarClient({
 
       {/* Navigation Section */}
       <div
-        className="flex-1 overflow-y-auto py-3"
+        className="flex-1 overflow-y-auto py-4"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         <nav className="px-3 space-y-3">
