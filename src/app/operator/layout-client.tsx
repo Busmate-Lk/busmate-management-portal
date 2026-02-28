@@ -1,14 +1,20 @@
 "use client"
 
 import { useState, type ReactNode } from "react"
-import { Sidebar } from "@/components/shared/sidebar"
+import { SidebarClient } from "@/components/shared/SidebarClient"
 import { OperatorContentHeader } from "@/components/operator/OperatorContentHeader"
 import { PageProvider, usePageContext } from "@/context/PageContext"
+import UserData from "@/types/UserData"
+
+interface OperatorLayoutClientProps {
+  children: ReactNode;
+  userData: UserData | null;
+}
 
 /**
  * Inner layout component that consumes page metadata
  */
-function OperatorLayoutContent({ children }: { children: ReactNode }) {
+function OperatorLayoutContent({ children, userData }: OperatorLayoutClientProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { metadata } = usePageContext()
 
@@ -19,11 +25,12 @@ function OperatorLayoutContent({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <Sidebar
+      <SidebarClient
         activeItem={metadata.activeItem || "dashboard"}
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
         role="operator"
+        userData={userData}
       />
 
       {/* Main content area - adjusts based on sidebar state */}
@@ -45,8 +52,9 @@ function OperatorLayoutContent({ children }: { children: ReactNode }) {
  *
  * Wraps operator pages with PageProvider and renders the common layout
  * including sidebar, header, and breadcrumbs based on page metadata.
+ * Receives user data from server-side layout and passes to sidebar.
  */
-export function OperatorLayoutClient({ children }: { children: ReactNode }) {
+export function OperatorLayoutClient({ children, userData }: OperatorLayoutClientProps) {
   return (
     <PageProvider
       initialMetadata={{
@@ -57,7 +65,7 @@ export function OperatorLayoutClient({ children }: { children: ReactNode }) {
         padding: 6,
       }}
     >
-      <OperatorLayoutContent>{children}</OperatorLayoutContent>
+      <OperatorLayoutContent userData={userData}>{children}</OperatorLayoutContent>
     </PageProvider>
   )
 }

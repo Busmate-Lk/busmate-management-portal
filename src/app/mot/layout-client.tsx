@@ -1,14 +1,20 @@
 "use client"
 
 import { useState, type ReactNode } from "react"
-import { Sidebar } from "@/components/shared/sidebar"
+import { SidebarClient } from "@/components/shared/SidebarClient"
 import { MotContentHeader } from "@/components/mot/MotContentHeader"
 import { PageProvider, usePageContext } from "@/context/PageContext"
+import UserData from "@/types/UserData"
+
+interface MotLayoutClientProps {
+  children: ReactNode;
+  userData: UserData | null;
+}
 
 /**
  * Inner layout component that consumes page metadata
  */
-function MotLayoutContent({ children }: { children: ReactNode }) {
+function MotLayoutContent({ children, userData }: MotLayoutClientProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { metadata } = usePageContext()
 
@@ -19,11 +25,12 @@ function MotLayoutContent({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <Sidebar 
+      <SidebarClient
         activeItem={metadata.activeItem || "dashboard"} 
         isCollapsed={isCollapsed} 
         setIsCollapsed={setIsCollapsed} 
-        role="mot" 
+        role="mot"
+        userData={userData}
       />
       
       {/* Main content area - adjusts based on sidebar state */}
@@ -44,9 +51,10 @@ function MotLayoutContent({ children }: { children: ReactNode }) {
  * MOT Layout Client Component
  * 
  * Wraps MOT pages with PageProvider and renders the common layout
- * including sidebar, header, and breadcrumbs based on page metadata
+ * including sidebar, header, and breadcrumbs based on page metadata.
+ * Receives user data from server-side layout and passes to sidebar.
  */
-export function MotLayoutClient({ children }: { children: ReactNode }) {
+export function MotLayoutClient({ children, userData }: MotLayoutClientProps) {
   return (
     <PageProvider
       initialMetadata={{
@@ -57,7 +65,7 @@ export function MotLayoutClient({ children }: { children: ReactNode }) {
         padding: 6,
       }}
     >
-      <MotLayoutContent>{children}</MotLayoutContent>
+      <MotLayoutContent userData={userData}>{children}</MotLayoutContent>
     </PageProvider>
   )
 }

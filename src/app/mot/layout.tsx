@@ -1,7 +1,10 @@
 import type React from "react"
 import type { Metadata } from "next"
+import { redirect } from "next/navigation"
 import { Toaster } from "@/components/ui/toaster"
 import { MotLayoutClient } from "./layout-client"
+import { getUserData } from "@/lib/utils/getUserData"
+import { isRoleAllowedForRoute, getRoleRedirectPath } from "@/lib/utils/getRoleRedirectPath"
 
 export const metadata: Metadata = {
   title: "BUSMATE LK MOT Portal",
@@ -9,14 +12,24 @@ export const metadata: Metadata = {
   generator: 'v0.dev'
 }
 
-export default function MotRootLayout({
+export default async function MotRootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const userData = await getUserData();
+
+  if (!userData) {
+    redirect('/');
+  }
+
+  if (!isRoleAllowedForRoute(userData.user_role, '/mot')) {
+    redirect(getRoleRedirectPath(userData.user_role));
+  }
+
   return (
     <>
-      <MotLayoutClient>
+      <MotLayoutClient userData={userData}>
         {children}
       </MotLayoutClient>
       <Toaster />

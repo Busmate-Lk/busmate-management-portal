@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import {AsgardeoProvider} from '@asgardeo/nextjs/server';
 
 export const metadata: Metadata = {
   title: "BUSMATE LK - Transportation Management",
@@ -14,7 +15,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased font-sans">
-          {children}
+        <AsgardeoProvider
+          preferences={{
+            theme: {
+              inheritFromBranding: false,
+              mode: "light"
+            }
+          }}
+        >
+          {children as any}
+        </AsgardeoProvider>
       </body>
     </html>
   );

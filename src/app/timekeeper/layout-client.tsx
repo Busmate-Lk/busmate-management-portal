@@ -1,14 +1,21 @@
 "use client"
 
 import { useState, type ReactNode } from "react"
-import { Sidebar } from "@/components/shared/sidebar"
+import { SidebarClient } from "@/components/shared/SidebarClient"
 import { TimekeeperContentHeader } from "@/components/timekeeper/TimekeeperContentHeader"
 import { PageProvider, usePageContext } from "@/context/PageContext"
+import UserData from "@/types/UserData"
+
+
+interface TimekeeperLayoutClientProps {
+  children: ReactNode;
+  userData: UserData | null;
+}
 
 /**
  * Inner layout component that consumes page metadata
  */
-function TimekeeperLayoutContent({ children }: { children: ReactNode }) {
+function TimekeeperLayoutContent({ children, userData }: TimekeeperLayoutClientProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { metadata } = usePageContext()
 
@@ -19,11 +26,12 @@ function TimekeeperLayoutContent({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <Sidebar
+      <SidebarClient
         activeItem={metadata.activeItem || "dashboard"}
         isCollapsed={isCollapsed}
         setIsCollapsed={setIsCollapsed}
         role="timeKeeper"
+        userData={userData}
       />
 
       {/* Main content area - adjusts based on sidebar state */}
@@ -45,8 +53,9 @@ function TimekeeperLayoutContent({ children }: { children: ReactNode }) {
  *
  * Wraps timekeeper pages with PageProvider and renders the common layout
  * including sidebar, header, and breadcrumbs based on page metadata.
+ * Receives user data from server-side layout and passes to sidebar.
  */
-export function TimekeeperLayoutClient({ children }: { children: ReactNode }) {
+export function TimekeeperLayoutClient({ children, userData }: TimekeeperLayoutClientProps) {
   return (
     <PageProvider
       initialMetadata={{
@@ -57,7 +66,7 @@ export function TimekeeperLayoutClient({ children }: { children: ReactNode }) {
         padding: 6,
       }}
     >
-      <TimekeeperLayoutContent>{children}</TimekeeperLayoutContent>
+      <TimekeeperLayoutContent userData={userData}>{children}</TimekeeperLayoutContent>
     </PageProvider>
   )
 }

@@ -1,14 +1,20 @@
 "use client"
 
 import { useState, type ReactNode } from "react"
-import { Sidebar } from "@/components/shared/sidebar"
+import { SidebarClient } from "@/components/shared/SidebarClient"
 import { AdminContentHeader } from "@/components/admin/AdminContentHeader"
 import { PageProvider, usePageContext } from "@/context/PageContext"
+import UserData from "@/types/UserData"
+
+interface AdminLayoutClientProps {
+  children: ReactNode;
+  userData: UserData | null;
+}
 
 /**
  * Inner layout component that consumes page metadata
  */
-function AdminLayoutContent({ children }: { children: ReactNode }) {
+function AdminLayoutContent({ children, userData }: AdminLayoutClientProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const { metadata } = usePageContext()
 
@@ -19,11 +25,12 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <Sidebar 
+      <SidebarClient 
         activeItem={metadata.activeItem || "dashboard"} 
         isCollapsed={isCollapsed} 
         setIsCollapsed={setIsCollapsed} 
-        role="admin" 
+        role="admin"
+        userData={userData}
       />
       
       {/* Main content area - adjusts based on sidebar state */}
@@ -44,9 +51,10 @@ function AdminLayoutContent({ children }: { children: ReactNode }) {
  * Admin Layout Client Component
  * 
  * Wraps admin pages with PageMetadataProvider and renders the common layout
- * including sidebar, header, and breadcrumbs based on page metadata
+ * including sidebar, header, and breadcrumbs based on page metadata.
+ * Receives user data from server-side layout and passes to sidebar.
  */
-export function AdminLayoutClient({ children }: { children: ReactNode }) {
+export function AdminLayoutClient({ children, userData }: AdminLayoutClientProps) {
   return (
     <PageProvider
       initialMetadata={{
@@ -57,7 +65,7 @@ export function AdminLayoutClient({ children }: { children: ReactNode }) {
         padding: 6,
       }}
     >
-      <AdminLayoutContent>{children}</AdminLayoutContent>
+      <AdminLayoutContent userData={userData}>{children}</AdminLayoutContent>
     </PageProvider>
   )
 }
