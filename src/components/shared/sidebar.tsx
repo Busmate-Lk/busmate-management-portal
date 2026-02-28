@@ -33,7 +33,7 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { sampleAuthState } from '@/_temp_/sampleAuth';
 
 interface SidebarItem {
   icon: any;
@@ -58,7 +58,7 @@ export function Sidebar({
   const [internalIsCollapsed, setInternalIsCollapsed] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
-  const { user, logout } = useAuth();
+  const {user, logout} = sampleAuthState;
 
   // Close user menu on outside click
   useEffect(() => {

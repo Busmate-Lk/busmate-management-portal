@@ -4,35 +4,36 @@ import Image from 'next/image';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { sampleAuthState } from '@/_temp_/sampleAuth';
 
 export default function Home() {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isLoading, isAuthenticated } = sampleAuthState;
+  
   const router = useRouter();
 
-  useEffect(() => {
-    if (!isLoading && isAuthenticated && user) {
-      // User is already logged in, redirect to appropriate dashboard
-      const getRedirectPath = (userRole: string) => {
-        switch (userRole?.toLowerCase()) {
-          case 'mot':
-            return '/mot/dashboard';
-          case 'fleetoperator':
-          case 'operator':
-            return '/operator/dashboard';
-          case 'timekeeper':
-            return '/timekeeper/dashboard';
-          case 'admin':
-          case 'systemadmin':
-          case 'system-admin':
-            return '/admin/dashboard';
-          default:
-            return '/operator/dashboard';
-        }
-      };
-      router.push(getRedirectPath(user.user_role));
-    }
-  }, [user, isLoading, isAuthenticated, router]);
+  // useEffect(() => {
+  //   if (!isLoading && isAuthenticated && user) {
+  //     // User is already logged in, redirect to appropriate dashboard
+  //     const getRedirectPath = (userRole: string) => {
+  //       switch (userRole?.toLowerCase()) {
+  //         case 'mot':
+  //           return '/mot/dashboard';
+  //         case 'fleetoperator':
+  //         case 'operator':
+  //           return '/operator/dashboard';
+  //         case 'timekeeper':
+  //           return '/timekeeper/dashboard';
+  //         case 'admin':
+  //         case 'systemadmin':
+  //         case 'system-admin':
+  //           return '/admin/dashboard';
+  //         default:
+  //           return '/operator/dashboard';
+  //       }
+  //     };
+  //     router.push(getRedirectPath(user.user_role));
+  //   }
+  // }, [user, isLoading, isAuthenticated, router]);
 
   if (isLoading) {
     return (
@@ -45,9 +46,9 @@ export default function Home() {
     );
   }
 
-  if (isAuthenticated && user) {
-    return null; // Will redirect in useEffect
-  }
+  // if (isAuthenticated && user) {
+  //   return null; // Will redirect in useEffect
+  // }
 
   return (
     <div className="min-h-screen flex items-center justify-end p-4 relative overflow-hidden">
@@ -102,7 +103,7 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { login } = useAuth();
+  const { login } = sampleAuthState;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
