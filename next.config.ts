@@ -15,22 +15,9 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
 
-  async rewrites() {
-    return [
-      {
-        source: '/api/user-management/:path*',
-        destination: 'http://54.91.217.117:8081/:path*' // Vercel will proxy server-side
-      },
-      {
-        source: '/api/route-management/:path*',
-        destination: 'http://18.140.161.237:8080/:path*'
-      },
-      {
-        source: '/api/notification-management/:path*',
-        destination: 'http://13.51.177.104:8080/:path*'
-      }
-    ]
-  }
+  // Note: API proxying is now handled by the centralized proxy at /api/proxy/*
+  // which automatically attaches Asgardeo authentication tokens.
+  // See: src/app/api/proxy/[...path]/route.ts
 };
 
 export default nextConfig;

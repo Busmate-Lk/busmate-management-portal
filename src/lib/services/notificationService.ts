@@ -1,6 +1,12 @@
-import { getCookie } from '@/lib/utils/cookieUtils';
+/**
+ * Notification Service
+ * 
+ * Uses the centralized API proxy which handles authentication automatically.
+ * All requests go through /api/proxy/notification-management/*
+ */
 
-const NOTIFICATION_API_BASE = process.env.NEXT_PUBLIC_NOTIFICATION_MANAGEMENT_API_URL || 'http://localhost:8080';
+// Use the proxy route - auth token is added server-side
+const NOTIFICATION_API_BASE = '/api/proxy/notification-management';
 
 export interface SendNotificationRequest {
     title: string;
@@ -60,18 +66,12 @@ export interface NotificationListItem {
  * Send a notification via the notification management service
  */
 export async function sendNotification(request: SendNotificationRequest): Promise<SendNotificationResponse> {
-    const authToken = getCookie('access_token');
-
-    if (!authToken) {
-        throw new Error('Authentication token not found. Please log in again.');
-    }
-
     const response = await fetch(`${NOTIFICATION_API_BASE}/api/notifications/send`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`,
         },
+        credentials: 'include',
         body: JSON.stringify(request),
     });
 
@@ -87,18 +87,12 @@ export async function sendNotification(request: SendNotificationRequest): Promis
  * Get notification details by ID
  */
 export async function getNotificationDetails(notificationId: string): Promise<NotificationDetails> {
-    const authToken = getCookie('access_token');
-
-    if (!authToken) {
-        throw new Error('Authentication token not found. Please log in again.');
-    }
-
     const response = await fetch(`${NOTIFICATION_API_BASE}/api/notifications/details/${notificationId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`,
         },
+        credentials: 'include',
     });
 
     if (!response.ok) {
@@ -114,18 +108,12 @@ export async function getNotificationDetails(notificationId: string): Promise<No
  * List recent notifications
  */
 export async function listNotifications(limit: number = 50): Promise<NotificationListItem[]> {
-    const authToken = getCookie('access_token');
-
-    if (!authToken) {
-        throw new Error('Authentication token not found. Please log in again.');
-    }
-
     const response = await fetch(`${NOTIFICATION_API_BASE}/api/notifications/list?limit=${limit}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`,
         },
+        credentials: 'include',
     });
 
     if (!response.ok) {
@@ -150,16 +138,9 @@ export async function listNotifications(limit: number = 50): Promise<Notificatio
 
 /** Delete a notification by id */
 export async function deleteNotification(notificationId: string): Promise<void> {
-    const authToken = getCookie('access_token');
-    if (!authToken) {
-        throw new Error('Authentication token not found. Please log in again.');
-    }
-
     const response = await fetch(`${NOTIFICATION_API_BASE}/api/notifications/delete/${notificationId}`, {
         method: 'DELETE',
-        headers: {
-            'Authorization': `Bearer ${authToken}`,
-        },
+        credentials: 'include',
     });
 
     if (!response.ok) {

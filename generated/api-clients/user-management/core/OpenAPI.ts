@@ -20,17 +20,11 @@ export type OpenAPIConfig = {
 };
 
 export const OpenAPI: OpenAPIConfig = {
-    BASE: process.env.NEXT_PUBLIC_USER_MANAGEMENT_API_URL || 'http://107.21.189.199:8081',
+    BASE: '/api/proxy/user-management',
     VERSION: '1.0.0',
     WITH_CREDENTIALS: true,
     CREDENTIALS: 'include',
-    TOKEN: async () => {
-        if (typeof window !== 'undefined') {
-            const { getCookie } = await import('@/lib/utils/cookieUtils');
-            return getCookie('access_token') || '';
-        }
-        return '';
-    },
+    TOKEN: undefined, // Token is handled by the server-side proxy
     USERNAME: undefined,
     PASSWORD: undefined,
     HEADERS: undefined,

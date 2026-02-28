@@ -20,11 +20,11 @@ export type OpenAPIConfig = {
 };
 
 export const OpenAPI: OpenAPIConfig = {
-    BASE: 'http://localhost:8083',
+    BASE: '/api/proxy/ticketing-management',
     VERSION: '1.0.0',
-    WITH_CREDENTIALS: false,
+    WITH_CREDENTIALS: true,
     CREDENTIALS: 'include',
-    TOKEN: undefined,
+    TOKEN: undefined, // Token is handled by the server-side proxy
     USERNAME: undefined,
     PASSWORD: undefined,
     HEADERS: undefined,

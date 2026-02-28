@@ -5,7 +5,7 @@ import { Search, Filter, Download, Calendar, Bus, TrendingUp, DollarSign, Users,
 import { MetricCard } from "@/components/operator/metric-card"
 import { RevenueChart } from "./revenue-chart"
 import { RevenueService, type BusRevenueData } from "@/lib/services/revenueService"
-import { useAuth } from "@/context/AuthContext"
+import { useAuth } from "@/context/AsgardeoAuthContext"
 
 interface RevenueData {
   id: string

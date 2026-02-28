@@ -1,5 +1,16 @@
-import { STAFF_API_BASE } from '@/lib/constants';
-import { getUserFromToken } from '@/lib/utils/jwtHandler';
+/**
+ * Staff Management Service
+ * 
+ * Uses the centralized API proxy which handles authentication automatically.
+ * All requests go through /api/proxy/user-management/* routes.
+ * 
+ * Note: The operator ID filtering should be done server-side based on
+ * the authenticated user's session. This service now relies on the
+ * backend to filter results appropriately.
+ */
+
+// Use the proxy route - auth token is added server-side
+const STAFF_API_BASE = '/api/proxy/user-management';
 
 export interface ConductorProfile {
     userId: string;
@@ -73,23 +84,16 @@ class StaffManagementService {
 
     /**
      * Get all conductors for the operator
+     * @param operatorId - Optional operator ID to filter by. If not provided, returns all conductors.
      */
-    async getConductors(token: string): Promise<ConductorProfile[]> {
+    async getConductors(operatorId?: string): Promise<ConductorProfile[]> {
         try {
-            if (!token) {
-                throw new Error('Missing access token');
-            }
-
-            // Get operator ID from token
-            const userFromToken = getUserFromToken(token);
-            const operatorId = userFromToken?.id;
-
             const response = await fetch(`${this.baseUrl}/api/conductor/all`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
             });
 
             if (!response.ok) {
@@ -104,7 +108,7 @@ class StaffManagementService {
                 return allConductors.filter(conductor => conductor.assign_operator_id === operatorId);
             }
 
-            // If no operator ID found, return all (shouldn't happen in production)
+            // If no operator ID provided, return all
             return allConductors;
         } catch (error) {
             console.error('Error fetching conductors:', error);
@@ -114,11 +118,9 @@ class StaffManagementService {
 
     /**
      * Get all drivers for the operator (using mock data until API is ready)
+     * @param operatorId - Optional operator ID to filter by
      */
-    async getDrivers(token: string): Promise<DriverProfile[]> {
-        // Get operator ID from token
-        const userFromToken = getUserFromToken(token);
-        const operatorId = userFromToken?.id;
+    async getDrivers(operatorId?: string): Promise<DriverProfile[]> {
 
         // Mock data for drivers until API is ready
         const allDrivers: DriverProfile[] = [

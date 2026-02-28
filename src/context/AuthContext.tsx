@@ -1,3 +1,22 @@
+/**
+ * @deprecated This AuthContext is deprecated.
+ * 
+ * Use the AsgardeoAuthContext instead:
+ * 
+ * ```tsx
+ * import { useAuth } from '@/context/AsgardeoAuthContext';
+ * 
+ * const { user, isAuthenticated, isLoading, logout } = useAuth();
+ * ```
+ * 
+ * Authentication is now handled by Asgardeo via:
+ * - Server-side sessions managed by @asgardeo/nextjs
+ * - Middleware at /middleware.ts for route protection
+ * - API proxy at /api/proxy/* for authenticated backend calls
+ * 
+ * This file is kept for reference only and will be removed in a future release.
+ */
+
 'use client';
 
 import { createContext, useState, useEffect, ReactNode, useContext } from 'react';

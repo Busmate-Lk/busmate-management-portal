@@ -33,7 +33,7 @@ import {
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AsgardeoAuthContext';
 
 interface SidebarItem {
   icon: any;

@@ -1,17 +1,20 @@
 'use client';
 
 import Image from 'next/image';
-import { EyeIcon, EyeOffIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AsgardeoAuthContext';
+import { SignInButton, SignedIn, SignedOut } from '@asgardeo/nextjs';
 
 export default function Home() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
+    console.log('[Landing Page] Auth state:', { isLoading, isAuthenticated, user: user?.email, role: user?.user_role });
+    
     if (!isLoading && isAuthenticated && user) {
+      console.log('[Landing Page] Redirecting to dashboard for role:', user.user_role);
       // User is already logged in, redirect to appropriate dashboard
       const getRedirectPath = (userRole: string) => {
         switch (userRole?.toLowerCase()) {
@@ -43,10 +46,6 @@ export default function Home() {
         </div>
       </div>
     );
-  }
-
-  if (isAuthenticated && user) {
-    return null; // Will redirect in useEffect
   }
 
   return (
@@ -87,135 +86,41 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Login Form */}
-        <LoginForm />
+        {/* Asgardeo Sign In */}
+        <SignedOut>
+          <LoginForm />
+        </SignedOut>
+
+        {/* Show loading state when signed in (will redirect) */}
+        <SignedIn>
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+            <p className="text-white text-sm">Redirecting to dashboard...</p>
+          </div>
+        </SignedIn>
       </div>
     </div>
   );
 }
 
 function LoginForm() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { login, isLoading } = useAuth();
 
-  const { login } = useAuth();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
-
+  const handleSignIn = async () => {
     try {
-      await login({ email, password });
-      // Success will be handled by the useEffect in the parent component
-    } catch (error: any) {
-      setError(error.message || 'Login failed. Please check your credentials.');
-    } finally {
-      setIsLoading(false);
+      await login();
+    } catch (error) {
+      console.error('Sign in failed:', error);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <div className="bg-red-500/30 border border-red-400/60 text-white px-4 py-2 rounded-lg text-sm font-medium drop-shadow-lg">
-          {error}
-        </div>
-      )}
-
-      {/* Email Field */}
-      <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-white mb-2 drop-shadow-lg font-semibold"
-        >
-          Email Address
-        </label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="example@gmail.lk"
-          className="w-full px-4 py-3 border border-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200 bg-white/30 backdrop-blur-sm text-white placeholder-white/80 shadow-lg font-medium"
-          required
-          disabled={isLoading}
-        />
-      </div>
-
-      {/* Password Field */}
-      <div>
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium text-white mb-2 drop-shadow-lg font-semibold"
-        >
-          Password
-        </label>
-        <div className="relative">
-          <input
-            type={showPassword ? 'text' : 'password'}
-            id="password"
-            name="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            className="w-full px-4 py-3 border border-white/50 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200 pr-12 bg-white/30 backdrop-blur-sm text-white placeholder-white/80 shadow-lg font-medium"
-            required
-            disabled={isLoading}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white hover:text-white/90 transition-colors"
-            disabled={isLoading}
-          >
-            {showPassword ? (
-              <EyeOffIcon className="w-5 h-5" />
-            ) : (
-              <EyeIcon className="w-5 h-5" />
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Remember Me & Forgot Password */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="remember"
-            checked={rememberMe}
-            onChange={(e) => setRememberMe(e.target.checked)}
-            className="w-4 h-4 text-blue-600 border-white/50 rounded focus:ring-blue-400 focus:ring-2 bg-white/30"
-            disabled={isLoading}
-          />
-          <label
-            htmlFor="remember"
-            className="ml-2 text-sm text-white drop-shadow-lg font-medium"
-          >
-            Remember Me
-          </label>
-        </div>
-        <a
-          href="#"
-          className="text-sm text-white hover:text-blue-300 transition-colors underline drop-shadow-lg font-medium"
-        >
-          Forgot password?
-        </a>
-      </div>
-
-      {/* Sign In Button */}
-      <button
-        type="submit"
-        disabled={isLoading}
+    <div className="space-y-6">
+      {/* Sign In Button using Asgardeo */}
+      <SignInButton 
         className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center shadow-xl hover:shadow-2xl transform hover:scale-[1.02] active:scale-[0.98] border border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
       >
-        {isLoading ? 'Signing In...' : 'Sign In'}
+        {isLoading ? 'Signing In...' : 'Sign In with Asgardeo'}
         {!isLoading && (
           <svg
             className="w-4 h-4 ml-2"
@@ -231,7 +136,22 @@ function LoginForm() {
             />
           </svg>
         )}
+      </SignInButton>
+
+      {/* Alternative: Custom sign-in button */}
+      <button
+        type="button"
+        onClick={handleSignIn}
+        disabled={isLoading}
+        className="w-full bg-white/20 hover:bg-white/30 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center border border-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {isLoading ? 'Loading...' : 'Continue with Single Sign-On'}
       </button>
-    </form>
+
+      {/* Help text */}
+      <p className="text-center text-white/70 text-sm">
+        Use your organization credentials to sign in
+      </p>
+    </div>
   );
 }

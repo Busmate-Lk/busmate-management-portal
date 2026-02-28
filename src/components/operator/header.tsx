@@ -2,7 +2,7 @@
 
 import { Bus, ChevronDown, Bell, User, LogOut } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
-import { useAuth } from "@/context/AuthContext"
+import { useAuth } from "@/context/AsgardeoAuthContext"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { listNotifications, type NotificationListItem } from "@/lib/services/notificationService"

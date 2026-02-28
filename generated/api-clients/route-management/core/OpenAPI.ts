@@ -20,11 +20,11 @@ export type OpenAPIConfig = {
 };
 
 export const OpenAPI: OpenAPIConfig = {
-    BASE: process.env.NEXT_PUBLIC_ROUTE_MANAGEMENT_API_URL || 'http://localhost:8080',
+    BASE: '/api/proxy/route-management',
     VERSION: '1.0.0',
-    WITH_CREDENTIALS: false,
+    WITH_CREDENTIALS: true,
     CREDENTIALS: 'include',
-    TOKEN: undefined,
+    TOKEN: undefined, // Token is handled by the server-side proxy
     USERNAME: undefined,
     PASSWORD: undefined,
     HEADERS: undefined,
