@@ -1,7 +1,7 @@
 import { getUserData } from '@/lib/utils/getUserData';
-import { AdminProfile } from '@/components/admin/profile';
+import { MotProfile } from '@/components/mot/profile';
 
 export default async function ProfilePage() {
   const userData = await getUserData();
-  return <AdminProfile userData={userData} />;
+  return <MotProfile userData={userData} />;
 }

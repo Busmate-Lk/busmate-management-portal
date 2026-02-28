@@ -33,6 +33,9 @@ export function UserActions({
   const displayRole = userData?.user_role || role || 'User';
   const displayName = userData?.firstName || displayEmail;
 
+  // Normalise the role into the URL path segment (timeKeeper → timekeeper)
+  const rolePath = (role || 'admin').toLowerCase();
+
   return (
     <>
       {/* Dropdown Menu (opens upward) */}
@@ -56,7 +59,7 @@ export function UserActions({
 
           {/* Menu items */}
           <Link
-            href={`/${role || 'admin'}/profile`}
+            href={`/${rolePath}/profile`}
             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             onClick={onCloseMenu}
           >
@@ -64,7 +67,7 @@ export function UserActions({
             Profile
           </Link>
           <Link
-            href={`/${role || 'admin'}/settings`}
+            href={`/${rolePath}/settings`}
             className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             onClick={onCloseMenu}
           >
