@@ -28,7 +28,7 @@ export default async function Home() {
       </div>
 
       {/* Login Form - positioned on the right with enhanced visibility */}
-      <div className="relative z-10 p-8 w-full max-w-md mr-20 lg:mr-40 bg-black/40 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl">
+      <div className="relative z-10 p-8 w-full max-w-lg mr-20 lg:mr-40 bg-black/40 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl">
         {/* Logo and Title */}
         <div className="flex items-center justify-center mb-2">
           <Image
@@ -46,17 +46,21 @@ export default async function Home() {
             Welcome to the Smart Bus Transport Management System{' '}
           </h2>
           <p className="text-white text-sm drop-shadow-lg">
-            Sign in to the System Management Portal
+            Click the button below to access Busmate Management Portal
           </p>
         </div>
 
         {/* Login Form */}
-        <SignedOut>
-          <SignInButton />
-        </SignedOut>
-        <SignedIn>
-          <SignOutButton />
-        </SignedIn>
+        <div className='flex w-full pt-0 pb-4 justify-center'>
+          <SignedOut>
+            <SignInButton>
+              Sign In with Asgardeo
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <SignOutButton />
+          </SignedIn>
+        </div>
       </div>
     </div>
   );
