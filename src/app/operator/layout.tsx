@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { Toaster } from "@/components/ui/toaster"
-import { OperatorLayoutClient } from "./layout-client"
+import { LayoutClient } from "@/components/shared/LayoutClient"
 import { getUserData } from "@/lib/utils/getUserData"
 import { isRoleAllowedForRoute, getRoleRedirectPath } from "@/lib/utils/getRoleRedirectPath"
 
@@ -28,9 +28,9 @@ export default async function OperatorRootLayout({
 
   return (
     <>
-      <OperatorLayoutClient userData={userData}>
+      <LayoutClient role="operator" userData={userData}>
         {children}
-      </OperatorLayoutClient>
+      </LayoutClient>
       <Toaster />
     </>
   )

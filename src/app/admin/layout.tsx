@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { Toaster } from "@/components/ui/toaster"
-import { AdminLayoutClient } from "./layout-client"
+import { LayoutClient } from "@/components/shared/LayoutClient"
 import { getUserData } from "@/lib/utils/getUserData"
 import { isRoleAllowedForRoute, getRoleRedirectPath } from "@/lib/utils/getRoleRedirectPath"
 
@@ -29,9 +29,9 @@ export default async function AdminRootLayout({
 
   return (
     <>
-      <AdminLayoutClient userData={userData}>
+      <LayoutClient role="admin" userData={userData}>
         {children}
-      </AdminLayoutClient>
+      </LayoutClient>
       <Toaster />
     </>
   )
