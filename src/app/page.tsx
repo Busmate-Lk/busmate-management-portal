@@ -4,6 +4,10 @@ import { getUserData } from '@/lib/utils/getUserData';
 import { getRoleRedirectPath } from '@/lib/utils/getRoleRedirectPath';
 import { redirect } from 'next/navigation';
 
+// Force dynamic rendering to prevent caching issues
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function Home() {
   const userData = await getUserData();
 

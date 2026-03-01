@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode, type ComponentType } from "react"
 import { SidebarClient } from "@/components/shared/SidebarClient"
+import { SessionMonitor } from "@/components/shared/SessionMonitor"
 import { PageProvider, usePageContext } from "@/context/PageContext"
 import { type PageMetadata } from "@/context/PageContext/PageContext"
 import { AdminContentHeader } from "@/components/admin/AdminContentHeader"
@@ -97,6 +98,9 @@ function LayoutContent({ children, userData, role, ContentHeader }: LayoutConten
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Session monitor - checks for session expiry in the background */}
+      <SessionMonitor checkInterval={60000} />
+      
       {/* Sidebar */}
       <SidebarClient
         activeItem={metadata.activeItem || "dashboard"}
