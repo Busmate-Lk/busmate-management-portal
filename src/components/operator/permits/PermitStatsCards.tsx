@@ -1,41 +1,19 @@
 'use client';
 
 import React from 'react';
-import { FileText, CheckCircle, XCircle, Clock, AlertTriangle, Loader } from 'lucide-react';
+import { FileText, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
+import { StatsCardsContainer } from '@/components/shared/StatsCardsContainer';
+import type { StatsCardMetric } from '@/components/shared/StatsCard';
 import type { OperatorPermitStatistics } from '@/data/operator/permits';
 
-interface StatCardProps {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  colorClass: string;
-  loading: boolean;
-}
-
-function StatCard({ icon, label, value, colorClass, loading }: StatCardProps) {
-  return (
-    <div className={`${colorClass} rounded-xl shadow-sm border-2 p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-1`}>
-      <div className="flex items-center gap-4">
-        <div className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 bg-white/60">
-          {icon}
-        </div>
-        <div>
-          <p className="text-xs font-medium text-gray-600 mb-1">{label}</p>
-          {loading ? (
-            <div className="h-8 w-12 bg-white/60 animate-pulse rounded" />
-          ) : (
-            <p className="text-2xl font-bold text-gray-900">{value.toLocaleString()}</p>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+// ── Types ─────────────────────────────────────────────────────────
 
 interface PermitStatsCardsProps {
   stats: OperatorPermitStatistics | null;
   loading?: boolean;
 }
+
+// ── Component ─────────────────────────────────────────────────────
 
 export function PermitStatsCards({ stats, loading = false }: PermitStatsCardsProps) {
   const safeStats: OperatorPermitStatistics = stats ?? {
@@ -47,50 +25,75 @@ export function PermitStatsCards({ stats, loading = false }: PermitStatsCardsPro
     expiringSoonPermits: 0,
   };
 
-  const cards = [
+  const metrics: StatsCardMetric[] = [
     {
-      icon: <FileText className="w-5 h-5 text-blue-600" />,
       label: 'Total Permits',
-      value: safeStats.totalPermits,
-      colorClass: 'bg-blue-50 border-blue-200',
+      value: (safeStats.totalPermits ?? 0).toLocaleString(),
+      trend: 'stable',
+      trendValue: '',
+      trendPositiveIsGood: true,
+      color: 'blue',
+      sparkData: [],
+      icon: FileText,
     },
     {
-      icon: <CheckCircle className="w-5 h-5 text-green-600" />,
       label: 'Active',
-      value: safeStats.activePermits,
-      colorClass: 'bg-green-50 border-green-200',
+      value: (safeStats.activePermits ?? 0).toLocaleString(),
+      trend: 'stable',
+      trendValue: '',
+      trendPositiveIsGood: true,
+      color: 'green',
+      sparkData: [],
+      icon: CheckCircle,
     },
     {
-      icon: <XCircle className="w-5 h-5 text-gray-500" />,
       label: 'Inactive',
-      value: safeStats.inactivePermits,
-      colorClass: 'bg-gray-50 border-gray-200',
+      value: (safeStats.inactivePermits ?? 0).toLocaleString(),
+      trend: 'stable',
+      trendValue: '',
+      trendPositiveIsGood: false,
+      color: 'amber',
+      sparkData: [],
+      icon: XCircle,
     },
     {
-      icon: <Clock className="w-5 h-5 text-yellow-600" />,
       label: 'Pending',
-      value: safeStats.pendingPermits,
-      colorClass: 'bg-yellow-50 border-yellow-200',
+      value: (safeStats.pendingPermits ?? 0).toLocaleString(),
+      trend: 'stable',
+      trendValue: '',
+      trendPositiveIsGood: false,
+      color: 'amber',
+      sparkData: [],
+      icon: Clock,
     },
     {
-      icon: <XCircle className="w-5 h-5 text-red-600" />,
       label: 'Expired',
-      value: safeStats.expiredPermits,
-      colorClass: 'bg-red-50 border-red-200',
+      value: (safeStats.expiredPermits ?? 0).toLocaleString(),
+      trend: 'stable',
+      trendValue: '',
+      trendPositiveIsGood: false,
+      color: 'red',
+      sparkData: [],
+      icon: XCircle,
     },
     {
-      icon: <AlertTriangle className="w-5 h-5 text-orange-600" />,
       label: 'Expiring Soon',
-      value: safeStats.expiringSoonPermits,
-      colorClass: 'bg-orange-50 border-orange-200',
+      value: (safeStats.expiringSoonPermits ?? 0).toLocaleString(),
+      trend: 'stable',
+      trendValue: '',
+      trendPositiveIsGood: false,
+      color: 'amber',
+      sparkData: [],
+      icon: AlertTriangle,
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
-      {cards.map((card) => (
-        <StatCard key={card.label} {...card} loading={loading} />
-      ))}
-    </div>
+    <StatsCardsContainer
+      metrics={metrics}
+      loading={loading}
+      columns={6}
+      skeletonCount={6}
+    />
   );
 }

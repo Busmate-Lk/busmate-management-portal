@@ -89,7 +89,7 @@ export default function BusAdvancedFilters({
         label: `Operator: ${opName}`,
         onRemove: () => setOperatorFilter('all'),
         colorClass: 'bg-blue-100 text-blue-800',
-        icon: Users,
+        icon: <Users className="h-4 w-4" />,
       });
     }
     if (modelFilter !== 'all') {
@@ -98,7 +98,7 @@ export default function BusAdvancedFilters({
         label: `Model: ${modelFilter}`,
         onRemove: () => setModelFilter('all'),
         colorClass: 'bg-purple-100 text-purple-800',
-        icon: Bus,
+        icon: <Bus className="h-4 w-4" />,
       });
     }
     if (minCapacity || maxCapacity) {

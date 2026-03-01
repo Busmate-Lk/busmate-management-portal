@@ -1,8 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Filter, X, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useCallback, useMemo } from 'react';
+import { Activity, Bus } from 'lucide-react';
+import {
+  SearchFilterBar,
+  SelectFilter,
+  type FilterChipDescriptor,
+} from '@/components/shared/SearchFilterBar';
 import type { BusStatus, BusServiceType } from '@/data/operator/buses';
+
+// ── Types ─────────────────────────────────────────────────────────
 
 interface FleetFiltersProps {
   search: string;
@@ -14,24 +21,27 @@ interface FleetFiltersProps {
   onClearAll: () => void;
   totalCount: number;
   filteredCount: number;
+  loading?: boolean;
 }
 
-const STATUS_OPTIONS: { value: BusStatus | 'ALL'; label: string; dotColor: string }[] = [
-  { value: 'ALL',         label: 'All Statuses',  dotColor: 'bg-gray-400' },
-  { value: 'ACTIVE',      label: 'Active',        dotColor: 'bg-green-500' },
-  { value: 'INACTIVE',    label: 'Inactive',      dotColor: 'bg-orange-500' },
-  { value: 'MAINTENANCE', label: 'Maintenance',   dotColor: 'bg-yellow-500' },
-  { value: 'RETIRED',     label: 'Retired',       dotColor: 'bg-gray-500' },
+// ── Filter options ────────────────────────────────────────────────
+
+const STATUS_OPTIONS = [
+  { value: 'ACTIVE',      label: 'Active'       },
+  { value: 'INACTIVE',    label: 'Inactive'     },
+  { value: 'MAINTENANCE', label: 'Maintenance'  },
+  { value: 'RETIRED',     label: 'Retired'      },
 ];
 
-const SERVICE_TYPE_OPTIONS: { value: BusServiceType | 'ALL'; label: string }[] = [
-  { value: 'ALL',          label: 'All Types' },
-  { value: 'SL',          label: 'SL (Normal)' },
-  { value: 'SL_AC',       label: 'SL A/C' },
-  { value: 'SEMI_LUXURY', label: 'Semi-Luxury' },
-  { value: 'LUXURY',      label: 'Luxury' },
-  { value: 'EXPRESS',     label: 'Express' },
+const SERVICE_TYPE_OPTIONS = [
+  { value: 'SL',          label: 'SL (Normal)'  },
+  { value: 'SL_AC',       label: 'SL A/C'       },
+  { value: 'SEMI_LUXURY', label: 'Semi-Luxury'  },
+  { value: 'LUXURY',      label: 'Luxury'        },
+  { value: 'EXPRESS',     label: 'Express'       },
 ];
+
+// ── Component ─────────────────────────────────────────────────────
 
 export function FleetFilters({
   search,
@@ -43,138 +53,67 @@ export function FleetFilters({
   onClearAll,
   totalCount,
   filteredCount,
+  loading = false,
 }: FleetFiltersProps) {
-  const [localSearch, setLocalSearch] = useState(search);
-  const [expanded, setExpanded] = useState(false);
+  const activeChips = useMemo<FilterChipDescriptor[]>(() => {
+    const chips: FilterChipDescriptor[] = [];
 
-  // Debounce search
-  useEffect(() => {
-    const t = setTimeout(() => {
-      if (localSearch !== search) onSearchChange(localSearch);
-    }, 350);
-    return () => clearTimeout(t);
-  }, [localSearch]);
+    if (statusFilter !== 'ALL') {
+      chips.push({
+        key:        'status',
+        label:      `Status: ${STATUS_OPTIONS.find(o => o.value === statusFilter)?.label ?? statusFilter}`,
+        onRemove:   () => onStatusChange('ALL'),
+        colorClass: 'bg-green-50 text-green-700 border-green-200',
+      });
+    }
 
-  useEffect(() => {
-    if (search !== localSearch) setLocalSearch(search);
-  }, [search]);
+    if (serviceTypeFilter !== 'ALL') {
+      chips.push({
+        key:        'serviceType',
+        label:      `Type: ${SERVICE_TYPE_OPTIONS.find(o => o.value === serviceTypeFilter)?.label ?? serviceTypeFilter}`,
+        onRemove:   () => onServiceTypeChange('ALL'),
+        colorClass: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      });
+    }
 
-  const hasFilters =
-    search !== '' ||
-    statusFilter !== 'ALL' ||
-    serviceTypeFilter !== 'ALL';
+    return chips;
+  }, [statusFilter, serviceTypeFilter, onStatusChange, onServiceTypeChange]);
 
-  const activeCount = [
-    search && 'search',
-    statusFilter !== 'ALL' && 'status',
-    serviceTypeFilter !== 'ALL' && 'service',
-  ].filter(Boolean).length;
-
-  const handleClear = useCallback(() => {
-    setLocalSearch('');
+  const handleClearAll = useCallback(() => {
     onClearAll();
   }, [onClearAll]);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl shadow-sm">
-      {/* Top bar */}
-      <div className="p-4 flex flex-col sm:flex-row gap-3">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            value={localSearch}
-            onChange={e => setLocalSearch(e.target.value)}
-            placeholder="Search by plate number, model, driver, route…"
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    <SearchFilterBar
+      searchValue={search}
+      onSearchChange={onSearchChange}
+      searchPlaceholder="Search by plate number, model, driver, route…"
+      totalCount={totalCount}
+      filteredCount={filteredCount}
+      resultLabel="bus"
+      loading={loading}
+      filters={
+        <>
+          <SelectFilter
+            value={statusFilter === 'ALL' ? 'all' : statusFilter}
+            onChange={(v) => onStatusChange(v === 'all' ? 'ALL' : v as BusStatus)}
+            options={STATUS_OPTIONS}
+            allLabel="All Statuses"
+            icon={<Activity className="h-3.5 w-3.5" />}
+            activeColorClass="bg-green-50 border-green-300 text-green-800"
           />
-          {localSearch && (
-            <button
-              onClick={() => setLocalSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-
-        {/* Status filter */}
-        <select
-          value={statusFilter}
-          onChange={e => onStatusChange(e.target.value as BusStatus | 'ALL')}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[140px]"
-        >
-          {STATUS_OPTIONS.map(o => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-
-        {/* Service type filter */}
-        <select
-          value={serviceTypeFilter}
-          onChange={e => onServiceTypeChange(e.target.value as BusServiceType | 'ALL')}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white min-w-[140px]"
-        >
-          {SERVICE_TYPE_OPTIONS.map(o => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-
-        {/* Clear / count */}
-        <div className="flex items-center gap-2 shrink-0">
-          {hasFilters && (
-            <button
-              onClick={handleClear}
-              className="flex items-center gap-1.5 px-3 py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-            >
-              <X className="w-4 h-4" />
-              Clear
-              {activeCount > 0 && (
-                <span className="bg-red-100 text-red-600 text-xs rounded-full px-1.5 py-0.5 font-medium">
-                  {activeCount}
-                </span>
-              )}
-            </button>
-          )}
-
-          <span className="text-sm text-gray-500 whitespace-nowrap">
-            {filteredCount === totalCount
-              ? `${totalCount} bus${totalCount !== 1 ? 'es' : ''}`
-              : `${filteredCount} / ${totalCount}`}
-          </span>
-        </div>
-      </div>
-
-      {/* Active filter chips */}
-      {hasFilters && (
-        <div className="px-4 pb-3 flex flex-wrap gap-2 border-t border-gray-100 pt-3">
-          {search && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-700 text-xs rounded-full">
-              Search: "{search}"
-              <button onClick={() => { setLocalSearch(''); onSearchChange(''); }}>
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          )}
-          {statusFilter !== 'ALL' && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-50 border border-green-200 text-green-700 text-xs rounded-full">
-              Status: {STATUS_OPTIONS.find(o => o.value === statusFilter)?.label}
-              <button onClick={() => onStatusChange('ALL')}>
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          )}
-          {serviceTypeFilter !== 'ALL' && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-50 border border-purple-200 text-purple-700 text-xs rounded-full">
-              Type: {SERVICE_TYPE_OPTIONS.find(o => o.value === serviceTypeFilter)?.label}
-              <button onClick={() => onServiceTypeChange('ALL')}>
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          )}
-        </div>
-      )}
-    </div>
+          <SelectFilter
+            value={serviceTypeFilter === 'ALL' ? 'all' : serviceTypeFilter}
+            onChange={(v) => onServiceTypeChange(v === 'all' ? 'ALL' : v as BusServiceType)}
+            options={SERVICE_TYPE_OPTIONS}
+            allLabel="All Service Types"
+            icon={<Bus className="h-3.5 w-3.5" />}
+            activeColorClass="bg-indigo-50 border-indigo-300 text-indigo-800"
+          />
+        </>
+      }
+      activeChips={activeChips}
+      onClearAllFilters={activeChips.length > 0 ? handleClearAll : undefined}
+    />
   );
 }

@@ -5,7 +5,7 @@ import { Search, Filter, Download, Calendar, Bus, TrendingUp, DollarSign, Users,
 import { MetricCard } from "@/components/operator/metric-card"
 import { RevenueChart } from "./revenue-chart"
 import { RevenueService, type BusRevenueData } from "@/lib/services/revenueService"
-import { useAuth } from "@/context/AuthContext"
+import { sampleAuthState } from "@/_temp_/sampleAuth"
 
 interface RevenueData {
   id: string
@@ -25,7 +25,7 @@ interface RevenueData {
 const MOCK_OPERATOR_ID = "a3d63f60-91b7-4a18-9a42-5b44e80f8d9e";
 
 export function RevenueAnalytics() {
-  const { user } = useAuth()
+  const { user } = sampleAuthState;
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedBus, setSelectedBus] = useState("all")
   const [dateRange, setDateRange] = useState("today")

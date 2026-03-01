@@ -213,6 +213,101 @@ export function MonitoringOverview({
         </div>
       </div>
 
+      {/* Quick Navigation */}
+      <div>
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">Quick Navigation</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <QuickNavCard
+            href="/admin/monitoring/performance"
+            icon={<Activity className="h-5 w-5 text-blue-600" />}
+            title="Performance Metrics"
+            subtitle="CPU, memory, response times, request rates"
+            stat={`${latestPerformance?.errorRate.toFixed(1)}% error rate`}
+            statColor={
+              latestPerformance && latestPerformance.errorRate > 2
+                ? 'text-red-600'
+                : 'text-green-600'
+            }
+          />
+          <QuickNavCard
+            href="/admin/monitoring/resources"
+            icon={<Database className="h-5 w-5 text-purple-600" />}
+            title="Resource Usage"
+            subtitle="Disk, network, database, sessions"
+            stat={`${latestResource?.diskUsage}% disk`}
+            statColor={
+              latestResource && latestResource.diskUsage > 80
+                ? 'text-red-600'
+                : 'text-green-600'
+            }
+          />
+          <QuickNavCard
+            href="/admin/monitoring/alerts"
+            icon={<Bell className="h-5 w-5 text-amber-600" />}
+            title="Alerts & Notifications"
+            subtitle="Thresholds, rules, active alerts"
+            stat={`${healthSummary.activeAlerts} active`}
+            statColor={
+              healthSummary.criticalAlerts > 0 ? 'text-red-600' : 'text-green-600'
+            }
+          />
+          <QuickNavCard
+            href="/admin/monitoring/api"
+            icon={<Globe className="h-5 w-5 text-green-600" />}
+            title="API Monitoring"
+            subtitle="Endpoints, response times, error rates"
+            stat={`${healthSummary.healthyApis}/${healthSummary.totalApis} healthy`}
+            statColor={
+              healthSummary.downApis > 0 ? 'text-red-600' : 'text-green-600'
+            }
+          />
+        </div>
+      </div>
+
+      {/* Active Alerts List */}
+      {activeAlerts.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gray-50/50">
+            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-amber-500" />
+              Active Alerts ({activeAlerts.length})
+            </h3>
+            <Link
+              href="/admin/monitoring/alerts"
+              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+            >
+              View All →
+            </Link>
+          </div>
+          <div className="divide-y divide-gray-100">
+            {activeAlerts.slice(0, 4).map((alert) => (
+              <div key={alert.id} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50/50 transition-colors">
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                  alert.severity === 'critical'
+                    ? 'bg-red-500'
+                    : alert.severity === 'warning'
+                    ? 'bg-amber-500'
+                    : 'bg-blue-500'
+                }`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 truncate">{alert.title}</p>
+                  <p className="text-xs text-gray-500">{alert.source}</p>
+                </div>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                  alert.severity === 'critical'
+                    ? 'bg-red-100 text-red-700'
+                    : alert.severity === 'warning'
+                    ? 'bg-amber-100 text-amber-700'
+                    : 'bg-blue-100 text-blue-700'
+                }`}>
+                  {alert.severity}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Status Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* API Status */}
@@ -293,101 +388,6 @@ export function MonitoringOverview({
               <div className="text-xs text-gray-500">Warning</div>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Active Alerts List */}
-      {activeAlerts.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gray-50/50">
-            <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-amber-500" />
-              Active Alerts ({activeAlerts.length})
-            </h3>
-            <Link
-              href="/admin/monitoring/alerts"
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium"
-            >
-              View All →
-            </Link>
-          </div>
-          <div className="divide-y divide-gray-100">
-            {activeAlerts.slice(0, 4).map((alert) => (
-              <div key={alert.id} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50/50 transition-colors">
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                  alert.severity === 'critical'
-                    ? 'bg-red-500'
-                    : alert.severity === 'warning'
-                    ? 'bg-amber-500'
-                    : 'bg-blue-500'
-                }`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">{alert.title}</p>
-                  <p className="text-xs text-gray-500">{alert.source}</p>
-                </div>
-                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                  alert.severity === 'critical'
-                    ? 'bg-red-100 text-red-700'
-                    : alert.severity === 'warning'
-                    ? 'bg-amber-100 text-amber-700'
-                    : 'bg-blue-100 text-blue-700'
-                }`}>
-                  {alert.severity}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Quick Navigation */}
-      <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">Quick Navigation</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <QuickNavCard
-            href="/admin/monitoring/performance"
-            icon={<Activity className="h-5 w-5 text-blue-600" />}
-            title="Performance Metrics"
-            subtitle="CPU, memory, response times, request rates"
-            stat={`${latestPerformance?.errorRate.toFixed(1)}% error rate`}
-            statColor={
-              latestPerformance && latestPerformance.errorRate > 2
-                ? 'text-red-600'
-                : 'text-green-600'
-            }
-          />
-          <QuickNavCard
-            href="/admin/monitoring/resources"
-            icon={<Database className="h-5 w-5 text-purple-600" />}
-            title="Resource Usage"
-            subtitle="Disk, network, database, sessions"
-            stat={`${latestResource?.diskUsage}% disk`}
-            statColor={
-              latestResource && latestResource.diskUsage > 80
-                ? 'text-red-600'
-                : 'text-green-600'
-            }
-          />
-          <QuickNavCard
-            href="/admin/monitoring/alerts"
-            icon={<Bell className="h-5 w-5 text-amber-600" />}
-            title="Alerts & Notifications"
-            subtitle="Thresholds, rules, active alerts"
-            stat={`${healthSummary.activeAlerts} active`}
-            statColor={
-              healthSummary.criticalAlerts > 0 ? 'text-red-600' : 'text-green-600'
-            }
-          />
-          <QuickNavCard
-            href="/admin/monitoring/api"
-            icon={<Globe className="h-5 w-5 text-green-600" />}
-            title="API Monitoring"
-            subtitle="Endpoints, response times, error rates"
-            stat={`${healthSummary.healthyApis}/${healthSummary.totalApis} healthy`}
-            statColor={
-              healthSummary.downApis > 0 ? 'text-red-600' : 'text-green-600'
-            }
-          />
         </div>
       </div>
 
