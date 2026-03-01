@@ -1,6 +1,8 @@
 import type React from "react"
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
+
+export const dynamic = 'force-dynamic';
 import { Toaster } from "@/components/ui/toaster"
 import { LayoutClient } from "@/components/shared/LayoutClient"
 import { getUserData } from "@/lib/utils/getUserData"

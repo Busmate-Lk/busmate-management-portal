@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import {AsgardeoProvider} from '@asgardeo/nextjs/server';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: "BUSMATE LK - Transportation Management",
   description: "Transportation management dashboard for BUSMATE LK",
