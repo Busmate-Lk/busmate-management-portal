@@ -52,9 +52,18 @@ export function FleetTable({
       sortable: true,
       minWidth: 'min-w-[140px]',
       render: (bus) => (
-        <div>
-          <div className="font-semibold text-gray-900">{bus.plateNumber}</div>
-          <div className="text-xs text-gray-500 font-mono">{bus.ntcRegistrationNumber}</div>
+        <div className="flex items-center gap-3">
+          <div className="shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center ring-1 ring-blue-200/60">
+            <Bus className="w-4 h-4 text-blue-600" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
+              {bus.plateNumber}
+            </p>
+            <p className="text-[11px] text-gray-400 font-mono leading-tight mt-0.5 truncate">
+              {bus.ntcRegistrationNumber}
+            </p>
+          </div>
         </div>
       ),
     },
@@ -136,16 +145,16 @@ export function FleetTable({
     },
     {
       key:             'actions',
-      header:          '',
-      headerClassName: 'text-right',
-      cellClassName:   'text-right',
+      header:          'Actions',
+      headerClassName: 'text-center',
+      cellClassName: 'text-center whitespace-nowrap',
       render: (bus) => (
         <button
           onClick={() => onView(bus.id)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+          title="View bus details"
+          className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors duration-100"
         >
-          <Eye className="w-3.5 h-3.5" />
-          View
+          <Eye className="h-3.5 w-3.5" />
         </button>
       ),
     },

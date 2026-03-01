@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Eye, FileText, AlertTriangle } from 'lucide-react';
+import { Eye, FileText, AlertTriangle, MapPin } from 'lucide-react';
 import { DataTable } from '@/components/shared/DataTable';
 import type { DataTableColumn, SortState } from '@/components/shared/DataTable';
 import type { OperatorPermit } from '@/data/operator/permits';
@@ -80,7 +80,16 @@ export function PermitsTable({ permits, loading, currentSort, onSort, onView }: 
       header: 'Permit Number',
       sortable: true,
       render: (row) => (
-        <span className="font-mono text-sm font-medium text-blue-700">{row.permitNumber}</span>
+        <div className="flex items-center gap-3">
+          <div className="shrink-0 w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center ring-1 ring-blue-200/60">
+            <FileText className="w-4 h-4 text-blue-600" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
+              {row.permitNumber}
+            </p>
+          </div>
+        </div>
       ),
     },
     {
@@ -88,11 +97,18 @@ export function PermitsTable({ permits, loading, currentSort, onSort, onView }: 
       header: 'Route Group',
       sortable: true,
       render: (row) => (
-        <div>
-          <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">{row.routeGroupName}</p>
-          {row.routeGroupCode && (
-            <p className="text-xs text-gray-500">{row.routeGroupCode}</p>
-          )}
+        <div className="flex items-center gap-1.5 min-w-0">
+          <MapPin className="w-4 h-4 text-blue-400 shrink-0" />
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
+              {row.routeGroupName}
+            </p>
+            {row.routeGroupCode && (
+              <p className="text-[11px] text-gray-400 leading-tight mt-0.5">
+                {row.routeGroupCode}
+              </p>
+            )}
+          </div>
         </div>
       ),
     },
@@ -168,15 +184,15 @@ export function PermitsTable({ permits, loading, currentSort, onSort, onView }: 
     {
       key: 'actions',
       header: 'Actions',
-      headerClassName: 'text-right',
-      cellClassName: 'text-right',
+      headerClassName: 'text-center',
+      cellClassName: 'text-center whitespace-nowrap',
       render: (row) => (
         <button
           onClick={() => onView(row.id)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-blue-600 hover:bg-blue-50 border border-blue-200 transition-colors font-medium"
+          title="View permit details"
+          className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors duration-100"
         >
-          <Eye className="w-3.5 h-3.5" />
-          View
+          <Eye className="h-3.5 w-3.5" />
         </button>
       ),
     },

@@ -213,13 +213,13 @@ function buildActionsColumn(): DataTableColumn<StaffMember> {
     headerClassName: 'text-center',
     cellClassName: 'whitespace-nowrap text-center',
     render: (member) => (
-      <Link
-        href={`/operator/staff-management/${member.id}`}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors"
+      <button
+        onClick={() => window.location.href = `/operator/staff-management/${member.id}`}
+        title="View staff details"
+        className="p-1.5 rounded-lg text-blue-500 hover:bg-blue-50 transition-colors duration-100"
       >
-        <Eye className="w-3.5 h-3.5" />
-        View
-      </Link>
+        <Eye className="h-3.5 w-3.5" />
+      </button>
     ),
   };
 }
