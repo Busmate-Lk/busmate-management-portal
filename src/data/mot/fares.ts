@@ -1,384 +1,296 @@
-// Sample data for fares - replace with API calls when backend is ready
+// Stage-based fare structure data for Sri Lankan public bus transportation
+// Replace with API calls when backend is ready
 
-export interface DistanceBand {
-    min: number;
-    max: number;
-    fare: number;
+// ── Types ─────────────────────────────────────────────────────────
+
+export type PermitType = 'NORMAL' | 'SEMILUXURY' | 'LUXURY' | 'EXTRALUXURY';
+
+export const PERMIT_TYPES: PermitType[] = ['NORMAL', 'SEMILUXURY', 'LUXURY', 'EXTRALUXURY'];
+
+export const PERMIT_TYPE_LABELS: Record<PermitType, string> = {
+  NORMAL: 'Normal',
+  SEMILUXURY: 'Semi Luxury',
+  LUXURY: 'Luxury',
+  EXTRALUXURY: 'Extra Luxury',
+};
+
+export const PERMIT_TYPE_COLORS: Record<PermitType, string> = {
+  NORMAL: 'bg-blue-50 text-blue-700 border-blue-200',
+  SEMILUXURY: 'bg-amber-50 text-amber-700 border-amber-200',
+  LUXURY: 'bg-purple-50 text-purple-700 border-purple-200',
+  EXTRALUXURY: 'bg-rose-50 text-rose-700 border-rose-200',
+};
+
+export interface FareMatrixEntry {
+  stage: number;
+  fares: Record<PermitType, number>;
 }
 
-export interface Fare {
-    id: string;
-    busType: string;
-    facilityType: string;
-    baseFare: number;
-    perKmRate: number;
-    effectiveFrom: string;
-    effectiveTo: string | null;
-    status: 'Active' | 'Expired' | 'Pending' | 'Inactive';
-    route: string;
-    operator: string;
-    operatorType: string;
-    region: string;
-    province: string;
-    notes: string;
-    distanceBands: DistanceBand[];
-    createdDate: string;
-    lastUpdated: string;
-    createdBy: string;
+export type AmendmentStatus = 'ACTIVE' | 'SUPERSEDED' | 'DRAFT' | 'PENDING';
+
+export const AMENDMENT_STATUS_COLORS: Record<AmendmentStatus, string> = {
+  ACTIVE: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+  SUPERSEDED: 'bg-gray-100 text-gray-600 border-gray-200',
+  DRAFT: 'bg-amber-50 text-amber-700 border-amber-200',
+  PENDING: 'bg-blue-50 text-blue-700 border-blue-200',
+};
+
+export interface FareAmendment {
+  id: string;
+  referenceNumber: string;
+  title: string;
+  description: string;
+  effectiveDate: string;
+  approvedDate: string | null;
+  approvedBy: string;
+  status: AmendmentStatus;
+  gazetteNumber: string;
+  remarks: string;
+  maxStages: number;
+  matrix: FareMatrixEntry[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FareAmendmentSummary {
+  id: string;
+  referenceNumber: string;
+  title: string;
+  effectiveDate: string;
+  approvedDate: string | null;
+  status: AmendmentStatus;
+  gazetteNumber: string;
+  maxStages: number;
+  createdAt: string;
 }
 
 export interface FareStatistics {
-    totalFares: number;
-    activeFares: number;
-    expiredFares: number;
-    pendingFares: number;
-    averagePerKmRate: number;
+  totalAmendments: number;
+  activeAmendment: string;
+  totalPermitTypes: number;
+  maxStages: number;
+  averageNormalFare: number;
+  lastUpdated: string;
 }
 
-export interface FareFilterOptions {
-    statuses: string[];
-    busTypes: string[];
-    facilityTypes: string[];
-    operators: string[];
-    regions: string[];
+export interface FareAmendmentFormData {
+  referenceNumber: string;
+  title: string;
+  description: string;
+  effectiveDate: string;
+  gazetteNumber: string;
+  remarks: string;
+  maxStages: number;
+  baseRates: Record<PermitType, number>;
+  incrementRates: Record<PermitType, number>;
 }
 
-export interface FareFormData {
-    busType: string;
-    facilityType: string;
-    route: string;
-    operator: string;
-    operatorType: string;
-    province: string;
-    baseFare: string;
-    perKmRate: string;
-    effectiveFrom: string;
-    effectiveTo: string;
-    notes: string;
+// ── Fare Matrix Generator ─────────────────────────────────────────
+
+function generateFareMatrix(
+  maxStages: number,
+  baseRates: Record<PermitType, number>,
+  incrementRates: Record<PermitType, number>,
+): FareMatrixEntry[] {
+  const matrix: FareMatrixEntry[] = [];
+
+  for (let stage = 1; stage <= maxStages; stage++) {
+    const fares = {} as Record<PermitType, number>;
+    for (const permitType of PERMIT_TYPES) {
+      const rawFare = baseRates[permitType] + (stage - 1) * incrementRates[permitType];
+      fares[permitType] = Math.round(rawFare * 2) / 2;
+    }
+    matrix.push({ stage, fares });
+  }
+
+  return matrix;
 }
 
-const sampleFares: Fare[] = [
-    {
-        id: 'FS001',
-        busType: 'AC',
-        facilityType: 'Luxury',
-        baseFare: 100.0,
-        perKmRate: 5.8,
-        effectiveFrom: '2024-01-01',
-        effectiveTo: '2024-12-31',
-        status: 'Active',
-        route: 'Colombo - Kandy',
-        operator: 'SLTB Central',
-        operatorType: 'SLTB',
-        region: 'Central Province',
-        province: 'Central',
-        notes: 'Premium service with luxury amenities. Includes complimentary refreshments.',
-        distanceBands: [
-            { min: 0, max: 50, fare: 150 },
-            { min: 51, max: 100, fare: 280 },
-            { min: 101, max: 150, fare: 410 },
-            { min: 151, max: 200, fare: 540 },
-        ],
-        createdDate: '2023-12-15',
-        lastUpdated: '2024-01-01',
-        createdBy: 'John Doe (Transport Officer)',
-    },
-    {
-        id: 'FS002',
-        busType: 'Non-AC',
-        facilityType: 'Normal',
-        baseFare: 77.0,
-        perKmRate: 4.8,
-        effectiveFrom: '2025-01-01',
-        effectiveTo: '2025-12-31',
-        status: 'Active',
-        route: 'Colombo - Galle',
-        operator: 'Southern Transport',
-        operatorType: 'Private',
-        region: 'Southern Province',
-        province: 'Southern',
-        notes: 'Standard service for coastal route. High frequency during peak hours.',
-        distanceBands: [
-            { min: 0, max: 50, fare: 120 },
-            { min: 51, max: 100, fare: 240 },
-            { min: 101, max: 150, fare: 360 },
-        ],
-        createdDate: '2024-11-20',
-        lastUpdated: '2024-11-25',
-        createdBy: 'Jane Smith (Fare Manager)',
-    },
-    {
-        id: 'FS003',
-        busType: 'Semi-Luxury',
-        facilityType: 'Semi-Luxury',
-        baseFare: 48.0,
-        perKmRate: 4.5,
-        effectiveFrom: '2024-10-01',
-        effectiveTo: '2025-09-30',
-        status: 'Active',
-        route: 'Kandy - Nuwara Eliya',
-        operator: 'Hill Country Express',
-        operatorType: 'Private',
-        region: 'Central Province',
-        province: 'Central',
-        notes: 'Semi-luxury service for hill country route with scenic views.',
-        distanceBands: [
-            { min: 0, max: 40, fare: 100 },
-            { min: 41, max: 80, fare: 200 },
-            { min: 81, max: 120, fare: 300 },
-        ],
-        createdDate: '2024-09-15',
-        lastUpdated: '2024-09-20',
-        createdBy: 'Kumar Perera (Route Manager)',
-    },
-    {
-        id: 'FS004',
-        busType: 'AC',
-        facilityType: 'Express',
-        baseFare: 900.0,
-        perKmRate: 6.4,
-        effectiveFrom: '2025-10-01',
-        effectiveTo: '2026-09-30',
-        status: 'Active',
-        route: 'Colombo - Matara',
-        operator: 'Coastal Express',
-        operatorType: 'Private',
-        region: 'Southern Province',
-        province: 'Southern',
-        notes: 'Express AC service for long distance coastal route. Limited stops.',
-        distanceBands: [
-            { min: 0, max: 50, fare: 200 },
-            { min: 51, max: 100, fare: 400 },
-            { min: 101, max: 160, fare: 600 },
-        ],
-        createdDate: '2025-09-10',
-        lastUpdated: '2025-09-15',
-        createdBy: 'Anura Silva (Operations Head)',
-    },
-    {
-        id: 'FS005',
-        busType: 'Non-AC',
-        facilityType: 'Normal',
-        baseFare: 48.0,
-        perKmRate: 5.2,
-        effectiveFrom: '2023-12-01',
-        effectiveTo: '2024-11-30',
-        status: 'Expired',
-        route: 'Kurunegala - Anuradhapura',
-        operator: 'North Western Transport',
-        operatorType: 'SLTB',
-        region: 'North Western Province',
-        province: 'North Western',
-        notes: 'Regular service connecting northwestern cities. Replaced by FS010.',
-        distanceBands: [
-            { min: 0, max: 50, fare: 110 },
-            { min: 51, max: 100, fare: 220 },
-            { min: 101, max: 150, fare: 330 },
-        ],
-        createdDate: '2023-11-15',
-        lastUpdated: '2023-11-20',
-        createdBy: 'Nimal Fernando (District Officer)',
-    },
-    {
-        id: 'FS006',
-        busType: 'AC',
-        facilityType: 'Intercity',
-        baseFare: 120.0,
-        perKmRate: 5.5,
-        effectiveFrom: '2025-03-01',
-        effectiveTo: '2026-02-28',
-        status: 'Active',
-        route: 'Colombo - Negombo',
-        operator: 'Colombo City Transport',
-        operatorType: 'Private',
-        region: 'Western Province',
-        province: 'Western',
-        notes: 'Intercity express service between Colombo and Negombo airport corridor.',
-        distanceBands: [
-            { min: 0, max: 20, fare: 80 },
-            { min: 21, max: 40, fare: 150 },
-        ],
-        createdDate: '2025-02-10',
-        lastUpdated: '2025-02-15',
-        createdBy: 'Saman Kumara (City Transport Manager)',
-    },
-    {
-        id: 'FS007',
-        busType: 'Non-AC',
-        facilityType: 'Normal',
-        baseFare: 40.0,
-        perKmRate: 3.8,
-        effectiveFrom: '2025-06-01',
-        effectiveTo: null,
-        status: 'Pending',
-        route: 'Kandy - Badulla',
-        operator: 'Uva Province Transport Board',
-        operatorType: 'Provincial',
-        region: 'Uva Province',
-        province: 'Uva',
-        notes: 'Proposed fare structure for hill country route. Awaiting ministry approval.',
-        distanceBands: [
-            { min: 0, max: 50, fare: 95 },
-            { min: 51, max: 100, fare: 190 },
-            { min: 101, max: 150, fare: 285 },
-        ],
-        createdDate: '2025-04-20',
-        lastUpdated: '2025-05-01',
-        createdBy: 'Deepa Wijesinghe (Planning Officer)',
-    },
-    {
-        id: 'FS008',
-        busType: 'Semi-Luxury',
-        facilityType: 'Semi-Luxury',
-        baseFare: 65.0,
-        perKmRate: 4.2,
-        effectiveFrom: '2024-06-01',
-        effectiveTo: '2024-05-31',
-        status: 'Expired',
-        route: 'Galle - Matara',
-        operator: 'Southern Transport',
-        operatorType: 'Private',
-        region: 'Southern Province',
-        province: 'Southern',
-        notes: 'Previous semi-luxury fare for short-distance southern coastal route.',
-        distanceBands: [
-            { min: 0, max: 25, fare: 75 },
-            { min: 26, max: 50, fare: 140 },
-        ],
-        createdDate: '2024-05-10',
-        lastUpdated: '2024-05-15',
-        createdBy: 'Ravi Mendis (Regional Manager)',
-    },
-    {
-        id: 'FS009',
-        busType: 'AC',
-        facilityType: 'Luxury',
-        baseFare: 150.0,
-        perKmRate: 7.0,
-        effectiveFrom: '2025-01-15',
-        effectiveTo: '2026-01-14',
-        status: 'Active',
-        route: 'Colombo - Ratnapura',
-        operator: 'Sabaragamuwa Transport Board',
-        operatorType: 'Provincial',
-        region: 'Sabaragamuwa Province',
-        province: 'Sabaragamuwa',
-        notes: 'Luxury AC service through gem country with premium seating.',
-        distanceBands: [
-            { min: 0, max: 50, fare: 180 },
-            { min: 51, max: 100, fare: 350 },
-            { min: 101, max: 150, fare: 500 },
-        ],
-        createdDate: '2025-01-05',
-        lastUpdated: '2025-01-10',
-        createdBy: 'Lakshman Dias (Senior Transport Officer)',
-    },
-    {
-        id: 'FS010',
-        busType: 'Non-AC',
-        facilityType: 'Normal',
-        baseFare: 55.0,
-        perKmRate: 5.5,
-        effectiveFrom: '2024-12-01',
-        effectiveTo: '2025-11-30',
-        status: 'Active',
-        route: 'Kurunegala - Anuradhapura',
-        operator: 'North Western Transport',
-        operatorType: 'SLTB',
-        region: 'North Western Province',
-        province: 'North Western',
-        notes: 'Updated fare structure replacing FS005. Revised per-km rate applied.',
-        distanceBands: [
-            { min: 0, max: 50, fare: 120 },
-            { min: 51, max: 100, fare: 240 },
-            { min: 101, max: 150, fare: 360 },
-        ],
-        createdDate: '2024-11-15',
-        lastUpdated: '2024-11-20',
-        createdBy: 'Nimal Fernando (District Officer)',
-    },
-    {
-        id: 'FS011',
-        busType: 'AC',
-        facilityType: 'Express',
-        baseFare: 85.0,
-        perKmRate: 5.0,
-        effectiveFrom: '2025-04-01',
-        effectiveTo: null,
-        status: 'Pending',
-        route: 'Anuradhapura - Trincomalee',
-        operator: 'North Central Province Transport Board',
-        operatorType: 'Provincial',
-        region: 'North Central Province',
-        province: 'North Central',
-        notes: 'Proposed express AC service connecting ancient cities. Under review.',
-        distanceBands: [
-            { min: 0, max: 50, fare: 130 },
-            { min: 51, max: 100, fare: 260 },
-            { min: 101, max: 150, fare: 390 },
-        ],
-        createdDate: '2025-03-10',
-        lastUpdated: '2025-03-15',
-        createdBy: 'Sunil Jayawardena (Regional Planner)',
-    },
-    {
-        id: 'FS012',
-        busType: 'Non-AC',
-        facilityType: 'Normal',
-        baseFare: 35.0,
-        perKmRate: 3.5,
-        effectiveFrom: '2024-08-01',
-        effectiveTo: '2025-07-31',
-        status: 'Active',
-        route: 'Colombo - Chilaw',
-        operator: 'Sri Lanka Transport Board (SLTB)',
-        operatorType: 'SLTB',
-        region: 'North Western Province',
-        province: 'North Western',
-        notes: 'Standard SLTB service along the northwestern coastal corridor.',
-        distanceBands: [
-            { min: 0, max: 40, fare: 80 },
-            { min: 41, max: 80, fare: 160 },
-            { min: 81, max: 120, fare: 240 },
-        ],
-        createdDate: '2024-07-15',
-        lastUpdated: '2024-07-20',
-        createdBy: 'Chaminda Perera (SLTB Fare Division)',
-    },
+// ── Sample Amendments ─────────────────────────────────────────────
+
+const amendments: FareAmendment[] = [
+  {
+    id: 'FA-2026-001',
+    referenceNumber: 'NTC/FARE/2026/001',
+    title: 'Fare Revision - January 2026',
+    description:
+      'Revised fare structure effective from January 2026 reflecting increased fuel costs and operational expenses. This amendment updates fares across all permit types with an average increase of 8% compared to the previous structure.',
+    effectiveDate: '2026-01-15',
+    approvedDate: '2026-01-10',
+    approvedBy: 'Ministry of Transport',
+    status: 'ACTIVE',
+    gazetteNumber: 'GZ-2026/01/15-2241',
+    remarks: 'Approved by Cabinet Decision No. CD/2026/001. Applicable to all routes island-wide.',
+    maxStages: 350,
+    matrix: generateFareMatrix(350, {
+      NORMAL: 20.00,
+      SEMILUXURY: 26.00,
+      LUXURY: 36.00,
+      EXTRALUXURY: 50.00,
+    }, {
+      NORMAL: 1.80,
+      SEMILUXURY: 2.35,
+      LUXURY: 3.25,
+      EXTRALUXURY: 4.50,
+    }),
+    createdAt: '2026-01-08',
+    updatedAt: '2026-01-10',
+  },
+  {
+    id: 'FA-2025-003',
+    referenceNumber: 'NTC/FARE/2025/003',
+    title: 'Fare Revision - July 2025',
+    description:
+      'Mid-year fare adjustment for July 2025 reflecting fuel price stabilization. Includes minor adjustments to semi-luxury and luxury categories.',
+    effectiveDate: '2025-07-01',
+    approvedDate: '2025-06-25',
+    approvedBy: 'Ministry of Transport',
+    status: 'SUPERSEDED',
+    gazetteNumber: 'GZ-2025/07/01-2198',
+    remarks: 'Superseded by FA-2026-001. Was in effect from July 2025 to January 2026.',
+    maxStages: 350,
+    matrix: generateFareMatrix(350, {
+      NORMAL: 18.50,
+      SEMILUXURY: 24.00,
+      LUXURY: 33.50,
+      EXTRALUXURY: 46.00,
+    }, {
+      NORMAL: 1.65,
+      SEMILUXURY: 2.15,
+      LUXURY: 3.00,
+      EXTRALUXURY: 4.15,
+    }),
+    createdAt: '2025-06-20',
+    updatedAt: '2025-06-25',
+  },
+  {
+    id: 'FA-2025-001',
+    referenceNumber: 'NTC/FARE/2025/001',
+    title: 'Fare Revision - January 2025',
+    description:
+      'Annual fare revision for 2025 incorporating fuel surcharge adjustments and CPI-based indexation. Applicable from 1st January 2025.',
+    effectiveDate: '2025-01-01',
+    approvedDate: '2024-12-20',
+    approvedBy: 'Ministry of Transport',
+    status: 'SUPERSEDED',
+    gazetteNumber: 'GZ-2025/01/01-2150',
+    remarks: 'Superseded by FA-2025-003. Implemented CPI-based indexation for the first time.',
+    maxStages: 350,
+    matrix: generateFareMatrix(350, {
+      NORMAL: 17.00,
+      SEMILUXURY: 22.00,
+      LUXURY: 31.00,
+      EXTRALUXURY: 43.00,
+    }, {
+      NORMAL: 1.50,
+      SEMILUXURY: 1.95,
+      LUXURY: 2.80,
+      EXTRALUXURY: 3.85,
+    }),
+    createdAt: '2024-12-15',
+    updatedAt: '2024-12-20',
+  },
+  {
+    id: 'FA-2024-002',
+    referenceNumber: 'NTC/FARE/2024/002',
+    title: 'Fare Revision - June 2024',
+    description:
+      'Emergency fare revision in response to significant fuel price increases. Implemented across all categories with immediate effect.',
+    effectiveDate: '2024-06-01',
+    approvedDate: '2024-05-28',
+    approvedBy: 'Ministry of Transport',
+    status: 'SUPERSEDED',
+    gazetteNumber: 'GZ-2024/06/01-2098',
+    remarks: 'Emergency revision. Superseded by FA-2025-001.',
+    maxStages: 350,
+    matrix: generateFareMatrix(350, {
+      NORMAL: 15.00,
+      SEMILUXURY: 19.50,
+      LUXURY: 27.00,
+      EXTRALUXURY: 37.50,
+    }, {
+      NORMAL: 1.35,
+      SEMILUXURY: 1.75,
+      LUXURY: 2.45,
+      EXTRALUXURY: 3.40,
+    }),
+    createdAt: '2024-05-25',
+    updatedAt: '2024-05-28',
+  },
+  {
+    id: 'FA-2026-DRAFT',
+    referenceNumber: 'NTC/FARE/2026/DRAFT-002',
+    title: 'Proposed Fare Revision - Mid 2026',
+    description:
+      'Draft fare revision proposal for mid-2026 under review. Includes proposed adjustments based on projected fuel price changes and inflation forecasts.',
+    effectiveDate: '2026-07-01',
+    approvedDate: null,
+    approvedBy: '',
+    status: 'DRAFT',
+    gazetteNumber: '',
+    remarks: 'Under review by the fare committee. Subject to Cabinet approval.',
+    maxStages: 350,
+    matrix: generateFareMatrix(350, {
+      NORMAL: 22.00,
+      SEMILUXURY: 28.50,
+      LUXURY: 40.00,
+      EXTRALUXURY: 55.00,
+    }, {
+      NORMAL: 2.00,
+      SEMILUXURY: 2.60,
+      LUXURY: 3.60,
+      EXTRALUXURY: 5.00,
+    }),
+    createdAt: '2026-02-15',
+    updatedAt: '2026-02-20',
+  },
 ];
 
-// --- Service functions (mirror API service pattern for easy swap) ---
+// ── Service Functions ─────────────────────────────────────────────
 
-export function getFares(): Fare[] {
-    return sampleFares;
+export function getAmendments(): FareAmendment[] {
+  return amendments;
 }
 
-export function getFareById(id: string): Fare | undefined {
-    return sampleFares.find((f) => f.id === id);
+export function getAmendmentSummaries(): FareAmendmentSummary[] {
+  return amendments.map(({ id, referenceNumber, title, effectiveDate, approvedDate, status, gazetteNumber, maxStages, createdAt }) => ({
+    id,
+    referenceNumber,
+    title,
+    effectiveDate,
+    approvedDate,
+    status,
+    gazetteNumber,
+    maxStages,
+    createdAt,
+  }));
+}
+
+export function getAmendmentById(id: string): FareAmendment | undefined {
+  return amendments.find((a) => a.id === id);
+}
+
+export function getActiveAmendment(): FareAmendment | undefined {
+  return amendments.find((a) => a.status === 'ACTIVE');
 }
 
 export function getFareStatistics(): FareStatistics {
-    const fares = sampleFares;
-    const activeFares = fares.filter((f) => f.status === 'Active');
-    return {
-        totalFares: fares.length,
-        activeFares: activeFares.length,
-        expiredFares: fares.filter((f) => f.status === 'Expired').length,
-        pendingFares: fares.filter((f) => f.status === 'Pending').length,
-        averagePerKmRate:
-            fares.length > 0
-                ? fares.reduce((sum, f) => sum + f.perKmRate, 0) / fares.length
-                : 0,
-    };
+  const active = getActiveAmendment();
+  const avgNormal =
+    active
+      ? active.matrix.reduce((sum, e) => sum + e.fares.NORMAL, 0) / active.matrix.length
+      : 0;
+
+  return {
+    totalAmendments: amendments.length,
+    activeAmendment: active?.referenceNumber ?? 'N/A',
+    totalPermitTypes: PERMIT_TYPES.length,
+    maxStages: active?.maxStages ?? 350,
+    averageNormalFare: Math.round(avgNormal * 100) / 100,
+    lastUpdated: active?.updatedAt ?? '',
+  };
 }
 
-export function getFareFilterOptions(): FareFilterOptions {
-    const fares = sampleFares;
-    return {
-        statuses: [...new Set(fares.map((f) => f.status))],
-        busTypes: [...new Set(fares.map((f) => f.busType))],
-        facilityTypes: [...new Set(fares.map((f) => f.facilityType))],
-        operators: [...new Set(fares.map((f) => f.operator))],
-        regions: [...new Set(fares.map((f) => f.region))],
-    };
+export function getAmendmentStatusOptions(): AmendmentStatus[] {
+  return [...new Set(amendments.map((a) => a.status))];
 }
