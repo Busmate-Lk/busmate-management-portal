@@ -227,15 +227,6 @@ function ServicePermitsContent() {
       {/* Statistics */}
       <PermitStatsCards stats={statistics} loading={!initialized} />
 
-      {/* Read-only info notice */}
-      <div className="flex items-start gap-2.5 p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800">
-        <Info className="w-4 h-4 mt-0.5 shrink-0" />
-        <span>
-          Service permits are issued and managed by the Ministry of Transport. This view is
-          read-only. Contact the MOT to request changes or renewals.
-        </span>
-      </div>
-
       {/* Filters */}
       <PermitFilters
         searchTerm={filters.search}
@@ -271,6 +262,15 @@ function ServicePermitsContent() {
           }
           loading={loading}
         />
+      </div>
+
+      {/* Read-only info notice */}
+      <div className="flex items-start gap-2.5 p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-800">
+        <Info className="w-4 h-4 mt-0.5 shrink-0" />
+        <span>
+          Service permits are issued and managed by the Ministry of Transport. This view is
+          read-only. Contact the MOT to request changes or renewals.
+        </span>
       </div>
     </div>
   );
