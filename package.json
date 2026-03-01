@@ -18,7 +18,12 @@
     "generate:api-route:local": "npx openapi-typescript-codegen --input http://localhost:8080/v3/api-docs  --output ./generated/api-clients/route-management",
     "generate:api-location:local": "npx openapi-typescript-codegen --input http://localhost:4000/api-spec  --output ./generated/api-clients/location-tracking",
     "generate:api-ticketing:cloud": "npx openapi-typescript-codegen --input http://54.91.217.117:8083/v3/api-docs  --output ./generated/api-clients/ticketing-management",
-    "generate:api-ticketing:local": "npx openapi-typescript-codegen --input http://localhost:8083/v3/api-docs  --output ./generated/api-clients/ticketing-management"
+    "generate:api-ticketing:local": "npx openapi-typescript-codegen --input http://localhost:8083/v3/api-docs  --output ./generated/api-clients/ticketing-management",
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui",
+    "test:e2e:headed": "npx playwright test --headed",
+    "test:e2e:debug": "npx playwright test --debug",
+    "test:e2e:report": "npx playwright show-report"
   },
   "dependencies": {
     "@asgardeo/nextjs": "^0.1.81",
@@ -90,6 +95,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/js-yaml": "^4.0.9",
     "@types/jsonwebtoken": "^9.0.10",
