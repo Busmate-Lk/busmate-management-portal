@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSetPageMetadata } from '@/context/PageContext';
+import { RefreshCw, Info } from 'lucide-react';
+import { useSetPageMetadata, useSetPageActions } from '@/context/PageContext';
 import {
   FleetStatsCards,
   FleetFilters,
   FleetTable,
-  FleetPagination,
 } from '@/components/operator/fleet';
+import { DataPagination } from '@/components/shared/DataPagination';
 import {
   getOperatorBuses,
   getFleetStatistics,
@@ -28,10 +29,10 @@ export default function FleetManagementPage() {
     activeItem: 'fleetmanagement',
     showBreadcrumbs: true,
     breadcrumbs: [{ label: 'Fleet Management' }],
-    padding: 0,
   });
 
   // ── Data state ────────────────────────────────────────────────────────────
+
   const [buses,      setBuses]      = useState<OperatorBus[]>([]);
   const [stats,      setStats]      = useState<FleetStatistics>({
     totalBuses: 0, activeBuses: 0, inactiveBuses: 0,
@@ -41,33 +42,43 @@ export default function FleetManagementPage() {
     totalElements: 0, totalPages: 0, currentPage: 0, pageSize: 10,
   });
 
-  // ── UI state ─────────────────────────────────────────────────────────────
-  const [isLoading,      setIsLoading]      = useState(true);
-  const [statsLoading,   setStatsLoading]   = useState(true);
-  const [tableLoading,   setTableLoading]   = useState(false);
-  const [error,          setError]          = useState<string | null>(null);
+  // ── UI state ──────────────────────────────────────────────────────────────
 
-  // ── Filter / sort state ───────────────────────────────────────────────────
-  const [search,           setSearch]           = useState('');
-  const [statusFilter,     setStatusFilter]     = useState<BusStatus | 'ALL'>('ALL');
-  const [serviceTypeFilter,setServiceTypeFilter] = useState<BusServiceType | 'ALL'>('ALL');
-  const [currentPage,      setCurrentPage]      = useState(0);
-  const [pageSize,         setPageSize]         = useState(10);
-  const [sortField,        setSortField]        = useState('plateNumber');
-  const [sortDir,          setSortDir]          = useState<'asc' | 'desc'>('asc');
+  const [isLoading,    setIsLoading]    = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(false);
+  const [error,        setError]        = useState<string | null>(null);
 
-  // ── Load statistics (once) ─────────────────────────────────────────────────
-  useEffect(() => {
-    let cancelled = false;
+  // ── Filter / sort / page state ────────────────────────────────────────────
+
+  const [search,            setSearch]            = useState('');
+  const [statusFilter,      setStatusFilter]      = useState<BusStatus | 'ALL'>('ALL');
+  const [serviceTypeFilter, setServiceTypeFilter] = useState<BusServiceType | 'ALL'>('ALL');
+  const [currentPage,       setCurrentPage]       = useState(0);
+  const [pageSize,          setPageSize]          = useState(10);
+  const [sortField,         setSortField]         = useState('plateNumber');
+  const [sortDir,           setSortDir]           = useState<'asc' | 'desc'>('asc');
+
+  // ── Load statistics (once) ────────────────────────────────────────────────
+
+  const loadStatistics = useCallback(async () => {
     setStatsLoading(true);
-    getFleetStatistics()
-      .then(s => { if (!cancelled) setStats(s); })
-      .catch(() => {})
-      .finally(() => { if (!cancelled) setStatsLoading(false); });
-    return () => { cancelled = true; };
+    try {
+      const s = await getFleetStatistics();
+      setStats(s);
+    } catch {
+      // Statistics are non-critical; fail silently.
+    } finally {
+      setStatsLoading(false);
+    }
   }, []);
 
-  // ── Load buses ─────────────────────────────────────────────────────────────
+  useEffect(() => {
+    loadStatistics();
+  }, [loadStatistics]);
+
+  // ── Load buses ────────────────────────────────────────────────────────────
+
   const loadBuses = useCallback(async (showFullLoader = false) => {
     if (showFullLoader) setIsLoading(true); else setTableLoading(true);
     setError(null);
@@ -97,9 +108,29 @@ export default function FleetManagementPage() {
     }
   }, [currentPage, pageSize, search, statusFilter, serviceTypeFilter]);
 
-  useEffect(() => { loadBuses(isLoading); }, [loadBuses]);
+  useEffect(() => {
+    loadBuses(isLoading);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadBuses]);
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
+  // ── Page-level actions (header toolbar) ───────────────────────────────────
+
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([loadStatistics(), loadBuses()]);
+  }, [loadStatistics, loadBuses]);
+
+  useSetPageActions(
+    <button
+      onClick={handleRefresh}
+      disabled={isLoading || tableLoading}
+      className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      <RefreshCw className={`h-3.5 w-3.5 ${isLoading || tableLoading ? 'animate-spin' : ''}`} />
+      Refresh
+    </button>
+  );
+
+  // ── Filter / sort handlers ────────────────────────────────────────────────
 
   const handleSearchChange = useCallback((v: string) => {
     setSearch(v);
@@ -141,85 +172,79 @@ export default function FleetManagementPage() {
     setCurrentPage(0);
   }, []);
 
-  const hasFilters = search !== '' || statusFilter !== 'ALL' || serviceTypeFilter !== 'ALL';
+  const hasActiveFilters = search !== '' || statusFilter !== 'ALL' || serviceTypeFilter !== 'ALL';
 
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
 
-        {/* Stats */}
-        <FleetStatsCards stats={stats} loading={statsLoading} />
+      {/* Statistics Cards */}
+      <FleetStatsCards stats={stats} loading={statsLoading} />
 
-        {/* Filters */}
-        <FleetFilters
-          search={search}
-          onSearchChange={handleSearchChange}
-          statusFilter={statusFilter}
-          onStatusChange={handleStatusChange}
-          serviceTypeFilter={serviceTypeFilter}
-          onServiceTypeChange={handleServiceTypeChange}
-          onClearAll={handleClearAll}
-          totalCount={stats.totalBuses}
-          filteredCount={pagination.totalElements}
+      {/* Search & Filters */}
+      <FleetFilters
+        search={search}
+        onSearchChange={handleSearchChange}
+        statusFilter={statusFilter}
+        onStatusChange={handleStatusChange}
+        serviceTypeFilter={serviceTypeFilter}
+        onServiceTypeChange={handleServiceTypeChange}
+        onClearAll={handleClearAll}
+        totalCount={stats.totalBuses}
+        filteredCount={pagination.totalElements}
+        loading={tableLoading}
+      />
+
+      {/* Error Banner */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 text-sm text-red-700">
+          <div className="flex-1">
+            <span className="font-semibold">Error: </span>{error}
+          </div>
+          <button
+            onClick={() => loadBuses()}
+            className="shrink-0 text-red-600 underline hover:no-underline text-xs font-medium"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Table + Pagination Card */}
+      <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
+        <FleetTable
+          buses={buses}
+          onView={handleView}
+          onSort={handleSort}
+          currentSort={{ field: sortField, direction: sortDir }}
+          loading={isLoading || tableLoading}
+          hasActiveFilters={hasActiveFilters}
         />
 
-        {/* Error */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700 flex items-center gap-2">
-            <span className="font-medium">Error:</span> {error}
-            <button
-              onClick={() => loadBuses()}
-              className="ml-auto text-red-600 underline hover:no-underline text-xs"
-            >
-              Retry
-            </button>
-          </div>
+        {!error && pagination.totalElements > 0 && (
+          <DataPagination
+            currentPage={pagination.currentPage}
+            totalPages={pagination.totalPages}
+            totalElements={pagination.totalElements}
+            pageSize={pagination.pageSize}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+            loading={tableLoading}
+          />
         )}
-
-        {/* Full-page loading skeleton */}
-        {isLoading ? (
-          <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100 animate-pulse">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 px-4 py-4">
-                <div className="h-4 bg-gray-200 rounded w-24" />
-                <div className="h-4 bg-gray-200 rounded w-36" />
-                <div className="h-4 bg-gray-200 rounded w-20" />
-                <div className="h-4 bg-gray-200 rounded w-10 ml-auto" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <>
-            {/* Table */}
-            <FleetTable
-              buses={buses}
-              onView={handleView}
-              onSort={handleSort}
-              currentSort={{ field: sortField, direction: sortDir }}
-              loading={tableLoading}
-              hasActiveFilters={hasFilters}
-            />
-
-            {/* Pagination */}
-            {!error && pagination.totalElements > 0 && (
-              <FleetPagination
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                totalElements={pagination.totalElements}
-                pageSize={pagination.pageSize}
-                onPageChange={handlePageChange}
-                onPageSizeChange={handlePageSizeChange}
-              />
-            )}
-          </>
-        )}
-
-        {/* Read-only notice */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-700">
-          <strong>Read-only view:</strong> Fleet registration and modifications are managed by the National Transport Commission (NTC).
-          Please contact NTC for any changes to your fleet.
       </div>
+
+      {/* Read-only notice */}
+      <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-700">
+        <Info className="h-4 w-4 shrink-0 mt-0.5 text-blue-500" />
+        <p>
+          <span className="font-semibold">Read-only view:</span>{' '}
+          Fleet registration and modifications are managed by the National Transport Commission (NTC).
+          Please contact NTC for any changes to your fleet.
+        </p>
+      </div>
+
     </div>
   );
 }
