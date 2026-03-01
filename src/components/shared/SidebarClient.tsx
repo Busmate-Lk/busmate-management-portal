@@ -220,10 +220,16 @@ export function SidebarClient({
       href: '/operator/staff-management',
     },
     {
-      icon: DollarSign,
-      label: 'Revenue Management',
-      active: activeItem === 'revenue',
-      href: '/operator/revenue-management',
+      icon: ChartAreaIcon,
+      label: 'Revenue Analytics',
+      active: activeItem === 'revenue-analytics',
+      href: '/operator/revenue-analytics',
+    },
+    {
+      icon: CircleDollarSignIcon,
+      label: 'Salary Management',
+      active: activeItem === 'salary-management',
+      href: '/operator/salary-management',
     },
   ];
 
