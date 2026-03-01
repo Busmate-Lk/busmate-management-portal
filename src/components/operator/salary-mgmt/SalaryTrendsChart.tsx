@@ -20,6 +20,7 @@ interface SalaryTrendsChartProps {
  */
 export function SalaryTrendsChart({ data, loading }: SalaryTrendsChartProps) {
   if (loading) {
+    const skeletonHeights = [60, 80, 40, 90, 50, 70];
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 animate-pulse">
         <div className="h-5 bg-gray-200 rounded w-48 mb-6" />
@@ -28,7 +29,7 @@ export function SalaryTrendsChart({ data, loading }: SalaryTrendsChartProps) {
             <div
               key={i}
               className="flex-1 bg-gray-200 rounded-t"
-              style={{ height: `${40 + Math.random() * 60}%` }}
+              style={{ height: `${skeletonHeights[i]}%` }}
             />
           ))}
         </div>

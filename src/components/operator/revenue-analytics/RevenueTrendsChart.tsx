@@ -23,6 +23,7 @@ interface RevenueTrendsChartProps {
 export function RevenueTrendsChart({ data, loading }: RevenueTrendsChartProps) {
   // ── Loading skeleton ──────────────────────────────────────────
   if (loading) {
+    const skeletonHeights = [60, 80, 40, 90, 50, 70, 55, 85, 35, 65, 75, 45, 95, 25];
     return (
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 animate-pulse">
         <div className="h-5 bg-gray-200 rounded w-48 mb-6" />
@@ -31,7 +32,7 @@ export function RevenueTrendsChart({ data, loading }: RevenueTrendsChartProps) {
             <div
               key={i}
               className="flex-1 bg-gray-200 rounded-t"
-              style={{ height: `${30 + Math.random() * 70}%` }}
+              style={{ height: `${skeletonHeights[i]}%` }}
             />
           ))}
         </div>
