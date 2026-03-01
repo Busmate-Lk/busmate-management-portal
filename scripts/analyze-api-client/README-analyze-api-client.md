@@ -22,7 +22,7 @@ A **Node.js** script that inspects a generated OpenAPI client (the kind produced
 Run from the **project root**:
 
 ```bash
-node scripts/analyze-api-client.js <api-client-path> [options]
+node scripts/analyze-api-client/analyze-api-client.js <api-client-path> [options]
 ```
 
 ### Arguments
@@ -49,7 +49,7 @@ node scripts/analyze-api-client.js <api-client-path> [options]
 ### Analyse the route-management client (default options)
 
 ```bash
-node scripts/analyze-api-client.js generated/api-clients/route-management
+node scripts/analyze-api-client/analyze-api-client.js generated/api-clients/route-management
 ```
 
 Reports are saved to `reports/api-client-analysis/route-management/`.
@@ -59,7 +59,7 @@ Reports are saved to `reports/api-client-analysis/route-management/`.
 ### Analyse the user-management client
 
 ```bash
-node scripts/analyze-api-client.js generated/api-clients/user-management
+node scripts/analyze-api-client/analyze-api-client.js generated/api-clients/user-management
 ```
 
 Reports are saved to `reports/api-client-analysis/user-management/`.
@@ -69,7 +69,7 @@ Reports are saved to `reports/api-client-analysis/user-management/`.
 ### Custom output directory
 
 ```bash
-node scripts/analyze-api-client.js generated/api-clients/route-management \
+node scripts/analyze-api-client/analyze-api-client.js generated/api-clients/route-management \
   --output=docs/api-analysis
 ```
 
@@ -78,7 +78,7 @@ node scripts/analyze-api-client.js generated/api-clients/route-management \
 ### Also search a `pages/` directory
 
 ```bash
-node scripts/analyze-api-client.js generated/api-clients/route-management \
+node scripts/analyze-api-client/analyze-api-client.js generated/api-clients/route-management \
   --search-dirs=src,pages
 ```
 
@@ -87,7 +87,7 @@ node scripts/analyze-api-client.js generated/api-clients/route-management \
 ### Print results to stdout (no files written)
 
 ```bash
-node scripts/analyze-api-client.js generated/api-clients/route-management \
+node scripts/analyze-api-client/analyze-api-client.js generated/api-clients/route-management \
   --stdout --quiet
 ```
 
@@ -96,7 +96,7 @@ node scripts/analyze-api-client.js generated/api-clients/route-management \
 ### Absolute path to a client outside the project root
 
 ```bash
-node scripts/analyze-api-client.js /absolute/path/to/my-api-client \
+node scripts/analyze-api-client/analyze-api-client.js /absolute/path/to/my-api-client \
   --search-dirs=src \
   --output=reports/my-api-analysis
 ```
@@ -142,10 +142,10 @@ The script is designed to work with **any** generated OpenAPI client that follow
 
 ```bash
 # ticketing-management client
-node scripts/analyze-api-client.js generated/api-clients/ticketing-management
+node scripts/analyze-api-client/analyze-api-client.js generated/api-clients/ticketing-management
 
 # location-tracking client
-node scripts/analyze-api-client.js generated/api-clients/location-tracking
+node scripts/analyze-api-client/analyze-api-client.js generated/api-clients/location-tracking
 ```
 
 ---
